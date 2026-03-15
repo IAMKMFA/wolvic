@@ -502,13 +502,20 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
 
         attachToWindow(mWindows.getFocusedWindow(), null);
 
-        addWidgets(Arrays.asList(mRootWidget, mNavigationBar, mKeyboard, mTray, mTabsBar, mWebXRInterstitial));
+        if (BuildConfig.FRAMATOME_MODE) {
+            addWidgets(Arrays.asList(mRootWidget, mKeyboard, mWebXRInterstitial));
+        } else {
+            addWidgets(Arrays.asList(mRootWidget, mNavigationBar, mKeyboard, mTray, mTabsBar, mWebXRInterstitial));
+        }
 
         // Create the platform plugin after widgets are created to be extra safe.
         mPlatformPlugin = createPlatformPlugin(this);
         if (mPlatformPlugin != null)
             mPlatformPlugin.registerListener(this);
 
+        if (BuildConfig.FRAMATOME_MODE) {
+            com.framatome.vr.tours.TourIndexServer.INSTANCE.writeIndexFile(this);
+        }
         mWindows.restoreSessions();
     }
 

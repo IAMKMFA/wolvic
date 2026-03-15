@@ -81,3 +81,9 @@ app/agconnect-services.json
 
 # Token files
 .mls_token
+gecko-patches/
+gecko-patches/
+third_party/
+release/
+local.properties
+user.properties

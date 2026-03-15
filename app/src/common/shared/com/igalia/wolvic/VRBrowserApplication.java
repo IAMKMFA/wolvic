@@ -107,6 +107,10 @@ public class VRBrowserApplication extends Application implements AppServicesProv
                     .penaltyLog()
                     .build());
         }
+
+        if (BuildConfig.FRAMATOME_MODE) {
+            com.framatome.vr.tours.FramatomeInitializer.INSTANCE.init(this);
+        }
     }
 
     public Services getServices() {

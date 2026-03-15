@@ -7,6 +7,7 @@ plugins {
 apply plugin: 'com.android.application'
 apply from: "$project.rootDir/tools/gradle/versionCode.gradle"
 apply plugin: 'kotlin-android'
+apply plugin: 'org.jetbrains.kotlin.plugin.compose'
 
 // Apply AGConnect plugin only for Huawei builds
 if (getGradle().getStartParameter().getTaskRequests().toString() =~ /[Hh]vr/
@@ -108,11 +109,11 @@ android {
     namespace 'com.igalia.wolvic'
     compileSdkVersion 35
     defaultConfig {
-        applicationId "com.igalia.wolvic"
-        minSdkVersion 24
+        applicationId "com.framatome.vr.pro"
+        minSdkVersion 29
         targetSdkVersion 34
         versionCode generatedVersionCode
-        versionName "1.9"
+        versionName "1.0-wolvic"
         buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""
         buildConfigField "Boolean", "DISABLE_CRASH_RESTART", getCrashRestartDisabled()
         buildConfigField "String", "AMO_COLLECTION", "\"fxr\""
@@ -128,10 +129,11 @@ android {
         buildConfigField 'String', 'ANNOUNCEMENTS_ENDPOINT', '"https://igalia.github.io/wolvic/announcements.json"'
         buildConfigField 'String', 'EXPERIENCES_ENDPOINT', '"https://igalia.github.io/wolvic/experiences.json"'
         buildConfigField 'String', 'HEYVR_ENDPOINT', '"https://api.heyvr.io/v1/public/global/feed/featured?limit=50"'
+        buildConfigField "Boolean", "FRAMATOME_MODE", "true"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        resValue 'string', 'app_name', 'Wolvic'
-        resValue 'string', 'HOMEPAGE_URL', "https://wolvic.com/start"
+        resValue 'string', 'app_name', 'Framatome VR'
+        resValue 'string', 'HOMEPAGE_URL', "http://localhost:18080"
         externalNativeBuild {
             cmake {
                 cppFlags "-std=c++14 -fexceptions -frtti -Werror" +
@@ -157,7 +159,7 @@ android {
     }
 
     base {
-        archivesName = "Wolvic"
+        archivesName = "FramatomeVR"
     }
 
     compileOptions {
@@ -471,7 +473,8 @@ android {
             java.srcDirs = [
                     'app',
                     'src/common/shared',
-                    'src/main/cpp/vrb/android/java'
+                    'src/main/cpp/vrb/android/java',
+                    'src/main/java'
             ]
         }
 
@@ -575,7 +578,9 @@ android {
         prefab true // enable prefab support for various SDK AAR
         dataBinding true
         buildConfig true
+        compose true
     }
+
 
     lint {
         disable 'ExtraTranslation'
@@ -597,6 +602,15 @@ configurations {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+
+    // Framatome VR Pro — Tour management
+    def composeBom = platform("androidx.compose:compose-bom:2024.10.01")
+    implementation composeBom
+    implementation "androidx.compose.ui:ui"
+    implementation "androidx.compose.ui:ui-tooling-preview"
+    implementation "androidx.compose.material3:material3:1.3.0"
+    implementation "androidx.activity:activity-compose:1.9.3"
+    implementation "org.nanohttpd:nanohttpd:2.3.1"
 
     // Common
     implementation libs.lifecycle.runtime
