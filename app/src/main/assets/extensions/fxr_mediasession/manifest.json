@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "Wolvic MediaSession Enhancements",
+  "name": "Framatome VR MediaSession Enhancements",
   "version": "1.0",
   "description": "Fixes VR Video playback compatibility",
   "browser_specific_settings": {

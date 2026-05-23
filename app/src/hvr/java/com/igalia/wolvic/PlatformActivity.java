@@ -34,7 +34,7 @@ import com.huawei.hvr.LibUpdateClient;
 import com.igalia.wolvic.browser.PermissionDelegate;
 import com.igalia.wolvic.browser.SettingsStore;
 import com.igalia.wolvic.geolocation.HVRLocationManager;
-import com.igalia.wolvic.messaging.WolvicHmsMessageService;
+import com.igalia.wolvic.messaging.FramatomeHmsMessageService;
 import com.igalia.wolvic.speech.SpeechRecognizer;
 import com.igalia.wolvic.speech.SpeechServices;
 import com.igalia.wolvic.telemetry.HVRTelemetry;
@@ -128,10 +128,10 @@ public abstract class PlatformActivity extends FragmentActivity implements Surfa
     }
 
     private void handlemHmsMessageBroadcast(Intent intent) {
-        if (!WolvicHmsMessageService.MESSAGE_RECEIVED_ACTION.equals(intent.getAction()))
+        if (!FramatomeHmsMessageService.MESSAGE_RECEIVED_ACTION.equals(intent.getAction()))
             return;
 
-        RemoteMessage message = intent.getParcelableExtra(WolvicHmsMessageService.MESSAGE_EXTRA);
+        RemoteMessage message = intent.getParcelableExtra(FramatomeHmsMessageService.MESSAGE_EXTRA);
         Log.i(TAG, "PushKit: received remote message " + message);
 
         String title = null;
@@ -224,7 +224,7 @@ public abstract class PlatformActivity extends FragmentActivity implements Surfa
         }, null);
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        setTheme(R.style.Theme_WolvicPhone);
+        setTheme(R.style.Theme_FramatomePhone);
         setContentView(R.layout.activity_main);
         pushBackHandler(mPhoneBackHandler);
     }
@@ -270,7 +270,7 @@ public abstract class PlatformActivity extends FragmentActivity implements Surfa
         }
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(WolvicHmsMessageService.MESSAGE_RECEIVED_ACTION);
+        filter.addAction(FramatomeHmsMessageService.MESSAGE_RECEIVED_ACTION);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             registerReceiver(mHmsMessageBroadcastReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
         } else {
@@ -290,30 +290,30 @@ public abstract class PlatformActivity extends FragmentActivity implements Surfa
 
     private void setHmsMessageServiceAutoInit(boolean enabled) {
         Log.d(TAG, "PushKit: setHmsMessageServiceAutoInit");
-        Intent intent = new Intent(this, WolvicHmsMessageService.class);
-        intent.putExtra(WolvicHmsMessageService.COMMAND, WolvicHmsMessageService.COMMAND_AUTO_INIT);
-        intent.putExtra(WolvicHmsMessageService.ENABLED_EXTRA, enabled);
+        Intent intent = new Intent(this, FramatomeHmsMessageService.class);
+        intent.putExtra(FramatomeHmsMessageService.COMMAND, FramatomeHmsMessageService.COMMAND_AUTO_INIT);
+        intent.putExtra(FramatomeHmsMessageService.ENABLED_EXTRA, enabled);
         startService(intent);
     }
 
     private void getHmsMessageServiceToken() {
         Log.d(TAG, "PushKit: getHmsMessageServiceToken");
-        Intent intent = new Intent(this, WolvicHmsMessageService.class);
-        intent.putExtra(WolvicHmsMessageService.COMMAND, WolvicHmsMessageService.COMMAND_GET_TOKEN);
+        Intent intent = new Intent(this, FramatomeHmsMessageService.class);
+        intent.putExtra(FramatomeHmsMessageService.COMMAND, FramatomeHmsMessageService.COMMAND_GET_TOKEN);
         startService(intent);
     }
 
     private void deleteHmsMessageServiceToken() {
         Log.d(TAG, "PushKit: deleteHmsMessageServiceToken");
-        Intent intent = new Intent(this, WolvicHmsMessageService.class);
-        intent.putExtra(WolvicHmsMessageService.COMMAND, WolvicHmsMessageService.COMMAND_DELETE_TOKEN);
+        Intent intent = new Intent(this, FramatomeHmsMessageService.class);
+        intent.putExtra(FramatomeHmsMessageService.COMMAND, FramatomeHmsMessageService.COMMAND_DELETE_TOKEN);
         startService(intent);
     }
 
     private void stopHmsMessageService() {
         Log.d(TAG, "PushKit: stopHmsMessageService");
-        Intent intent = new Intent(this, WolvicHmsMessageService.class);
-        intent.putExtra(WolvicHmsMessageService.COMMAND, WolvicHmsMessageService.COMMAND_STOP_SERVICE);
+        Intent intent = new Intent(this, FramatomeHmsMessageService.class);
+        intent.putExtra(FramatomeHmsMessageService.COMMAND, FramatomeHmsMessageService.COMMAND_STOP_SERVICE);
         startService(intent);
     }
 

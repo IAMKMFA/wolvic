@@ -301,23 +301,27 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         SettingsStore.getInstance(getBaseContext()).setPid(Process.myPid());
         ((VRBrowserApplication)getApplication()).onActivityCreate(this);
 
-        if (!DeviceType.isHVRBuild() && SettingsStore.getInstance(getBaseContext()).isTelemetryEnabled()) {
+        if (!BuildConfig.FRAMATOME_MODE
+                && !DeviceType.isHVRBuild()
+                && SettingsStore.getInstance(getBaseContext()).isTelemetryEnabled()) {
             TelemetryService.setService(new OpenTelemetry(getApplication()));
         }
 
-        // Fix for infinite restart on startup crashes.
-        long count = SettingsStore.getInstance(getBaseContext()).getCrashRestartCount();
-        boolean cancelRestart = count > CrashReporterService.MAX_RESTART_COUNT;
-        if (cancelRestart) {
-            super.onCreate(savedInstanceState);
-            Log.e(LOGTAG, "Cancel Restart");
-            finish();
-            return;
+        if (!BuildConfig.FRAMATOME_MODE) {
+            // Fix for infinite restart on startup crashes.
+            long count = SettingsStore.getInstance(getBaseContext()).getCrashRestartCount();
+            boolean cancelRestart = count > CrashReporterService.MAX_RESTART_COUNT;
+            if (cancelRestart) {
+                super.onCreate(savedInstanceState);
+                Log.e(LOGTAG, "Cancel Restart");
+                finish();
+                return;
+            }
+            SettingsStore.getInstance(getBaseContext()).incrementCrashRestartCount();
+            mHandler.postDelayed(() -> SettingsStore.getInstance(getBaseContext()).resetCrashRestartCount(), RESET_CRASH_COUNT_DELAY);
+            // Set a global exception handler as soon as possible
+            GlobalExceptionHandler.register(this.getApplicationContext());
         }
-        SettingsStore.getInstance(getBaseContext()).incrementCrashRestartCount();
-        mHandler.postDelayed(() -> SettingsStore.getInstance(getBaseContext()).resetCrashRestartCount(), RESET_CRASH_COUNT_DELAY);
-        // Set a global exception handler as soon as possible
-        GlobalExceptionHandler.register(this.getApplicationContext());
 
         if (DeviceType.isOculusBuild()) {
             workaroundGeckoSigAction();
@@ -327,15 +331,17 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         BitmapCache.getInstance(this).onCreate();
 
         WRuntime runtime = EngineProvider.INSTANCE.getOrCreateRuntime(this);
-        runtime.appendAppNotesToCrashReport("Wolvic " + BuildConfig.VERSION_NAME + "-" + BuildConfig.VERSION_CODE + "-" + BuildConfig.FLAVOR + "-" + BuildConfig.BUILD_TYPE + " (" + BuildConfig.GIT_HASH + ")");
+        if (!BuildConfig.FRAMATOME_MODE) {
+            runtime.appendAppNotesToCrashReport("Wolvic " + BuildConfig.VERSION_NAME + "-" + BuildConfig.VERSION_CODE + "-" + BuildConfig.FLAVOR + "-" + BuildConfig.BUILD_TYPE + " (" + BuildConfig.GIT_HASH + ")");
 
-        // Create broadcast receiver for getting crash messages from crash process
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(CrashReporterService.CRASH_ACTION);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            registerReceiver(mCrashReceiver, intentFilter, BuildConfig.APPLICATION_ID + "." + getString(R.string.app_permission_name), null, Context.RECEIVER_NOT_EXPORTED);
-        } else {
-            registerReceiver(mCrashReceiver, intentFilter, BuildConfig.APPLICATION_ID + "." + getString(R.string.app_permission_name), null);
+            // Create broadcast receiver for getting crash messages from crash process
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(CrashReporterService.CRASH_ACTION);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                registerReceiver(mCrashReceiver, intentFilter, BuildConfig.APPLICATION_ID + "." + getString(R.string.app_permission_name), null, Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                registerReceiver(mCrashReceiver, intentFilter, BuildConfig.APPLICATION_ID + "." + getString(R.string.app_permission_name), null);
+            }
         }
 
         mLastGesture = NoGesture;
@@ -409,10 +415,11 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         else
             setPointerMode(mSettings.getPointerMode());
 
-        // Show the launch dialogs, if needed.
-        if (!showTermsServiceDialogIfNeeded()) {
-            if (!showPrivacyDialogIfNeeded()) {
-                showWhatsNewDialogIfNeeded();
+        if (!BuildConfig.FRAMATOME_MODE) {
+            if (!showTermsServiceDialogIfNeeded()) {
+                if (!showPrivacyDialogIfNeeded()) {
+                    showWhatsNewDialogIfNeeded();
+                }
             }
         }
 
@@ -430,8 +437,9 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
             }
         });
 
-        // Create Browser navigation widget
-        mNavigationBar = new NavigationBarWidget(this);
+        if (!BuildConfig.FRAMATOME_MODE) {
+            mNavigationBar = new NavigationBarWidget(this);
+        }
 
         // Create keyboard widget
         mKeyboard = new KeyboardWidget(this);
@@ -445,8 +453,8 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
             @Override
             public void onFocusedWindowChanged(@NonNull WindowWidget aFocusedWindow, @Nullable WindowWidget aPrevFocusedWindow) {
                 attachToWindow(aFocusedWindow, aPrevFocusedWindow);
-                mTray.setAddWindowVisible(mWindows.canOpenNewWindow());
-                mNavigationBar.hideAllNotifications();
+                if (mTray != null) mTray.setAddWindowVisible(mWindows.canOpenNewWindow());
+                if (mNavigationBar != null) mNavigationBar.hideAllNotifications();
             }
             @Override
             public void onWindowBorderChanged(@NonNull WindowWidget aChangeWindow) {
@@ -455,15 +463,17 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
 
             @Override
             public void onWindowsMoved() {
-                mNavigationBar.hideAllNotifications();
-                updateWidget(mTray);
+                if (mNavigationBar != null) mNavigationBar.hideAllNotifications();
+                if (mTray != null) updateWidget(mTray);
             }
 
             @Override
             public void onWindowClosed() {
-                mTray.setAddWindowVisible(mWindows.canOpenNewWindow());
-                mNavigationBar.hideAllNotifications();
-                updateWidget(mTray);
+                if (mTray != null) {
+                    mTray.setAddWindowVisible(mWindows.canOpenNewWindow());
+                    updateWidget(mTray);
+                }
+                if (mNavigationBar != null) mNavigationBar.hideAllNotifications();
             }
 
             @Override
@@ -486,18 +496,20 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
             }
         });
 
-        // Create the tray
-        mTray = new TrayWidget(this);
-        mTray.addListeners(mWindows);
-        mTray.setAddWindowVisible(mWindows.canOpenNewWindow());
+        if (!BuildConfig.FRAMATOME_MODE) {
+            mTray = new TrayWidget(this);
+            mTray.addListeners(mWindows);
+            mTray.setAddWindowVisible(mWindows.canOpenNewWindow());
+        }
 
-        // Create Tabs bar widget
-        if (mSettings.getTabsLocation() == SettingsStore.TABS_LOCATION_HORIZONTAL) {
-            mTabsBar = new HorizontalTabsBar(this, mWindows);
-        } else if (mSettings.getTabsLocation() == SettingsStore.TABS_LOCATION_VERTICAL) {
-            mTabsBar = new VerticalTabsBar(this, mWindows);
-        } else {
-            mTabsBar = null;
+        if (!BuildConfig.FRAMATOME_MODE) {
+            if (mSettings.getTabsLocation() == SettingsStore.TABS_LOCATION_HORIZONTAL) {
+                mTabsBar = new HorizontalTabsBar(this, mWindows);
+            } else if (mSettings.getTabsLocation() == SettingsStore.TABS_LOCATION_VERTICAL) {
+                mTabsBar = new VerticalTabsBar(this, mWindows);
+            } else {
+                mTabsBar = null;
+            }
         }
 
         attachToWindow(mWindows.getFocusedWindow(), null);
@@ -513,9 +525,6 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         if (mPlatformPlugin != null)
             mPlatformPlugin.registerListener(this);
 
-        if (BuildConfig.FRAMATOME_MODE) {
-            com.framatome.vr.tours.TourIndexServer.INSTANCE.writeIndexFile(this);
-        }
         mWindows.restoreSessions();
     }
 
@@ -527,9 +536,9 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
 
     private void attachToWindow(@NonNull WindowWidget aWindow, @Nullable WindowWidget aPrevWindow) {
         mPermissionDelegate.setParentWidgetHandle(aWindow.getHandle());
-        mNavigationBar.attachToWindow(aWindow);
+        if (mNavigationBar != null) mNavigationBar.attachToWindow(aWindow);
         mKeyboard.attachToWindow(aWindow);
-        mTray.attachToWindow(aWindow);
+        if (mTray != null) mTray.attachToWindow(aWindow);
 
         if (mTabsBar != null) {
             mTabsBar.attachToWindow(aWindow);
@@ -537,9 +546,9 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         mWindows.adjustWindowOffsets();
 
         if (aPrevWindow != null) {
-            updateWidget(mNavigationBar);
+            if (mNavigationBar != null) updateWidget(mNavigationBar);
             updateWidget(mKeyboard);
-            updateWidget(mTray);
+            if (mTray != null) updateWidget(mTray);
             if (mTabsBar != null) {
                 updateWidget(mTabsBar);
             }
@@ -738,7 +747,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
             mPermissionDelegate.release();
         }
 
-        mTray.removeListeners(mWindows);
+        if (mTray != null) mTray.removeListeners(mWindows);
 
         // Remove all widget listeners
         mWindows.onDestroy();
@@ -781,7 +790,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         Language language = LocaleUtils.getDisplayLanguage(this);
         newConfig.setLocale(language.getLocale());
         // TODO: Deprecated updateConfiguration(Configuration,DisplayMetrics),
-        //  see https://github.com/Igalia/wolvic/issues/797
+        //  see upstream VR browser tracker (legacy issue #797)
         getBaseContext().getResources().updateConfiguration(newConfig, getBaseContext().getResources().getDisplayMetrics());
 
         LocaleUtils.update(this, language);
@@ -1225,7 +1234,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
                 return;
             }
             if (widget == null) {
-                if (getNavigationBar().isInVRVideo()) {
+                if (getNavigationBar() != null && getNavigationBar().isInVRVideo()) {
                     widget = getNavigationBar().getMediaControlsWidget();
                 } else {
                     Log.e(LOGTAG, "Failed to find widget for scroll event: " + aHandle);
@@ -1606,7 +1615,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         }
         int plugged = intent == null ? -1 : intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
         boolean isCharging = plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB || plugged == BatteryManager.BATTERY_PLUGGED_WIRELESS;
-        mTray.setBatteryLevels(mLastBatteryLevel, isCharging, leftLevel, rightLevel);
+        if (mTray != null) mTray.setBatteryLevels(mLastBatteryLevel, isCharging, leftLevel, rightLevel);
     }
 
     @Keep
@@ -2010,7 +2019,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
 
     @Override
     public void keyboardDismissed() {
-        mNavigationBar.showVoiceSearch();
+        if (mNavigationBar != null) mNavigationBar.showVoiceSearch();
     }
 
     @Override

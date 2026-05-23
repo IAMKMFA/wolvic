@@ -6,6 +6,7 @@ import android.util.Log
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
+import java.security.MessageDigest
 import java.util.Locale
 import java.util.UUID
 import java.util.zip.ZipEntry
@@ -21,8 +22,8 @@ class PublicInboxImporter private constructor(
     constructor(app: Application) : this(
         app = app,
         externalBaseOverride = null,
-        sharedRoots = DEFAULT_SHARED_ROOTS,
-        legacyRoot = DEFAULT_LEGACY_ROOT,
+        sharedRoots = defaultSharedRoots(),
+        legacyRoot = defaultLegacyRoot(),
         maxExtractBytes = DEFAULT_MAX_BYTES
     )
 
@@ -36,13 +37,13 @@ class PublicInboxImporter private constructor(
 
     data class ImportConfig(
         val externalBase: File,
-        val sharedRoots: List<File> = DEFAULT_SHARED_ROOTS,
-        val legacyRoot: File = DEFAULT_LEGACY_ROOT,
+        val sharedRoots: List<File> = defaultSharedRoots(),
+        val legacyRoot: File = defaultLegacyRoot(),
         val maxExtractBytes: Long = DEFAULT_MAX_BYTES
     )
 
     private val externalBase: File by lazy {
-        externalBaseOverride ?: File(requireNotNull(app).getExternalFilesDir(null), "tours")
+        externalBaseOverride ?: TourStorage.ensureAppDirs(requireNotNull(app))
     }
     private val scratchRoot: File by lazy {
         File(externalBase, ".imports").apply { if (!exists()) mkdirs() }
@@ -60,11 +61,16 @@ class PublicInboxImporter private constructor(
         }
 
         val zipSources = (sharedRoots.flatMap { root ->
-            listOf(File(root, "inbox"), File(root, "Tours"), root)
+            listOf(File(root, "inbox"), File(root, "Inbox"), File(root, "Tours"), File(root, "tours"), root)
         } + legacyRoot)
 
-        zipSources.forEach { maybeImportZips(it) }
-        sharedRoots.map { File(it, "Tours") }.forEach { syncFolders(it) }
+        zipSources.distinctBy { it.absolutePath }.forEach { maybeImportZips(it) }
+
+        sharedRoots
+            .flatMap { listOf(File(it, "Tours"), File(it, "tours")) }
+            .distinctBy { it.absolutePath }
+            .forEach { syncFolders(it) }
+
         purgeInvalidTours()
     }
 
@@ -82,7 +88,6 @@ class PublicInboxImporter private constructor(
                     safeUnzip(zip, scratch)
                     extractNestedZips(scratch)
                     cleanupJunk(scratch)
-                    flattenSingleFolder(scratch)
                     val imported = finalizeScratch(scratch, inferFolderName(zip.name))
                     recordImport(zip, imported)
                 } catch (t: Throwable) {
@@ -92,7 +97,7 @@ class PublicInboxImporter private constructor(
     }
 
     private fun alreadyImported(zip: File): Boolean {
-        val ledgerFile = File(importLedger, "${zip.name}.marker")
+        val ledgerFile = File(importLedger, "${ledgerKey(zip)}.marker")
         if (!ledgerFile.exists()) return false
         try {
             val storedTimestamp = ledgerFile.readText().trim().toLongOrNull() ?: return false
@@ -104,9 +109,10 @@ class PublicInboxImporter private constructor(
 
     private fun recordImport(zip: File, tourNames: List<String>) {
         try {
-            val ledgerFile = File(importLedger, "${zip.name}.marker")
+            val key = ledgerKey(zip)
+            val ledgerFile = File(importLedger, "$key.marker")
             ledgerFile.writeText(zip.lastModified().toString())
-            val metaFile = File(importLedger, "${zip.name}.tours")
+            val metaFile = File(importLedger, "$key.tours")
             metaFile.writeText(tourNames.joinToString("\n"))
         } catch (t: Throwable) {
             logWarn("Failed to record import marker for ${zip.name}", t)
@@ -171,7 +177,9 @@ class PublicInboxImporter private constructor(
     }
 
     private fun discoverTours(root: File): List<File> {
-        if (containsEntryFile(root)) return listOf(root)
+        if (containsEntryFile(root)) {
+            return listOf(root)
+        }
         val results = mutableListOf<File>()
         fun dfs(dir: File, depth: Int) {
             if (depth > 5) return
@@ -221,13 +229,20 @@ class PublicInboxImporter private constructor(
         }
     }
 
-    private fun inferFolderName(zipName: String) = zipName.removeSuffix(".zip").removeSuffix(".ZIP")
+    private fun inferFolderName(zipName: String): String {
+        return zipName.removeSuffix(".zip").removeSuffix(".ZIP")
+    }
 
-    private fun sanitizeName(raw: String): String =
-        raw.trim().replace(Regex("[\\n\\r]"), " ").replace(Regex("[/\\\\]+"), "_").take(120)
+    private fun sanitizeName(raw: String): String {
+        return raw.trim()
+            .replace(Regex("[\\n\\r]"), " ")
+            .replace(Regex("[/\\\\]+"), "_")
+            .take(120)
+    }
 
     private fun safeUnzip(zipFile: File, destDir: File) {
         var total: Long = 0
+        val destCanonical = destDir.canonicalFile
         ZipInputStream(FileInputStream(zipFile)).use { zis ->
             var entry: ZipEntry? = zis.nextEntry
             while (entry != null) {
@@ -235,7 +250,13 @@ class PublicInboxImporter private constructor(
                 if (name.startsWith("/") || name.contains("..")) {
                     throw IOException("Invalid zip entry path: $name")
                 }
-                val outFile = File(destDir, name)
+                val outFile = File(destDir, name).canonicalFile
+                if (
+                    outFile != destCanonical &&
+                    !outFile.path.startsWith(destCanonical.path + File.separator)
+                ) {
+                    throw IOException("Zip entry escapes destination: $name")
+                }
                 if (entry.isDirectory) {
                     outFile.mkdirs()
                 } else {
@@ -258,6 +279,7 @@ class PublicInboxImporter private constructor(
             .filter { it.isFile && it.extension.equals("zip", ignoreCase = true) }
             .toList()
         if (zips.isEmpty()) return
+
         for (zip in zips) {
             try {
                 val targetName = inferFolderName(zip.name)
@@ -282,6 +304,7 @@ class PublicInboxImporter private constructor(
             val children = current.listFiles { f -> f.isDirectory && !isIgnorable(f.name) } ?: return current
             return if (children.size == 1) findDeepIndexFolder(children.first(), depth + 1) else current
         }
+
         val target = findDeepIndexFolder(dir)
         if (target != dir) {
             logInfo("Flattening nested tour folder from ${target.absolutePath}")
@@ -296,34 +319,69 @@ class PublicInboxImporter private constructor(
 
     private fun cleanupJunk(dir: File) {
         dir.walkBottomUp().forEach { file ->
-            if (isIgnorable(file.name)) file.deleteRecursively()
+            if (isIgnorable(file.name)) {
+                file.deleteRecursively()
+            }
         }
     }
 
-    private fun isIgnorable(name: String): Boolean =
-        name == ".imported" || name == ".bundled" || name == ".imports" || name == ".import_ledger" ||
-        name.equals("__MACOSX", ignoreCase = true) || name.equals(".DS_Store", ignoreCase = true) ||
-        name.equals("thumbs.db", ignoreCase = true)
+    private fun isIgnorable(name: String): Boolean {
+        return name == ".imported" ||
+            name == ".bundled" ||
+            name == ".imports" ||
+            name == ".import_ledger" ||
+            name.equals("__MACOSX", ignoreCase = true) ||
+            name.equals(".DS_Store", ignoreCase = true) ||
+            name.equals("thumbs.db", ignoreCase = true)
+    }
 
     private fun logInfo(message: String) = runLogging(message) { Log.i(TAG, message) }
-    private fun logWarn(message: String, throwable: Throwable? = null) = runLogging(message) { Log.w(TAG, message, throwable) }
-    private fun logError(message: String, throwable: Throwable? = null) = runLogging(message) { Log.e(TAG, message, throwable) }
+    private fun logWarn(message: String, throwable: Throwable? = null) = runLogging(message) {
+        Log.w(TAG, message, throwable)
+    }
+    private fun logError(message: String, throwable: Throwable? = null) = runLogging(message) {
+        Log.e(TAG, message, throwable)
+    }
 
     private fun runLogging(message: String, block: () -> Unit) {
-        try { block() } catch (_: Throwable) { println("$TAG: $message") }
+        try {
+            block()
+        } catch (_: Throwable) {
+            println("$TAG: $message")
+        }
     }
 
     companion object {
         private const val TAG = "PublicInboxImporter"
-        @Suppress("DEPRECATION")
-        private val extRoot: File = Environment.getExternalStorageDirectory()
-        private val DEFAULT_SHARED_ROOTS = listOf(
-            File(extRoot, "FramatomeVR"),
-            File(extRoot, "FramatomeVRPro")
-        )
-        private val DEFAULT_LEGACY_ROOT = extRoot
         private const val DEFAULT_MAX_BYTES: Long = 4L * 1024 * 1024 * 1024
+
+        @Suppress("DEPRECATION")
+        private fun externalStorageRoot(): File = Environment.getExternalStorageDirectory()
+
+        private fun defaultSharedRoots(): List<File> {
+            val extRoot = externalStorageRoot()
+            return listOf(
+                File(extRoot, "FramatomeVR"),
+                File(extRoot, "FramatomeVRPro")
+            )
+        }
+
+        private fun defaultLegacyRoot(): File = externalStorageRoot()
     }
+}
+
+private fun ledgerKey(zip: File): String {
+    val identity = try {
+        zip.canonicalPath
+    } catch (_: Throwable) {
+        zip.absolutePath
+    }
+    val digest = MessageDigest.getInstance("SHA-256")
+        .digest(identity.toByteArray(Charsets.UTF_8))
+        .joinToString("") { "%02x".format(it) }
+        .take(16)
+    val safeName = zip.name.replace(Regex("[^A-Za-z0-9._-]"), "_")
+    return "$digest-$safeName"
 }
 
 private fun ZipInputStream.copyToLimited(out: java.io.OutputStream, limit: Long): Long {

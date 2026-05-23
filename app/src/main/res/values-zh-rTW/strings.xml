@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- IMPORTANT NOTE: If this file is updated anyhow, the STRs wiki must be updated accordingly:
-    https://github.com/Igalia/wolvic/wiki/Localization -->
+    Framatome VR Pro string resources (derived from upstream VR browser localization). -->
 
     <!-- This string is used on the virtual keyboard to label the 'Enter' key (stylized in uppercase letters as 'ENTER'). -->
     <string name="keyboard_enter_label">輸入</string>
@@ -211,14 +211,14 @@
     <string name="settings_language_choose_language_voice_search">選擇您喜歡的語音搜尋語言</string>
 
     <!-- This string is used to label a text label that appears in the header of 'Language Settings' ->
-         'Wolvic Display Language' dialog window (accessible from the browser's Settings dialog window).
+         'Framatome VR Display Language' dialog window (accessible from the browser's Settings dialog window).
          Below this string appears a list of locales for the user to choose as their preferred display
          language for the application UI.
          '%1$s' Will be replaced at runtime with the app name. -->
     <string name="settings_language_choose_display_language_title">%1$s 顯示語言</string>
 
     <!-- This string is used to label a text label that appears in the header description of 'Language Settings' ->
-         'Wolvic Display Language' dialog window (accessible from the browser's Settings dialog window).
+         'Framatome VR Display Language' dialog window (accessible from the browser's Settings dialog window).
          Below this string appears a list of locales for the user to choose as their preferred display
          language for the application UI. -->
     <string name="settings_language_choose_language_display_description">選擇用來顯示介面選單、訊息、通知的語言。</string>
@@ -388,7 +388,7 @@
         opens the Firfox Reality support web site in the browser window. -->
     <string name="settings_help">幫助</string>
 
-    <!-- This string is displayed in the settings header under the Wolvic logo. When clicked the settings panel is closed
+    <!-- This string is displayed in the settings header under the Framatome VR logo. When clicked the settings panel is closed
          a the survey web site in opened in the currently focused window -->
     <string name="settings_send_your_feedback">向我們發送您的回饋</string>
 
@@ -844,7 +844,7 @@
     <string name="security_options_webxr_settings">進階</string>
 
     <!-- This string is a label above the group of switches that indicates that the switches below
-         relate to Wolvic data collection and use.
+         relate to Framatome VR data collection and use.
          '%1$s' Will be replaced at runtime with the app name. -->
     <string name="security_options_speech_data_collection_title">%1$s 資料收集與使用</string>
 
@@ -1499,7 +1499,7 @@
     <string name="media_pause_tooltip">暫停</string>
 
     <!-- This string is for the tooltip that appears upon hovering the 'Home' button in the browser's navigation bar.
-         'Home' refers to the browser's start page (e.g., the Wolvic Home Page). -->
+         'Home' refers to the browser's start page (e.g., the Framatome VR Home Page). -->
     <string name="home_tooltip">首頁</string>
 
     <!-- This string is for the tooltip that appears upon hovering the 'Voice Search' (microphone) button in the
@@ -1828,7 +1828,7 @@
     <string name="popup_block_description_v1">還是想要顯示這些視窗嗎？</string>
 
     <!-- This string is displayed on the right of the checkbox in the the pop-up blocking dialog.
-         If the checkbox is checked Wolvic will never ask again to block pop-ups for this site -->
+         If the checkbox is checked Framatome VR will never ask again to block pop-ups for this site -->
     <string name="popup_block_checkbox">針對這個網站不要再問我</string>
 
     <!-- This string is displayed on the left button of the pop-up blocking dialog.
@@ -2235,7 +2235,7 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="web_apps_dialog_cancel">取消</string>
     <string name="web_apps_saved_notification">新增了網頁應用程式！</string>
     <string name="download_addon_install">安裝插件</string>
-    <string name="privacy_dialog_disagree">關閉Wolvic</string>
+    <string name="privacy_dialog_disagree">關閉Framatome VR</string>
     <string name="voice_service_metkai">MeetKai</string>
     <string name="web_apps_dialog_title_parameter">安裝 %1$s</string>
     <string name="deprecated_version_dialog_info_button">了解更多…</string>
@@ -2252,7 +2252,7 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="download_addon_install_cancel">取消</string>
     <string name="notifications_title">通知</string>
     <string name="notifications_loading">載入通知</string>
-    <string name="security_options_permission_fine_location_warning">Wolvic 只能取得您的大概位置。這可以在系統設定中更改。</string>
+    <string name="security_options_permission_fine_location_warning">Framatome VR 只能取得您的大概位置。這可以在系統設定中更改。</string>
     <string name="web_apps_description">當您位於頁面上時，請按一下「儲存 Web 應用程式...」按鈕，將其新增至您的 Web 應用程式。</string>
     <string name="web_apps_empty">您的網頁應用程式清單為空</string>
     <string name="web_apps_dialog_install">安裝</string>
@@ -2289,47 +2289,47 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="voice_search_unsupported">你的語言不支持語音搜尋服務。</string>
     <string name="notifications_empty">您的通知清單為空</string>
     <string name="upload_list_empty">沒有可供上傳的文件</string>
-    <string name="terms_service_subtitle_2">Wolvic 網路為基礎的資訊服務</string>
+    <string name="terms_service_subtitle_2">Framatome VR 網路為基礎的資訊服務</string>
     <string name="download_addon_install_blocked_body">允許在開發人員選項中繼續進行本機插件安裝。</string>
     <string name="external_open_uri_error_title">開啟外部應用程式時出錯</string>
     <string name="language_service_options_reset">重置語音搜尋服務設置</string>
-    <string name="deprecated_version_dialog_body">Wolvic 的本「App Lab」版本將于2023 年 10 月底刪除。
+    <string name="deprecated_version_dialog_body">Framatome VR 的本「App Lab」版本將于2023 年 10 月底刪除。
 \n
-\n請從 Meta Quest Store 安裝最新版本的 Wolvic。
+\n請從 Meta Quest Store 安裝最新版本的 Framatome VR。
 \n
-\n重要提示：除非您使用同步，否則新的 Wolvic 應用程式將不會有您的書籤和選項卡。</string>
+\n重要提示：除非您使用同步，否則新的 Framatome VR 應用程式將不會有您的書籤和選項卡。</string>
     <string name="external_open_uri_error_no_activity_body">找不到可以處理%1$s的應用程式</string>
-    <string name="rCN_first_launch_body">歡迎來到“Wolvic”!
+    <string name="rCN_first_launch_body">歡迎來到“Framatome VR”!
 \n
-\n註冊和使用「Wolvic」需要您同意《使用者協議》和《隱私權政策》，否則我們無法為您提供服務。請仔細閱讀文件並點擊「同意」繼續。如果您點擊“不同意”，您將無法繼續使用“Wolvic”。
+\n註冊和使用「Framatome VR」需要您同意《使用者協議》和《隱私權政策》，否則我們無法為您提供服務。請仔細閱讀文件並點擊「同意」繼續。如果您點擊“不同意”，您將無法繼續使用“Framatome VR”。
 \n
 \n您可以閱讀完整的使用者協議和隱私權政策。</string>
-    <string name="privacy_dialog_message">你的隱私對我們很重要。為了運行瀏覽器，請接受我們的服務條款和隱私權政策。感謝您使用Wolvic！</string>
+    <string name="privacy_dialog_message">你的隱私對我們很重要。為了運行瀏覽器，請接受我們的服務條款和隱私權政策。感謝您使用Framatome VR！</string>
     <string name="privacy_policy_title">隱私權政策</string>
-    <string name="terms_service_section_1">Wolvic 是免費的開源軟體，由來自世界各地的數千名社群建構。您應該了解以下幾點：
+    <string name="terms_service_section_1">Framatome VR 是免費的開源軟體，由來自世界各地的數千名社群建構。您應該了解以下幾點：
 \n
-\n\t•Wolvic 是根據 Mozilla 公共授權的條款向您提供的。這意味著您可以使用、複製 Wolvic 並將其分發給其他人。也歡迎您根據需要修改 Wolvic 的原始碼。 Mozilla 公共授權也賦予您分發修改版本的權利。
+\n\t•Framatome VR 是根據 Mozilla 公共授權的條款向您提供的。這意味著您可以使用、複製 Framatome VR 並將其分發給其他人。也歡迎您根據需要修改 Framatome VR 的原始碼。 Mozilla 公共授權也賦予您分發修改版本的權利。
 \n
-\n\t• 您未被授予 Igalia 或任何一方的任何商標權或商標許可，包括但不限於 Wolvic 名稱或標誌。
+\n\t• 您未被授予 Igalia 或任何一方的任何商標權或商標許可，包括但不限於 Framatome VR 名稱或標誌。
 \n
-\n\t• Wolvic 中的某些功能（例如崩潰報告器）可讓您選擇向 Igalia 提供回饋。選擇提交回饋，即表示您授予 Igalia 使用回饋來改善其產品、在其網站上發布匿名回饋以及分發匿名回饋的權限。
+\n\t• Framatome VR 中的某些功能（例如崩潰報告器）可讓您選擇向 Igalia 提供回饋。選擇提交回饋，即表示您授予 Igalia 使用回饋來改善其產品、在其網站上發布匿名回饋以及分發匿名回饋的權限。
 \n
-\n\t• Wolvic 隱私權政策中描述了我們如何使用您透過 Wolvic 提交給 Igalia 的個人資訊和回饋。
+\n\t• Framatome VR 隱私權政策中描述了我們如何使用您透過 Framatome VR 提交給 Igalia 的個人資訊和回饋。
 \n
-\n\t• Wolvic 的一些功能是利用網路為基礎的資訊服務；但是，我們不能保證它們 100% 準確或沒有錯誤。更多詳細信息，包括有關如何停用使用這些服務的功能的信息，可以在服務條款（如下）中找到。</string>
-    <string name="privacy_policy_section_3">本隱私權政策受西班牙法律管轄。該應用程式的隱私權政策語言是西班牙語。因此，西班牙語原始版本與其翻譯成其他語言之間的任何可能的差異都將被視為西班牙語版本中的主要差異，可以在此處找到：https://wolvic.com/es/legal/privacy /。</string>
+\n\t• Framatome VR 的一些功能是利用網路為基礎的資訊服務；但是，我們不能保證它們 100% 準確或沒有錯誤。更多詳細信息，包括有關如何停用使用這些服務的功能的信息，可以在服務條款（如下）中找到。</string>
+    <string name="privacy_policy_section_3">本隱私權政策受西班牙法律管轄。該應用程式的隱私權政策語言是西班牙語。因此，西班牙語原始版本與其翻譯成其他語言之間的任何可能的差異都將被視為西班牙語版本中的主要差異，可以在此處找到：https://framatome.com/es/legal/privacy /。</string>
     <string name="voice_service_huawei_asr">華為自動語音識別</string>
-    <string name="terms_service_section_2">Wolvic 使用網路為基礎的資訊服務（「服務」）來提供一些功能，請您根據下述條款使用此二進位版本的 Wolvic。
+    <string name="terms_service_section_2">Framatome VR 使用網路為基礎的資訊服務（「服務」）來提供一些功能，請您根據下述條款使用此二進位版本的 Framatome VR。
 \n
 \n\t• Igalia 及其貢獻者、授權人和合作夥伴致力於提供最準確和最新的服務。然而，我們不能保證這些資訊是全面且無錯誤的。例如，安全瀏覽服務可能無法識別一些有風險的網站，並且可能會錯誤地識別一些安全網站，而在位置感知服務中，我們的服務提供者返回的所有位置僅是估計值，我們和我們的服務提供者都不保證這些位置的準確性。
 \n
 \n\t• Igalia 可自行決定終止或變更服務。
 \n
-\n\t• 歡迎您將這些服務與 Wolvic 的隨附版本一起使用，Igalia 授予您這樣做的權利。 Igalia 及其授權人保留服務中的所有其他權利。這些條款無意限制根據適用於 Wolvic 和 Wolvic 相應原始碼版本的開源許可授予的任何權利。
+\n\t• 歡迎您將這些服務與 Framatome VR 的隨附版本一起使用，Igalia 授予您這樣做的權利。 Igalia 及其授權人保留服務中的所有其他權利。這些條款無意限制根據適用於 Framatome VR 和 Framatome VR 相應原始碼版本的開源許可授予的任何權利。
 \n
 \n\t•服務以「現況」提供。 Igalia 及其貢獻者、授權人和經銷商不承擔任何明示或暗示的保證，包括但不限於服務適銷性和適合您的特定目的的保證。您承擔為您的目的選擇服務以及服務的品質和性能的全部風險。
 \n
-\n\t• 除法律要求外，Igalia、其貢獻者、許可方和分銷商對因使用Wolvic 和服務而產生的或以任何方式與之相關的任何間接、特殊、偶然、後果性、懲罰性或懲戒性損害不承擔責任。這些條款項下的集體責任將不超過 500 美元（五百美元）。某些司法管轄區不允許排除或限制某些損害，因此此排除和限制可能不適用於您。
+\n\t• 除法律要求外，Igalia、其貢獻者、許可方和分銷商對因使用Framatome VR 和服務而產生的或以任何方式與之相關的任何間接、特殊、偶然、後果性、懲罰性或懲戒性損害不承擔責任。這些條款項下的集體責任將不超過 500 美元（五百美元）。某些司法管轄區不允許排除或限制某些損害，因此此排除和限制可能不適用於您。
 \n
 \n\t• Igalia 可能會根據需要不時更新這些條款。未經 Igalia 書面同意，不得修改或取消這些條款。
 \n
@@ -2361,7 +2361,7 @@ the Select` button. When clicked it closes all the previously selected tabs -->
 \n
 \n\t\t\t⁃ 位置感知瀏覽現已停用
 \n
-\n\t\t◦ Wolvic 中的增強追蹤保護會在您瀏覽時自動保護您的隱私。它會阻止在線追蹤您的追蹤器，以收集有關您的瀏覽習慣和興趣的信息，而不會破壞網站功能。它還包括針對有害腳本的保護，例如耗盡電池電量的惡意軟體。追蹤保護共有三種模式：標準、嚴格和關閉。如果您想將其關閉，請按照下列步驟操作：
+\n\t\t◦ Framatome VR 中的增強追蹤保護會在您瀏覽時自動保護您的隱私。它會阻止在線追蹤您的追蹤器，以收集有關您的瀏覽習慣和興趣的信息，而不會破壞網站功能。它還包括針對有害腳本的保護，例如耗盡電池電量的惡意軟體。追蹤保護共有三種模式：標準、嚴格和關閉。如果您想將其關閉，請按照下列步驟操作：
 \n
 \n\t\t\t⁃ 前往 “Privacy &amp; Security” 設定。
 \n
@@ -2369,7 +2369,7 @@ the Select` button. When clicked it closes all the previously selected tabs -->
 \n
 \n\t\t\t⁃ 增強追蹤保護現已停用。</string>
     <string name="privacy_policy_section_2">IGALIA 致力於遵守有關保護個人資料的法律規定：歐洲議會和理事會 2016 年 4 月 27 日頒布的關於在處理個人資料和處理方面保護自然人的法規 (EU) 2016/679關於此類資料的自由流動並廢除第95/46/EC 號指令（一般資料保護條例）以及12 月5 日關於資料保護和數位權利保障(LOPDGDD) 的第3/2018 號組織法。
-\nIGALIA 不會以可識別使用者身分的方式收集個人資料。因此，您可以使用該應用程式、查閱和瀏覽虛擬實境環境，而無需直接或間接透露您的身分或向 IGALIA 提供個人資料；因此，IGALIA 對在 WOLVIC 中輸入的任何資料不承擔任何責任。
+\nIGALIA 不會以可識別使用者身分的方式收集個人資料。因此，您可以使用該應用程式、查閱和瀏覽虛擬實境環境，而無需直接或間接透露您的身分或向 IGALIA 提供個人資料；因此，IGALIA 對在 FRAMATOME VR 中輸入的任何資料不承擔任何責任。
 \nIGALIA 為使用本應用程式所取得的如下唯一資料和資訊在任何時候都不會單獨連結到用戶：
 \n
 \n\t• 分析性、純統計性和非識別性資料。
@@ -2413,8 +2413,8 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="permission_location_rationale">提供附近的新聞和內容需要獲得存取您的位置的權限。</string>
     <string name="hamburger_menu_zoom">放大</string>
     <string name="vision_glass_touchpad_instructions">輕擊即可點擊。 滑動即可滾動</string>
-    <string name="phone_ui_set3dmode_alert_dialog_description">無法切換到 3D 模式。 嘗試拔下眼鏡插頭並重新插上，然後重新啟動 Wolvic。</string>
-    <string name="phone_ui_usb_alert_dialog_description">無法取得USB權限。 嘗試拔下眼鏡插頭並重新插上，然後重新啟動 Wolvic。</string>
+    <string name="phone_ui_set3dmode_alert_dialog_description">無法切換到 3D 模式。 嘗試拔下眼鏡插頭並重新插上，然後重新啟動 Framatome VR。</string>
+    <string name="phone_ui_usb_alert_dialog_description">無法取得USB權限。 嘗試拔下眼鏡插頭並重新插上，然後重新啟動 Framatome VR。</string>
     <string name="permission_read_external_storage_rationale">開啟裝置上的檔案需要讀取外部儲存的權限。</string>
     <string name="permission_persistent_storage_rationale">在設備上儲存和開啟檔案需要在持久性儲存中儲存資料的權限。</string>
     <string name="new_tab">開新分頁</string>

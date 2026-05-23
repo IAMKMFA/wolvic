@@ -1,22 +1,13 @@
-# Contributing to Wolvic
+# Contributing to Framatome VR Pro
 
-Wolvic welcomes contribution from everyone. Here are the guidelines if you are thinking of helping us.
+This repository is a **Framatome** product fork of an open-source VR browser codebase. Internal development follows Framatome engineering practices and release gates (Arbor XR, signed APKs, on-device WebXR validation).
 
+## For Framatome developers
 
-## Contributions
+- Use feature branches and merge via your team's review process.
+- Quest 3 / `oculusvrArm64GeckoGeneric` is the primary shipping variant.
+- Do not commit secrets, keystores, or proprietary tour content.
 
-Contributions to Wolvic or its dependencies should be made in the form of GitHub pull requests. Each pull request will be reviewed by a core contributor(someone with permission to land patches) and either landed in the main tree or given feedback for changes that would be required. All contributions should follow this format, even those from core contributors.
+## Upstream lineage
 
-Should you wish to work on an issue, please claim it first by commenting on the GitHub issue that you want to work on it. This prevents duplicate efforts from contributors on the same issue.
-
-Head over to [Good First Issue](https://github.com/Igalia/wolvic/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22) to find good first bugs to start with. 
-
-## Pull Request Checklist
-
-- Branch from the [main](https://github.com/Igalia/wolvic/tree/main) branch and, if needed, [rebase](https://help.github.com/en/articles/about-git-rebase) to the current main branch before submitting your pull request. If it doesn't merge cleanly with main, you may be asked to [rebase](https://help.github.com/en/articles/about-git-rebase) your changes.
-
-- Commits should be as small as possible, while ensuring that each commit is correct independently (i.e., each commit should compile and pass tests). 
-
-- If your patch is not getting reviewed or you need a specific person to review it, you can @-reply a reviewer asking for a review in the pull request or a comment.
-
-For specific git instructions, see [GitHub workflow 101](https://github.com/servo/servo/wiki/Github-workflow).
+The engine and shell inherit Mozilla Public License 2.0 code paths from the broader Firefox Reality / VR browser ecosystem. Historical upstream contribution guides are not authoritative for this fork; treat this file and `README.md` as the source of truth for Framatome VR Pro.

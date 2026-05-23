@@ -1,12 +1,12 @@
-const LOGTAG = '[wolvic:launchimmersive]';
+const LOGTAG = '[framatome:launchimmersive]';
 const ENABLE_LOGS = true;
 const logDebug = (...args) => ENABLE_LOGS && console.log(LOGTAG, ...args);
 
-const PARENT_ELEMENT_XPATH_PARAMETER = 'wolvic-launchimmersive-parentElementXPath';
-const TARGET_ELEMENT_XPATH_PARAMETER = 'wolvic-launchimmersive-targetElementXPath';
+const PARENT_ELEMENT_XPATH_PARAMETER = 'framatome-launchimmersive-parentElementXPath';
+const TARGET_ELEMENT_XPATH_PARAMETER = 'framatome-launchimmersive-targetElementXPath';
 
-const IFRAME_READY_MSG = 'wolvic-launchimmersive-iframeReady';
-const TARGET_ELEMENT_MSG = 'wolvic-launchimmersive-targetElement';
+const IFRAME_READY_MSG = 'framatome-launchimmersive-iframeReady';
+const TARGET_ELEMENT_MSG = 'framatome-launchimmersive-targetElement';
 
 var parentElementXPath;
 var targetElementXPath;

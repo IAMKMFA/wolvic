@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- IMPORTANT NOTE: If this file is updated anyhow, the STRs wiki must be updated accordingly:
-    https://github.com/Igalia/wolvic/wiki/Localization -->
+    Framatome VR Pro string resources (derived from upstream VR browser localization). -->
     <!-- This string is used on the virtual keyboard to label the 'Enter' key (stylized in uppercase letters as 'ENTER'). -->
     <string name="keyboard_enter_label">输入</string>
     <!-- This string is used on the virtual keyboard to label the 'Enter' key with a "Go" IME action.
@@ -160,13 +160,13 @@
          (e.g., `Español` is mapped to `es`) when configured in the 'Voice Search' system. -->
     <string name="settings_language_choose_language_voice_search">选择优先使用哪种语言进行语音搜索</string>
     <!-- This string is used to label a text label that appears in the header of 'Language Settings' ->
-         'Wolvic Display Language' dialog window (accessible from the browser's Settings dialog window).
+         'Framatome VR Display Language' dialog window (accessible from the browser's Settings dialog window).
          Below this string appears a list of locales for the user to choose as their preferred display
          language for the application UI.
          '%1$s' Will be replaced at runtime with the app name. -->
     <string name="settings_language_choose_display_language_title">%1$s 显示语言</string>
     <!-- This string is used to label a text label that appears in the header description of 'Language Settings' ->
-         'Wolvic Display Language' dialog window (accessible from the browser's Settings dialog window).
+         'Framatome VR Display Language' dialog window (accessible from the browser's Settings dialog window).
          Below this string appears a list of locales for the user to choose as their preferred display
          language for the application UI. -->
     <string name="settings_language_choose_language_display_description">选择用于显示菜单、消息和通知的语言。</string>
@@ -303,7 +303,7 @@
     <!-- This string is used to label a button in the 'Settings' dialog window that, when pressed,
         opens the Firfox Reality support web site in the browser window. -->
     <string name="settings_help">帮助</string>
-    <!-- This string is displayed in the settings header under the Wolvic logo. When clicked the settings panel is closed
+    <!-- This string is displayed in the settings header under the Framatome VR logo. When clicked the settings panel is closed
          a the survey web site in opened in the currently focused window -->
     <string name="settings_send_your_feedback">提交您的反馈意见</string>
     <!-- This string is used in the 'Settings' window when user is signed-out of Mozilla Accounts -->
@@ -647,7 +647,7 @@
          webxr blocked sites. -->
     <string name="security_options_webxr_settings">高级</string>
     <!-- This string is a label above the group of switches that indicates that the switches below
-         relate to Wolvic data collection and use.
+         relate to Framatome VR data collection and use.
          '%1$s' Will be replaced at runtime with the app name. -->
     <string name="security_options_speech_data_collection_title">%1$s 数据收集与使用</string>
     <!-- This string labels an Allow/Don't Allow switch in the Privacy and Security settings dialog
@@ -1117,7 +1117,7 @@
          When clicked the current media playback is paused. -->
     <string name="media_pause_tooltip">暂停</string>
     <!-- This string is for the tooltip that appears upon hovering the 'Home' button in the browser's navigation bar.
-         'Home' refers to the browser's start page (e.g., the Wolvic Home Page). -->
+         'Home' refers to the browser's start page (e.g., the Framatome VR Home Page). -->
     <string name="home_tooltip">主页</string>
     <!-- This string is for the tooltip that appears upon hovering the 'Voice Search' (microphone) button in the
          browser's navigation bar. 'Voice Search' refers to the browser's system for searching the Web using
@@ -1366,7 +1366,7 @@
     <!-- This string is displayed as a description below the title of the pop-up blocking dialog. -->
     <string name="popup_block_description_v1">仍要显示这些窗口吗？</string>
     <!-- This string is displayed on the right of the checkbox in the the pop-up blocking dialog.
-         If the checkbox is checked Wolvic will never ask again to block pop-ups for this site -->
+         If the checkbox is checked Framatome VR will never ask again to block pop-ups for this site -->
     <string name="popup_block_checkbox">不再询问此网站</string>
     <!-- This string is displayed on the left button of the pop-up blocking dialog.
          If the button is clicked the pop-up will be shown -->
@@ -1642,11 +1642,11 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     '%1$s' Will be replaced at runtime with headset battery level. -->
     <string name="tray_status_headset">头戴设备：%1$s</string>
     <!-- These strings are used in the first-run flow on the phone UI in mainland China. -->
-    <string name="rCN_first_launch_title">“Wolvic”用户协议及隐私政策申明</string>
+    <string name="rCN_first_launch_title">“Framatome VR”用户协议及隐私政策申明</string>
     <string name="rCN_first_launch_body">
-        欢迎使用 Wolvic !
+        欢迎使用 Framatome VR !
         \n
-        \n 注册使用 Wolvic 需要您同意用户协议和隐私政策，否则我们无法为 您提供服务。请您仔细阅读下方政策中的条款后再点击“同意”前往下一 步。如果您选择“不同意”，您将无法使用 Wolvic 。
+        \n 注册使用 Framatome VR 需要您同意用户协议和隐私政策，否则我们无法为 您提供服务。请您仔细阅读下方政策中的条款后再点击“同意”前往下一 步。如果您选择“不同意”，您将无法使用 Framatome VR 。
         \n
         \n您可以阅读完整版用户协议和隐私政策
     </string>
@@ -1667,27 +1667,27 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="hvr_enter_vr">进入VR</string>
     <!-- This strings are displayed in the privacy dialog on first launch. -->
     <string name="privacy_dialog_title">隐私</string>
-    <string name="privacy_dialog_message">您的隐私很重要。在运行浏览器前，请先同意我们的用户协议与隐私政策。感谢使用Wolvic！</string>
+    <string name="privacy_dialog_message">您的隐私很重要。在运行浏览器前，请先同意我们的用户协议与隐私政策。感谢使用Framatome VR！</string>
     <string name="privacy_dialog_agree">同意</string>
     <string name="privacy_dialog_disagree">不同意</string>
     <!-- These strings are the content of the Terms of Service. -->
-    <string name="terms_service_title">Wolvic移动应用程序用户协议</string>
+    <string name="terms_service_title">Framatome VR移动应用程序用户协议</string>
     <string name="terms_service_section_1">
-    Wolvic 是免费的开源软件，由来自世界各地的数千名社区构建。您应该了解以下几点：
-    \n\n\t\u2022 Wolvic 是根据 Mozilla 公共许可证的条款向您提供的。这意味着您可以使用、复制 Wolvic 并将其分发给其他人。也欢迎您根据需要修改 Wolvic 的源代码。 Mozilla 公共许可证还赋予您分发修改版本的权利。
-    \n\n\t\u2022 您未被授予 Igalia 或任何一方的任何商标权或商标许可，包括但不限于 Wolvic 名称或徽标。
-    \n\n\t\u2022 Wolvic 中的某些功能（例如崩溃报告器）使您可以选择向 Igalia 提供反馈。选择提交反馈，即表示您授予 Igalia 使用反馈来改进其产品、在其网站上发布匿名反馈以及分发匿名反馈的权限。
-    \n\n\t\u2022 Wolvic 隐私政策中描述了我们如何使用您通过 Wolvic 提交给 Igalia 的个人信息和反馈。
-    \n\n\t\u2022 Wolvic 的一些功能利用基于网络的信息服务；但是，我们不能保证它们 100% 准确或没有错误。更多详细信息，包括有关如何禁用使用这些服务的功能的信息，可以在（如下）服务条款中找到。
+    Framatome VR 是免费的开源软件，由来自世界各地的数千名社区构建。您应该了解以下几点：
+    \n\n\t\u2022 Framatome VR 是根据 Mozilla 公共许可证的条款向您提供的。这意味着您可以使用、复制 Framatome VR 并将其分发给其他人。也欢迎您根据需要修改 Framatome VR 的源代码。 Mozilla 公共许可证还赋予您分发修改版本的权利。
+    \n\n\t\u2022 您未被授予 Igalia 或任何一方的任何商标权或商标许可，包括但不限于 Framatome VR 名称或徽标。
+    \n\n\t\u2022 Framatome VR 中的某些功能（例如崩溃报告器）使您可以选择向 Igalia 提供反馈。选择提交反馈，即表示您授予 Igalia 使用反馈来改进其产品、在其网站上发布匿名反馈以及分发匿名反馈的权限。
+    \n\n\t\u2022 Framatome VR 隐私政策中描述了我们如何使用您通过 Framatome VR 提交给 Igalia 的个人信息和反馈。
+    \n\n\t\u2022 Framatome VR 的一些功能利用基于网络的信息服务；但是，我们不能保证它们 100% 准确或没有错误。更多详细信息，包括有关如何禁用使用这些服务的功能的信息，可以在（如下）服务条款中找到。
     </string>
-    <string name="terms_service_subtitle_2">Wolvic基于网络信息的服务</string>
+    <string name="terms_service_subtitle_2">Framatome VR基于网络信息的服务</string>
     <string name="terms_service_section_2">
-    Wolvic按照下述条款使用基于网络信息的服务（ “服务”）为您提供Wolvic二进制版本的某些功能：
+    Framatome VR按照下述条款使用基于网络信息的服务（ “服务”）为您提供Framatome VR二进制版本的某些功能：
     \n\n\t\u2022 Igalia及其贡献者、许可人和合作伙伴努力提供最准确和最新的服务。但是，我们不能保证这些信息是全面无误的。例如，安全浏览服务（Safe Browsing Service）可能无法识别一些有风险的网站，并可能错误地识别一些安全的网站；位置感知服务（Location Aware Service）中，服务提供商反馈的所有位置都只是估计位置，我们和服务提供商都不保证所提供的位置的准确性。
     \n\n\t\u2022 Igalia可自行决定停止或改变服务。
-    \n\n\t\u2022 Igalia欢迎您将这些服务与Wolvic配套版本一起使用。Igalia 授予您这样做的权利。Igalia及其许可人保留服务的所有其他权利。这些条款无意限制Wolvic及其相应源代码版本的开源许可证所赋予的任何权利。
+    \n\n\t\u2022 Igalia欢迎您将这些服务与Framatome VR配套版本一起使用。Igalia 授予您这样做的权利。Igalia及其许可人保留服务的所有其他权利。这些条款无意限制Framatome VR及其相应源代码版本的开源许可证所赋予的任何权利。
     \n\n\t\u2022 根据“现状流程”提供服务。Igalia、其贡献者、许可人和分销商不提供任何明示或暗示的保证，包括但不限于保证服务适销以及符合您的特定目的。您将全部承担所选择的服务以及服务的质量和性能可能带来的风险。
-    \n\n\t\u2022 除非法律要求，Igalia、其贡献者、许可人和分销商不对因使用 Wolvic和服务而引起的或以任何方式与之相关的任何间接、特殊、附带、后果性、惩罚性或惩戒性的损害负责。这些条款下的集体责任将不超过500美元（五百美元）。某些司法管辖区不允许排除或限制某些损害，因此本排除和限制条款可能不适用于您。
+    \n\n\t\u2022 除非法律要求，Igalia、其贡献者、许可人和分销商不对因使用 Framatome VR和服务而引起的或以任何方式与之相关的任何间接、特殊、附带、后果性、惩罚性或惩戒性的损害负责。这些条款下的集体责任将不超过500美元（五百美元）。某些司法管辖区不允许排除或限制某些损害，因此本排除和限制条款可能不适用于您。
     \n\n\t\u2022 Igalia可根据需要不时地更新这些条款。未经Igalia的书面同意，不得修改或取消这些条款。
     \n\n\t\u2022 这些条款受西班牙法律管辖，法律冲突条款除外。如果这些条款的某些部分被认定为无效或不可执行，其余部分仍具备完全的效力和作用。如果这些条款的翻译版本与西班牙语版本之间发生冲突，则应以西班牙语版本为准。
     \n\n\t\u2022 如果您不想使用一项或多项服务，或不接受上述条款，您可以禁用该功能或服务。关于如何禁用某项功能或服务的说明如下。其他功能和服务可在应用程序偏好中禁用。
@@ -1703,13 +1703,13 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     \n\n\t\t\t\u2043 输入geo.enabled。
     \n\n\t\t\t\u2043 双击geo.enabled preference。
     \n\n\t\t\t\u2043 位置感知浏览已被禁用。
-    \n\n\t\t\u25e6 Wolvic 中的增强跟踪保护会在您浏览时自动保护您的隐私。它会阻止在线跟踪您的跟踪器，以收集有关您的浏览习惯和兴趣的信息，而不会破坏网站功能。它还包括针对有害脚本的保护，例如耗尽电池电量的恶意软件。跟踪保护共有三种模式：标准、严格和关闭。如果您想将其关闭，请按照下列步骤操作：
+    \n\n\t\t\u25e6 Framatome VR 中的增强跟踪保护会在您浏览时自动保护您的隐私。它会阻止在线跟踪您的跟踪器，以收集有关您的浏览习惯和兴趣的信息，而不会破坏网站功能。它还包括针对有害脚本的保护，例如耗尽电池电量的恶意软件。跟踪保护共有三种模式：标准、严格和关闭。如果您想将其关闭，请按照下列步骤操作：
     \n\n\t\t\t\u2043 转到“隐私和安全”设置。
     \n\n\t\t\t\u2043 选择“关闭”单选按钮。
     \n\n\t\t\t\u2043 增强跟踪保护现已禁用。
     </string>
     <!-- These strings are the content of the Privacy Policy. -->
-    <string name="privacy_policy_title">Wolvic移动应用程序隐私政策</string>
+    <string name="privacy_policy_title">Framatome VR移动应用程序隐私政策</string>
     <string name="privacy_policy_subtitle_1">通告</string>
     <string name="privacy_policy_section_1">
         该应用程序由 Igalia, SL（以下简称 IGALIA）开发，注册办事处位于 Bugallal Marchesi, 22 – 1°, 15008, A Coruña, Galicia (Spain)，其联系方式为：
@@ -1720,7 +1720,7 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="privacy_policy_subtitle_2">数据保护</string>
     <string name="privacy_policy_section_2">
     IGALIA 致力于遵守有关保护个人数据的法律规定：欧洲议会和理事会 2016 年 4 月 27 日颁布的关于在处理个人数据和处理方面保护自然人的法规 (EU) 2016/679关于此类数据的自由流动并废除第 95/46/EC 号指令（一般数据保护条例）以及 12 月 5 日第 3/2018 号组织法，关于数据保护和数字权利保障 (LOPDGDD)。
-    \nIGALIA 不会以可识别用户身份的方式收集个人数据。因此，您可以使用该应用程序、查阅和浏览虚拟现实环境，而无需直接或间接透露您的身份或向 IGALIA 提供个人数据；因此，IGALIA 对在 WOLVIC 中输入的任何数据不承担任何责任。
+    \nIGALIA 不会以可识别用户身份的方式收集个人数据。因此，您可以使用该应用程序、查阅和浏览虚拟现实环境，而无需直接或间接透露您的身份或向 IGALIA 提供个人数据；因此，IGALIA 对在 FRAMATOME VR 中输入的任何数据不承担任何责任。
     \nIGALIA从本应用程序的使用中获得的唯一数据和信息，在任何时候都不会与用户关联，这些数据和信息如下：
     \n\n\t\u2022 分析性的、纯统计性的、非身份识别性的数据。
     \n\t\u2022 为了获取声音并将其译成文本，用户的声音数据将通过相关应用程序接口（API）发送到负责每个平台的第三方公司的服务器上：例如，Facebook旗下的Oculus，声音数据将被发送到Oculus Voice SDK。上述数据在任何时候都不会被处理、访问或纳入IGALIA服务器中。传送的数据将由拥有各平台的第三方公司（以下简称“第三方”）全权负责，这些公司可能位于欧盟以外，并受用户隐私保护程度较弱的法律制度约束。我们建议您在接受和使用这些外部平台的服务之前，仔细阅读其隐私政策和使用条款。IGALIA不会直接或间接对上述第三方的个人数据处理负责。
@@ -1748,7 +1748,7 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     </string>
     <string name="privacy_policy_subtitle_3">适用法律和原文语言</string>
     <string name="privacy_policy_section_3">
-        本隐私政策受西班牙法律管辖。该应用程序的隐私政策语言是西班牙语。因此，西班牙语原始版本与其翻译成其他语言之间的任何可能的差异都将被视为西班牙语版本中的主要差异，可以在此处找到：https://wolvic.com/es/legal/privacy/。
+        本隐私政策受西班牙法律管辖。该应用程序的隐私政策语言是西班牙语。因此，西班牙语原始版本与其翻译成其他语言之间的任何可能的差异都将被视为西班牙语版本中的主要差异，可以在此处找到：https://framatome.com/vr/privacy/。
     </string>
     <string name="settings_privacy_choose_search_engine_description">选择你偏爱的搜索引擎。</string>
     <string name="voice_search_unsupported">您的语言尚无语音搜索支持。</string>
@@ -1791,14 +1791,14 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="download_addon_install_cancel">取消</string>
     <string name="download_addon_install_blocked_body">要继续安装请在开发者选项中选择允许本地插件安装。</string>
     <string name="settings_language_portuguese">葡萄牙语</string>
-    <string name="security_options_permission_fine_location_warning">Wolvic 只可以获取您的大致位置。 您可在系统设置菜单更改设置。</string>
+    <string name="security_options_permission_fine_location_warning">Framatome VR 只可以获取您的大致位置。 您可在系统设置菜单更改设置。</string>
     <string name="upload_list_empty">无可上载文档</string>
     <string name="hamburger_menu_toggle_passthrough">通过</string>
-    <string name="deprecated_version_dialog_body">Wolvic 的“App Lab”版本将于2023年10月底删除。
+    <string name="deprecated_version_dialog_body">Framatome VR 的“App Lab”版本将于2023年10月底删除。
 \n
-\n请安装 Meta Quest 商店的Wolvic最新版本。
+\n请安装 Meta Quest 商店的Framatome VR最新版本。
 \n
-\n重要提示：除非您用同步，新版 Wolvic应用不会有你的书签和标签页。</string>
+\n重要提示：除非您用同步，新版 Framatome VR应用不会有你的书签和标签页。</string>
     <string name="deprecated_version_dialog_title">支持即将结束</string>
     <string name="deprecated_version_dialog_info_button">了解更多…</string>
     <string name="deprecated_version_dialog_store_button">安装…</string>
@@ -1820,10 +1820,10 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="permission_camera_rationale">拍摄周围世界的图像需要获得使用您的摄像头的权限。</string>
     <string name="permission_read_external_storage_rationale">打开设备上的文件需要获得读取您的外部存储权限。</string>
     <string name="phone_ui_alert_dialog_title">错误</string>
-    <string name="phone_ui_usb_alert_dialog_description">获取 USB 权限失败。尝试拔下眼镜并插回，然后重启 Wolvic。</string>
+    <string name="phone_ui_usb_alert_dialog_description">获取 USB 权限失败。尝试拔下眼镜并插回，然后重启 Framatome VR。</string>
     <string name="vision_glass_disconnected_message">请连接Vision Glass</string>
     <string name="vision_glass_error_message">发生错误。请重试。</string>
-    <string name="phone_ui_set3dmode_alert_dialog_description">切换到 3D 模式失败。尝试拔下眼镜并插回，然后重新启动 Wolvic。</string>
+    <string name="phone_ui_set3dmode_alert_dialog_description">切换到 3D 模式失败。尝试拔下眼镜并插回，然后重新启动 Framatome VR。</string>
     <string name="hamburger_menu_zoom">放大</string>
     <string name="tray_status_phone">电话: %1$s</string>
     <string name="vision_glass_touchpad_instructions">轻击屏幕即可点击。 轻滑即可滚动</string>

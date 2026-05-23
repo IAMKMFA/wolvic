@@ -1,12 +1,12 @@
 {
   "1": {
-    "whatsNewUrl": "https://wolvic.com/",
+    "whatsNewUrl": "https://framatome.com/vr",
     "environments": [
       {
-        "value": "wolvic",
-        "title": "Wolvic",
-        "thumbnail": "https://mixedreality.mozilla.org/FirefoxReality/envs/wolvic/thumbnail.jpg",
-        "payload": "https://mixedreality.mozilla.org/FirefoxReality/envs/wolvic/space.zip"
+        "value": "framatome_space",
+        "title": "Framatome VR",
+        "thumbnail": "https://mixedreality.mozilla.org/FirefoxReality/envs/framatome/thumbnail.jpg",
+        "payload": "https://mixedreality.mozilla.org/FirefoxReality/envs/framatome/space.zip"
       },
       {
         "value": "meadow",

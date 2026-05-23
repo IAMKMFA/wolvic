@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.WolvicPhone" parent="Theme.MaterialComponents.Light.DarkActionBar">
+    <style name="Theme.FramatomePhone" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/midnight</item>
         <item name="colorPrimaryDark">@color/midnight</item>
@@ -18,8 +18,8 @@
         <item name="backgroundColor">@color/midnight</item>
     </style>
 
-    <style name="Theme.WolvicPhone.Bar" parent="Widget.MaterialComponents.Toolbar.Primary" />
+    <style name="Theme.FramatomePhone.Bar" parent="Widget.MaterialComponents.Toolbar.Primary" />
 
-    <style name="Theme.WolvicPhone.PopupOverlay" parent="ThemeOverlay.MaterialComponents" />
+    <style name="Theme.FramatomePhone.PopupOverlay" parent="ThemeOverlay.MaterialComponents" />
 
 </resources>

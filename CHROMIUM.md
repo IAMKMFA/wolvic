@@ -1,4 +1,6 @@
-# Wolvic Chromium backend
+# Framatome VR Pro — Chromium backend (optional)
+
+> This document describes how to integrate a **Chromium-based** WebView backend used by some variants of this project. It was adapted from upstream VR-browser build notes; remote names and branch names on third-party GitHub repos may still use historical identifiers.
 
 Please bear in mind that this is a work in progress and part of the process requires manual steps. We are working on
 automating this process. Patches are welcome!
@@ -147,22 +149,22 @@ And then resume the build using the previous command.
 ## After build tasks
 
 The prebuilt AARs `Content.aar` and `ChromiumUi.aar` should be copied at the path `chromium_aar` defined
-in `local.properties` file in the Wolvic sources. We will call this location `WHERE_PREBUILT_AARS_ARE` from now on.
+in `local.properties` file in this repository. We will call this location `WHERE_PREBUILT_AARS_ARE` from now on.
 
 Unfortunately, there are known issues to use AARs solely. This should be fixed in the future but until then please do as
-follows before copying AARs to wolvic.
+follows before copying AARs into this project.
 
 ```
-# fix_aar.sh is contained in wolvic_chromium's `wolvic` branch.
+# fix_aar.sh is contained in the upstream Chromium integration branch (see remote checkout steps above).
 ./fix_aar.sh out/Default/Content.aar && ./fix_aar.sh out/Default/ChromiumUi.aar
 ```
 
 This will generate the new correct AAR files in your `chromium/src` root directory (**not in `out/Default!`**).
 
 The fixed `Content.aar` and `ChromiumUi.aar` need to be copied to the location `WHERE_PREBUILT_AARS_ARE`, where they can
-be found by the Wolvic building process.
+be found by the Gradle build.
 
-The following assets also need to be copied into the Wolvic repository located at `${WOLVIC_REPOSITORY}`.
+The following assets also need to be copied into this repository at `${WOLVIC_REPOSITORY}`.
 
 ```
 mkdir -p ${WOLVIC_REPOSITORY}/app/src/chromium/assets/
@@ -173,9 +175,9 @@ cp out/Default/wolvic.pak ${WOLVIC_REPOSITORY}/app/src/chromium/assets/
 
 > **Note**: you have to add the `_64` suffix to the first resource file.
 
-## Build Wolvic
+## Build (Chromium flavor)
 
-Follow the steps in the [README](README.md) to build Wolvic skipping everything related to Gecko. You'd only need to
+Follow the steps in the [README](README.md) to build this project skipping everything related to Gecko. You'd only need to
 tweak a few things.
 
 1. Set the `chromium_aar` variable in `local.properties`:
@@ -184,7 +186,7 @@ tweak a few things.
 chromium_aar=WHERE_PREBUILT_AARS_ARE
 ```
 
-2. Sync the Wolvic project with Gradle files
+2. Sync the project with Gradle files
 
 2. Choose build variant:
 

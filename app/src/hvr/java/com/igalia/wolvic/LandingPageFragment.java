@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 
 public class LandingPageFragment extends Fragment {
 
-    private static String[] WOLVIC_HOSTS = {"wolvic.com", "beta.wolvic.com"};
+    private static String[] FRAMATOME_HOSTS = {"framatome.com", "www.framatome.com"};
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -57,10 +57,10 @@ public class LandingPageFragment extends Fragment {
 
         WebView webView = view.findViewById(R.id.web_view);
 
-        // Enable JavaScript; this should be safe because we will only open wolvic.com on this view.
+        // Enable JavaScript; this should be safe because we only open Framatome hosts on this view.
         webView.getSettings().setJavaScriptEnabled(true);
 
-        // Links to wolvic.com will be opened in this Web view, "mailto" links will launch the email app
+        // Links to Framatome hosts open in this Web view; "mailto" links launch the email app
         // and all other links will be opened in the default browser.
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -77,7 +77,7 @@ public class LandingPageFragment extends Fragment {
                 }
 
                 String host = url.getHost();
-                if (Stream.of(WOLVIC_HOSTS).anyMatch(host::equalsIgnoreCase)) {
+                if (Stream.of(FRAMATOME_HOSTS).anyMatch(host::equalsIgnoreCase)) {
                     return false;
                 } else {
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, url);

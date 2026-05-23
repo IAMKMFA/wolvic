@@ -15,7 +15,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:popupTheme="@style/Theme.WolvicPhone.PopupOverlay" />
+        app:popupTheme="@style/Theme.FramatomePhone.PopupOverlay" />
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollview"

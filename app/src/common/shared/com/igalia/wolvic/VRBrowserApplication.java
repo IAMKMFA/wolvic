@@ -54,7 +54,9 @@ public class VRBrowserApplication extends Application implements AppServicesProv
     protected void onActivityCreate(@NonNull Context activityContext) {
         onConfigurationChanged(activityContext.getResources().getConfiguration());
         mAppExecutors = new AppExecutors();
-        TelemetryService.init(activityContext);
+        if (!BuildConfig.FRAMATOME_MODE) {
+            TelemetryService.init(activityContext);
+        }
         mConnectivityManager = new ConnectivityReceiver(activityContext);
         mConnectivityManager.init();
         mPlaces = new Places(activityContext);
@@ -87,7 +89,7 @@ public class VRBrowserApplication extends Application implements AppServicesProv
         Language language = LocaleUtils.getDisplayLanguage(context);
         newConfig.setLocale(language.getLocale());
         // TODO: Deprecated updateConfiguration(Configuration,DisplayMetrics),
-        //  see https://github.com/Igalia/wolvic/issues/797
+        //  see upstream VR browser tracker (legacy issue #797)
         getApplicationContext().getResources().updateConfiguration(newConfig, getBaseContext().getResources().getDisplayMetrics());
         super.onConfigurationChanged(newConfig);
     }
@@ -109,6 +111,8 @@ public class VRBrowserApplication extends Application implements AppServicesProv
         }
 
         if (BuildConfig.FRAMATOME_MODE) {
+            com.igalia.wolvic.browser.SettingsStore.getInstance(this).setTermsServiceAccepted(true);
+            com.igalia.wolvic.browser.SettingsStore.getInstance(this).setPrivacyPolicyAccepted(true);
             com.framatome.vr.tours.FramatomeInitializer.INSTANCE.init(this);
         }
     }

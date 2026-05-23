@@ -1,5 +1,5 @@
 /* To hide the "Download Vimeo app for Android" toast message,
-   which doesn't make sense to appear on Wolvic. */
+   which doesn't make sense to appear in Framatome VR. */
 .app_banner_container,
 .app_banner {
   display: none !important;

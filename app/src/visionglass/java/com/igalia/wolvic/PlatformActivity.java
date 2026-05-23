@@ -280,7 +280,7 @@ public class PlatformActivity extends FragmentActivity implements SensorEventLis
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setTheme(R.style.FxR_Dark);
 
-        ContextThemeWrapper themedContext = new ContextThemeWrapper(this, R.style.Theme_WolvicPhone);
+        ContextThemeWrapper themedContext = new ContextThemeWrapper(this, R.style.Theme_FramatomePhone);
         LayoutInflater themedInflater = getLayoutInflater().cloneInContext(themedContext);
         mBinding = DataBindingUtil.inflate(themedInflater, R.layout.visionglass_layout, null, false);
         setContentView(mBinding.getRoot());
@@ -292,7 +292,7 @@ public class PlatformActivity extends FragmentActivity implements SensorEventLis
 
         mViewModel.getConnectionState().observe(this, this::onConnectionStateChanged);
 
-        mAlignDialogFragment = new AlignPhoneDialogFragment(R.style.Theme_WolvicPhone);
+        mAlignDialogFragment = new AlignPhoneDialogFragment(R.style.Theme_FramatomePhone);
         mAlignDialogFragment.setOnRealignButtonClickListener(v -> {
             reorientController();
         });

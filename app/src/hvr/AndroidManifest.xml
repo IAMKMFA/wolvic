@@ -50,7 +50,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".WolvicHmsMessageService"
+            android:name="com.igalia.wolvic.messaging.FramatomeHmsMessageService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.huawei.push.action.MESSAGING_EVENT" />

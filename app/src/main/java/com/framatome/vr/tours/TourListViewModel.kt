@@ -13,7 +13,7 @@ class TourListViewModel(app: Application) : AndroidViewModel(app) {
     private val _tours = MutableStateFlow<List<Tour>>(emptyList())
     val tours: StateFlow<List<Tour>> = _tours
 
-    val baseDir: File = File(app.getExternalFilesDir(null), "tours")
+    private val appStorageRoot: File = TourStorage.appStorageRoot(app)
     private val settingsStore = TourSettingsStore(app)
     private val publicImporter = PublicInboxImporter(app)
 
@@ -55,41 +55,8 @@ class TourListViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun performRescan() {
-        if (!baseDir.exists()) baseDir.mkdirs()
+        TourStorage.ensureAppDirs(getApplication())
         publicImporter.runImportOnce()
-
-        val baseCanonical = baseDir.canonicalFile
-        val list = baseDir.listFiles { file ->
-            file.isDirectory && !file.name.startsWith(".")
-        }?.mapNotNull { dir ->
-            val indexHtml = File(dir, "index.html")
-            val indexHtm = File(dir, "index.htm")
-            val entry = when {
-                indexHtml.exists() -> "index.html"
-                indexHtm.exists() -> "index.htm"
-                else -> null
-            }
-            entry?.let {
-                val thumb = listOf("thumbnail.jpg", "thumbnail.png").map { File(dir, it) }
-                    .firstOrNull { it.exists() }?.absolutePath
-                val rel = dir.canonicalFile.relativeTo(baseCanonical).invariantSeparatorsPath
-                val enabled = settingsStore.isEnabled(rel)
-                val source = when {
-                    File(dir, ".bundled").exists() -> TourSource.BUNDLED
-                    File(dir, ".imported").exists() -> TourSource.EXTERNAL
-                    else -> TourSource.EXTERNAL
-                }
-                Tour(
-                    name = dir.name,
-                    absolutePath = dir.absolutePath,
-                    relativePath = rel,
-                    entryFileName = it,
-                    thumbnailPath = thumb,
-                    source = source,
-                    enabled = enabled
-                )
-            }
-        }?.sortedBy { it.name } ?: emptyList()
-        _tours.value = list
+        _tours.value = TourCatalog.scan(appStorageRoot, settingsStore::isEnabled)
     }
 }

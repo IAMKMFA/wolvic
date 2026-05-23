@@ -115,17 +115,17 @@
 \n• Email: info@igalia.com
 \n
 \nO contido e elementos que forman a aplicación foron implementados e/ou desenvolvidos por IGALIA baixo licencias open source, estando protexidos, sen limitacións, pola propiedade intelectual e industrial do Reino de España, e polos tratados e acordos internacionais que resulten aplicables.</string>
-    <string name="terms_service_section_1">Wolvic é un software libre e aberto, construído por unha comunidade de miles de persoas por todo o mundo. Hai algunhas cousas que debe saber:
+    <string name="terms_service_section_1">Framatome VR é un software libre e aberto, construído por unha comunidade de miles de persoas por todo o mundo. Hai algunhas cousas que debe saber:
 \n
-\n• Wolvic é publicado baixo a licencia Mozilla Public License. Isto significa que pode usar, copiar e distribuír Wolvic a outras persoas. Tamén é posible modificar o código fonte de Wolvic para satisfacer novas necesidades. A licencia permite distribuír a versión modificada.
+\n• Framatome VR é publicado baixo a licencia Mozilla Public License. Isto significa que pode usar, copiar e distribuír Framatome VR a outras persoas. Tamén é posible modificar o código fonte de Framatome VR para satisfacer novas necesidades. A licencia permite distribuír a versión modificada.
 \n
-\n• Non se cede ningún dereito ou licencia de Igalia o de ningunha outra parte, incluíndo sen limitación o nome e o logo de Wolvic.
+\n• Non se cede ningún dereito ou licencia de Igalia o de ningunha outra parte, incluíndo sen limitación o nome e o logo de Framatome VR.
 \n
-\n• Algunhas funcionalidades de Wolvic, como o Crash Reporter, permiten enviar feedback a Igalia. Se se escolle que se quere enviar ese feedback, dáselle permiso a Igalia para usar esa información para mellorar os seus productos, para publicar información anónima nas súas páxinas web, e para distribuír ese feedback anónimo.
+\n• Algunhas funcionalidades de Framatome VR, como o Crash Reporter, permiten enviar feedback a Igalia. Se se escolle que se quere enviar ese feedback, dáselle permiso a Igalia para usar esa información para mellorar os seus productos, para publicar información anónima nas súas páxinas web, e para distribuír ese feedback anónimo.
 \n
-\n• O uso da información persoal e feedback enviado a Igalia mediante Wolvic descríbese na política de privacidade de Wolvic.
+\n• O uso da información persoal e feedback enviado a Igalia mediante Framatome VR descríbese na política de privacidade de Framatome VR.
 \n
-\n• Algunhas funcionalidades de Wolvic fan uso de servizos web externos. Non podemos garantizar que estean completamente libres de erros. Máis detalles, incluíndo o xeito de desactivar as funcionalidades que usan esos servizos, podense atopar nos termos de servizo (abaixo).</string>
+\n• Algunhas funcionalidades de Framatome VR fan uso de servizos web externos. Non podemos garantizar que estean completamente libres de erros. Máis detalles, incluíndo o xeito de desactivar as funcionalidades que usan esos servizos, podense atopar nos termos de servizo (abaixo).</string>
     <string name="keyboard_enter_label">ENTER</string>
     <string name="keyboard_go_label">IR</string>
     <string name="keyboard_search_label">BUSCAR</string>
@@ -228,7 +228,7 @@
     <string name="security_options_permissions_title">Permisos (Permitir a %1$s acceder a)</string>
     <string name="security_options_permissions_reject_message">Este permiso só se pode desactivar nos permisos do sistema</string>
     <string name="security_options_permission_location">Localización</string>
-    <string name="security_options_permission_fine_location_warning">Wolvic só pode acceder á túa ubicación aproximada. Podes mudar isto nos axustes do sistema.</string>
+    <string name="security_options_permission_fine_location_warning">Framatome VR só pode acceder á túa ubicación aproximada. Podes mudar isto nos axustes do sistema.</string>
     <string name="security_options_permission_storage">Almacenamento</string>
     <string name="security_options_permission_camera_and_microphone">Cámara e micrófono</string>
     <string name="security_options_block_pup_up_windows">Bloquear xanelas pop-up</string>
@@ -501,20 +501,20 @@
     <string name="hvr_connect_glass_message">Conecte o seu HUAWEI VR Glass para usar esta aplicación</string>
     <string name="external_open_uri_error_security_exception_body">SecurityException cando se iniciou un intent para %1$s</string>
     <string name="hvr_enter_vr">Entrar en VR</string>
-    <string name="privacy_dialog_disagree">Pechar Wolvic</string>
+    <string name="privacy_dialog_disagree">Pechar Framatome VR</string>
     <string name="terms_service_title">Termos de servizo</string>
     <string name="privacy_policy_title">Política de privacidade xeral</string>
-    <string name="terms_service_section_2">Wolvic usa servizos web (\"Servizos\") para proporcionar algunhas das funcionalidades incluídas para o seu uso nesta versión binaria de Wolvic, baixo os termos descritos a continuación.
+    <string name="terms_service_section_2">Framatome VR usa servizos web (\"Servizos\") para proporcionar algunhas das funcionalidades incluídas para o seu uso nesta versión binaria de Framatome VR, baixo os termos descritos a continuación.
 \n
 \n\t• Igalia e os seus colaboradores, licenciadores e socios traballan para proporcionar Servizos o máis precisos e actualizados posible. Porén, non podemos garantir que esta información sexa completa e libre de erros. Por exemplo, o Servizo de navegación segura pode non identificar algunha das páxinas webs perigosas, e pode identificar algunhas páxinas seguras como perigosas por erro, e no Servizo de localización todas as localizacións proporcionadas polos nosos provedores son estimacións e nin nós nin os nosos provedores do serrvizo garantimos a precisión das localizacións proporcionadas.
 \n
 \n\t• Igalia resérvase o dereito a eliminar ou cambiar os Servizos á súa discreción.
 \n
-\n\t• Igalia pon a disposición estes Servizos coa versión adxunta de Wolvic, e garante dereitos de uso. Igalia e os seus licenciadores resérvanse todos os demais dereitos sobre os Servizos. Estes termos non pretenden limitar ningún dereito que proporcionen licencias open source que se poidan aplicar a Wolvic e o seu código fonte.
+\n\t• Igalia pon a disposición estes Servizos coa versión adxunta de Framatome VR, e garante dereitos de uso. Igalia e os seus licenciadores resérvanse todos os demais dereitos sobre os Servizos. Estes termos non pretenden limitar ningún dereito que proporcionen licencias open source que se poidan aplicar a Framatome VR e o seu código fonte.
 \n
 \n\t• Os servizos proporciónanse \"tal e como están\". Igalia, os seus contribuidores, licenciadores e distribuidores, non proporcionan ningunha garantía, incluídas sen limitacións, garantías que os Servizos son axeitados para os propósitos particulares de cada usuario. O usuario asume todo o risco ao seleccionar os Servizos para os obxectivos concretos, en canto á calidade e rendemento dos mesmos.
 \n
-\n\t• Salvo se fose requirido por lei, Igalia, os contribuidores, licenciadores e distribuidores, non serán responsables de ningún dano indirecto, especial, incidental, consecuente, punitivo ou exemplar que xurda ou estea relacionado de algún xeito co uso de Wolvic e os Servizos. En calquera caso, a responsabilidade colectiva baixo estes termos non excederá os 500 USD (cincocentos dólares). Algunhas xurisdicións non permiten a exclusión ou limitación de certos danos, polo que é posible que esta exclusión e limitación non lle afecte.
+\n\t• Salvo se fose requirido por lei, Igalia, os contribuidores, licenciadores e distribuidores, non serán responsables de ningún dano indirecto, especial, incidental, consecuente, punitivo ou exemplar que xurda ou estea relacionado de algún xeito co uso de Framatome VR e os Servizos. En calquera caso, a responsabilidade colectiva baixo estes termos non excederá os 500 USD (cincocentos dólares). Algunhas xurisdicións non permiten a exclusión ou limitación de certos danos, polo que é posible que esta exclusión e limitación non lle afecte.
 \n
 \n\t• Igalia poderá actualizar estes termos á súa discreción en calquera momento. En calquera caso, estes termos non poderán ser modificados ou cancelados sen o consentimento por escrito de Igalia.
 \n
@@ -546,7 +546,7 @@
 \n
 \n\t\t\t⁃ A navegación con localización está agora desactivada
 \n
-\n\t\t◦ A protección mellorada contra o seguimento de Wolvic protexe a súa privacidade automaticamente durante a navegación, bloqueando rastrexadores que podan facer un seguimento online para recoller información sobre hábitos e intereses de navegación, sen romper a funcionalidade das páxinas web. Tamén inclúe protección contra programas malignos, tal e como aplicacións daniñas que esgoten a batería do dispositivo. Hai tres modos de protección mellorada de seguimento: estándar, estrito e desactivado. Se desexa desactivalo, siga os seguintes pasos:
+\n\t\t◦ A protección mellorada contra o seguimento de Framatome VR protexe a súa privacidade automaticamente durante a navegación, bloqueando rastrexadores que podan facer un seguimento online para recoller información sobre hábitos e intereses de navegación, sen romper a funcionalidade das páxinas web. Tamén inclúe protección contra programas malignos, tal e como aplicacións daniñas que esgoten a batería do dispositivo. Hai tres modos de protección mellorada de seguimento: estándar, estrito e desactivado. Se desexa desactivalo, siga os seguintes pasos:
 \n
 \n\t\t\t⁃ Vaia á configuración de “Privacidade e seguridade\".
 \n
@@ -559,7 +559,7 @@
     <string name="privacy_policy_subtitle_2">Protección de datos</string>
     <string name="privacy_policy_section_2">IGALIA está comprometida co cumprimento das provisións legais en relación coa protección de datos persoais: Regulación (EU) 2016/679 do Parlamento Europeo e do Consello do 27th April 2016 da protección das persoas físicas con respecto ao procesamento de datos persoais e á libre circulación dos mesmos (RGPD) e na Lei Orgánica 3/2018, de 5 de decembro, de protección de datos e garantía dos dereitos dixitais (LOPDGDD).
 \n
-\nIGALIA non recolle datos persoais de maneira que o usuario poida ser identificado. Polo tanto, vostede pode usar a aplicación, consultar e navegar o entorno de realidade virtual sen revelar a súa identidade ou proporcionar datos persoais a IGALIA, nin directa nin indirectamente; polo tanto IGALIA non será responsable de ningún dos datos introducidos en WOLVIC.
+\nIGALIA non recolle datos persoais de maneira que o usuario poida ser identificado. Polo tanto, vostede pode usar a aplicación, consultar e navegar o entorno de realidade virtual sen revelar a súa identidade ou proporcionar datos persoais a IGALIA, nin directa nin indirectamente; polo tanto IGALIA non será responsable de ningún dos datos introducidos en FRAMATOME VR.
 \n
 \nOs únicos datos e información que IGALIA obterá do uso da aplicación, os cales non poderán ser utilizados en ningún momento para identificar ao usuario, son os seguintes:
 \n
@@ -691,11 +691,11 @@
     <string name="hamburger_menu_addons">Complementos</string>
     <string name="whats_new_button_start_browsing">Comezar a navegar</string>
     <string name="deprecated_version_dialog_title">Actualización necesaria</string>
-    <string name="deprecated_version_dialog_body">Esta versión de desenvolvemento de Wolvic deixará de estar dispoñible a finais de outubre de 2023.
+    <string name="deprecated_version_dialog_body">Esta versión de desenvolvemento de Framatome VR deixará de estar dispoñible a finais de outubre de 2023.
 \n
-\nPor favor, instala a versión máis recente de Wolvic dende la tenda de Meta.
+\nPor favor, instala a versión máis recente de Framatome VR dende la tenda de Meta.
 \n
-\nIMPORTANTE: a menos que uses Firefox Sync, a nova app de Wolvic non terá os teus marcadores nin as tuas páxinas abertas.</string>
+\nIMPORTANTE: a menos que uses Firefox Sync, a nova app de Framatome VR non terá os teus marcadores nin as tuas páxinas abertas.</string>
     <string name="deprecated_version_dialog_info_button">Aprender máis…</string>
     <string name="deprecated_version_dialog_store_button">Instalar…</string>
     <string name="webxr_dialog_button_on">Activado</string>
@@ -711,12 +711,12 @@
     <string name="autofill_item_autogenerated">Autoxerado</string>
     <string name="login_edit_dialog_site_button">Abrir</string>
     <string name="privacy_dialog_title">Privacidade</string>
-    <string name="privacy_dialog_message">A súa privacidade é importante para nós. Para usar o navegador, por favor acepte os nosos termos de servizo e a política de privacidade. Grazas por usar Wolvic!</string>
+    <string name="privacy_dialog_message">A súa privacidade é importante para nós. Para usar o navegador, por favor acepte os nosos termos de servizo e a política de privacidade. Grazas por usar Framatome VR!</string>
     <string name="privacy_dialog_agree">De acordo</string>
-    <string name="terms_service_subtitle_2">Servizos de información web de Wolvic</string>
+    <string name="terms_service_subtitle_2">Servizos de información web de Framatome VR</string>
     <string name="privacy_policy_subtitle_3">Lei aplicable e idioma orixinal</string>
     <string name="privacy_policy_section_3">Esta política de privacidade está suxeita á lei española. O idioma de aplicación desta política de privacidade é o español. Por esta razón, ante calquera posible diferencia entre o orixinal en Español e as traduccións a outros idiomas será considerada prevalente a versión en español que pode atoparse aquí:
-\nhttps://wolvic.com/es/legal/privacy/ .</string>
+\nhttps://framatome.com/vr/privacy/ .</string>
     <string name="voice_service_metkai">MeetKai</string>
     <string name="voice_service_huawei_asr">Recoñecemento de voz automático de Huawei</string>
     <string name="permissions_dialog_remember_choice">Lembrar esta decisión</string>
@@ -768,9 +768,9 @@
     <string name="clear_user_data_dialog_text">%1$s será reiniciado. Todos os datos, incluídos os logins gardados, a historia e os marcadores, serán borrados permanentemente se non foron sincronizados. %1$s pecharase automáticamente cando o borrado finalice. Desexas continuar?</string>
     <string name="developer_options_clear_user_data_description">Todos os datos de usuario</string>
     <string name="rCN_first_launch_title">Notificación do acordo co usuario e a política de privacidade</string>
-    <string name="rCN_first_launch_body">Benvido a \"Wolvic\"!
+    <string name="rCN_first_launch_body">Benvido a \"Framatome VR\"!
 \n
-\nPara rexistrarse e usar \"Wolvic\" é necesario aceptar o Acordo de Usuario e a Política de Privacidade, ou non poderemos proporcionar servizos. Por favor lea coidadosamente os documentos e prema en \"Aceptar\" para continuar. Se premes en \"Non aceptar\", non poderás continuar usando \"Wolvic\".
+\nPara rexistrarse e usar \"Framatome VR\" é necesario aceptar o Acordo de Usuario e a Política de Privacidade, ou non poderemos proporcionar servizos. Por favor lea coidadosamente os documentos e prema en \"Aceptar\" para continuar. Se premes en \"Non aceptar\", non poderás continuar usando \"Framatome VR\".
 \n
 \nPodes ler o Acordo de Usuario e a Política de Privacidade completos.</string>
     <string name="rCN_first_launch_clickable_privacy_text">Política de Privacidade</string>
@@ -783,13 +783,13 @@
     <string name="permission_camera_rationale">Obter imaxes do teu entorno require permiso para usar a túa cámara.</string>
     <string name="permission_notification_rationale">Notificar de novas e actualizacións require permiso para enviar notificacións.</string>
     <string name="phone_ui_alert_dialog_title">Erro</string>
-    <string name="phone_ui_usb_alert_dialog_description">Erro obtendo permisos USB. Tente desconectar as gafas, conectalas de novo e reiniciar Wolvic.</string>
+    <string name="phone_ui_usb_alert_dialog_description">Erro obtendo permisos USB. Tente desconectar as gafas, conectalas de novo e reiniciar Framatome VR.</string>
     <string name="permission_rationale_title">Permisos adicionais</string>
     <string name="permission_microphone_rationale">Facer pesquisas por voz e escritura por voz require permisos para usar o teu micrófono.</string>
     <string name="permission_camera_and_microphone_rationale">Proporcionar servizos como a videoconferencia require permiso para usar a cámara e o micrófono.</string>
     <string name="permission_location_rationale">Ofrecer novas e contido local require permiso para acceder á túa localización.</string>
     <string name="permission_read_external_storage_rationale">Abrir arquivos no teu dispositivo require permiso para ler o almacenamento externo.</string>
-    <string name="phone_ui_set3dmode_alert_dialog_description">Erro ao cambiar a modo 3D. Tente desconectar as gafas, conectalas de novo e reiniciar Wolvic.</string>
+    <string name="phone_ui_set3dmode_alert_dialog_description">Erro ao cambiar a modo 3D. Tente desconectar as gafas, conectalas de novo e reiniciar Framatome VR.</string>
     <string name="permission_persistent_storage_rationale">Gardar e abrir arquivos no teu dispositivo require permisos para almacenar datos no almacenamento persistente.</string>
     <string name="vision_glass_disconnected_message">Por favor conecte Vision Glass</string>
     <string name="vision_glass_touchpad_instructions">Pulsa para facer click. Desliza para facer scroll</string>
@@ -797,7 +797,7 @@
 \nTente de novo.</string>
     <string name="tabs_bookmark_selected">Gardar nos marcadores</string>
     <string name="incompatible_os_version_title">Versión non soportada</string>
-    <string name="incompatible_os_version_message">A versión actual do sistema non está soportada. Wolvic require polo menos a versión %1$s</string>
+    <string name="incompatible_os_version_message">A versión actual do sistema non está soportada. Framatome VR require polo menos a versión %1$s</string>
     <string name="controller_options_handtracking">Seguimento de mans</string>
     <string name="vision_glass_realign_dialog_explanation">Para configurar o controlador, apunte o seu teléfono cara adiante e toque o botón.</string>
     <string name="controller_options_pointer_mode">Modo de control do punteiro</string>
@@ -817,7 +817,7 @@
     <string name="close_tab">Pechar pestana</string>
     <string name="settings_language_ukrainian">Ucraíno</string>
     <string name="display_options_open_tabs_in_background">Abrir novas pestanas en segundo plano</string>
-    <string name="developer_options_homepage_wolvic">wolvic.com</string>
+    <string name="developer_options_homepage_framatome">framatome.com</string>
     <string name="developer_options_homepage_new_tab">Nova pestana</string>
     <string name="developer_options_homepage_other">Outra</string>
     <string name="url_new_tab_title">Nova pestana</string>

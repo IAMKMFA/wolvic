@@ -1,152 +1,186 @@
-# Wolvic XR Browser
+# Framatome VR Pro
 
-The goal of the Wolvic project is to create a full-featured browser exclusively AR and VR headsets.
+Full-immersion 3DVista tour platform for Meta Quest 3, built on a custom WebXR rendering engine.
 
-You can find us in [wolvic.com](https://www.wolvic.com), Mastodon [@WolvicXR](https://floss.social/@WolvicXR), Twitter [@wolvicxr](https://twitter.com/wolvicxr), and at [info@wolvic.com](mailto:info@wolvic.com).
+## What This Is
 
-Want to learn more about Wolvic? Read our [FAQ](https://wolvic.com/en/faq)!
+Framatome VR Pro delivers offline, fully immersive VR training tours to field technicians on Meta Quest 3 headsets. Tours are authored in 3DVista, exported as web packages, and deployed to headsets via Arbor XR or sideloading. The app handles everything from import to playback — no browser chrome, no setup, no internet required.
 
-## Setup instructions
+### Why It Exists
 
-> For setup instructions using the development version of the Chromium backend check [this instructions out instead](CHROMIUM.md)
+Standard browsers on Quest can render 3DVista tours, but they lack true WebXR immersion — the "Enter VR" button either doesn't work or leads to a broken experience. Framatome VR Pro solves this with a custom-built GeckoView engine patched with Igalia's WebXR extensions, wrapped in a purpose-built VR shell with zero browser UI exposed to the end user.
 
-### GeckoView local substitution
+## Architecture
 
-After [PR #70](https://github.com/Igalia/wolvic/pull/70), WebXR sessions won't work with the prebuilt maven GeckoView libraries because that PR introduced a change in the GeckoView protocol. So you have to build GeckoView manually by applying patches at [this repository](https://github.com/Igalia/wolvic-gecko-patches).
+```
+┌─────────────────────────────────────────────────┐
+│                 Framatome VR Pro                 │
+│                                                 │
+│  ┌───────────────────────────────────────────┐  │
+│  │        Framatome VR shell (OpenXR)        │  │
+│  │  - OpenXR runtime for Quest 3             │  │
+│  │  - No browser chrome / no dialogs         │  │
+│  │  - Single-window kiosk mode               │  │
+│  └─────────────────┬─────────────────────────┘  │
+│                    │                             │
+│  ┌─────────────────▼─────────────────────────┐  │
+│  │     Custom GeckoView (Firefox 128 ESR)    │  │
+│  │  - Igalia WebXR patches applied           │  │
+│  │  - navigator.xr.requestSession works      │  │
+│  │  - Built from source (aarch64-android)    │  │
+│  └─────────────────┬─────────────────────────┘  │
+│                    │                             │
+│  ┌─────────────────▼─────────────────────────┐  │
+│  │       Framatome Tour Subsystem (Kotlin)   │  │
+│  │  - NanoHTTPD on localhost:18080           │  │
+│  │  - Zip import pipeline (auto-extract)     │  │
+│  │  - HTML tour menu with intro animation    │  │
+│  │  - Branded "Enter VR" overlay injection   │  │
+│  │  - Tour enable/disable, delete, rescan    │  │
+│  └───────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────┘
+```
 
-This could be done either by using a [local maven repository](http://mozac.org/contributing/testing-components-inside-app) (quite cumbersome), or via Gradle's [dependency substitutions](https://docs.gradle.org/current/userguide/dependency_resolution.html) (not at all cumbersome!).
+### Key Components
 
-Currently, the substitution flow is streamlined for some of the core dependencies via configuration flags in `local.properties`. You can build against a local checkout of the following dependencies by specifying their local paths:
-- [GeckoView](https://hg.mozilla.org/releases/mozilla-release/tags), specifying its path via `dependencySubstitutions.geckoviewTopsrcdir=/path/to/mozilla-release` (and, optionally, `dependencySubstitutions.geckoviewTopobjdir=/path/to/topobjdir`). See [Bug 1533465](https://bugzilla.mozilla.org/show_bug.cgi?id=1533465).
-  - This assumes that you have built, packaged, and published your local GeckoView -- but don't worry, the dependency substitution script has the latest instructions for doing that.
-  - If you want to build for different architectures at the same time, you can specify the aarch64 path via `dependencySubstitutions.geckoviewTopobjdir` while the x86_64 path via `dependencySubstitutions.geckoviewTopobjdirX64`
+| Component | Location | Purpose |
+|---|---|---|
+| `LocalWebServer` | `tours/LocalWebServer.kt` | NanoHTTPD server on `localhost:18080`, serves tour files and injects the VR button overlay |
+| `TourIndexServer` | `tours/TourIndexServer.kt` | Generates the branded HTML tour menu with intro animation |
+| `PublicInboxImporter` | `tours/PublicInboxImporter.kt` | Scans external storage for `.zip` tour packages, extracts and validates them |
+| `FramatomeInitializer` | `tours/FramatomeInitializer.kt` | Bootstraps the server and runs initial import on app launch |
+| `TourListViewModel` | `tours/TourListViewModel.kt` | Tour state management — rescan, delete, enable/disable |
+| `TourSettingsStore` | `tours/TourSettingsStore.kt` | Persists per-tour enable/disable preferences |
 
-Do not forget to run a Gradle sync in Android Studio after changing `local.properties`. If you specified any substitutions, they will be reflected in the modules list, and you'll be able to modify them from a single Android Studio window.
+All Framatome code lives under `app/src/main/java/com/framatome/vr/tours/`.
 
-For step by step guide check [here](https://github.com/Igalia/wolvic/wiki/Developer-workflow#building-gecko).
+## User Experience
 
-### Clone Wolvic
+1. **Launch** — App opens with a 3-5 second branded intro animation (particles, logo reveal, tap to skip).
+2. **Tour Menu** — Dark-themed grid of available tours with thumbnails, WebXR badges, file sizes, and dates. Rescan button refreshes from disk.
+3. **Tour Playback** — Tapping a tour card loads it through the local server. A large branded "Enter VR" button (bottom-right, Framatome goggles icon) triggers full WebXR immersion. A "Home" button (bottom-left) returns to the menu.
+4. **Immersion** — Full stereoscopic VR via WebXR/OpenXR. Exit VR returns to the 2D browser panel with the button visible again.
+
+## Tour Management
+
+### Deploying Tours
+
+Tours are standard 3DVista web exports (folder with `index.html` + assets). Three delivery methods:
+
+**Via Arbor XR (production)**
+1. Export tour from 3DVista as a web package (`.zip`)
+2. Upload to Arbor XR under *Content > Files*
+3. Enable "Extract Zip on Device"
+4. Target path: device external storage under `FramatomeVR/Tours/` or `FramatomeVRPro/Tours/`
+5. The app auto-detects and imports on next launch or rescan
+
+**Via ADB (development)**
+```bash
+# Push a zip — app will auto-extract it
+adb push MyTour.zip /sdcard/FramatomeVR/inbox/
+
+# Or push an already-extracted tour folder
+adb push ./MyTourExport/ /sdcard/Android/data/com.framatome.vr.pro/files/tours/MyTour
+```
+
+**Via USB file transfer**
+Drop `.zip` files into `FramatomeVR/`, `FramatomeVR/inbox/`, `FramatomeVR/Tours/`, or `FramatomeVRPro/` on the headset's shared storage.
+
+### Import Pipeline
+
+The `PublicInboxImporter` handles all the complexity:
+- Scans multiple well-known directories on external storage
+- Extracts zips with 4GB safety cap and path traversal protection
+- Handles nested zips (up to 5 levels deep)
+- Flattens unnecessary wrapper folders to find `index.html`
+- Strips macOS/Windows junk files (`__MACOSX`, `.DS_Store`, `Thumbs.db`)
+- Deduplication via import ledger — won't re-extract unchanged zips
+- Purges invalid tours (no `index.html` = removed)
+
+### Tour Requirements
+
+Each tour folder must contain:
+- `index.html` or `index.htm` (required)
+- `thumbnail.jpg` or `thumbnail.png` (optional, shown on menu card)
+- All assets with relative paths (no absolute `http://` URLs)
+
+## Building
+
+### Prerequisites
+
+- Android Studio (latest stable)
+- JDK 17+
+- The custom GeckoView AAR is already integrated via local Maven repository
+
+### Build the APK
 
 ```bash
-git clone git@github.com:Igalia/wolvic.git
-cd wolvic
+cd framatome-vr-wolvic
+./gradlew assembleOculusvrArm64GeckoGenericDebug
 ```
 
-### Clone the third-party repo
+Output: `app/build/outputs/apk/oculusvrArm64GeckoGeneric/debug/FramatomeVR-oculusvr-arm64-gecko-generic-debug.apk`
 
-If you're developing for the Oculus, Huawei, Pico, or VIVE, you need to clone the repo with third-party SDK files.
+For a signed release build, use Android Studio's *Build > Generate Signed APK* workflow.
+
+### Install on Quest
 
 ```bash
-wolvic$ git clone git@github.com:Igalia/wolvic-third-parties.git third_party
+adb install -r app/build/outputs/apk/oculusvrArm64GeckoGeneric/debug/FramatomeVR-oculusvr-arm64-gecko-generic-debug.apk
 ```
 
-This repo is only available to Igalia members. If you have access to the relevant SDK but not this repo, you can manually place them here:
+Or install via Arbor XR / SideQuest for fleet deployment.
 
- - `third_party/OVRPlatformSDK/` for Oculus (should contain a `Android` and `Include` folders)
- - `third_party/hvr/` for Huawei (should contain  `arm64-v8a`, `armeabi-v7a` and `include` folders)
- - `third_party/picoxr` [Pico OpenXR Mobile SDK](https://developer-global.pico-interactive.com/sdk?deviceId=1&platformId=3&itemId=11) (should contain `libs` folders, among other things that are not necessary for Wolvic)
- - `third_party/spaces` [for Snapdragon Spaces](https://spaces.qualcomm.com/)(should contain `libopenxr_loader.aar`)
- - `third_party/aliceimu/` for [Huawei Vision Glass](https://consumer.huawei.com/cn/wearables/vision-glass/) (should contain an `.aar` file with the IMU library for the glasses)
+## Custom GeckoView
 
-The [repo in `third_party`](https://github.com/Igalia/wolvic-third-parties) can be updated like so:
+The WebXR immersion depends on a custom build of GeckoView (Firefox 128 ESR) with Igalia's WebXR patches. This provides `navigator.xr.requestSession('immersive-vr')` support that standard GeckoView does not have.
 
-```bash
-pushd third_party && git fetch && git checkout main && git rebase origin/main && popd
+- Source: `firefox-128.14.0` with patches from [Igalia/ASharpYard](https://phabricator.nicepfp.org/)
+- Target: `aarch64-unknown-linux-android` (Quest 3)
+- Published as a local Maven snapshot: `org.mozilla.geckoview:geckoview-default:128.14.20260314224701-SNAPSHOT`
+
+The GeckoView build only needs to be rebuilt if updating Firefox ESR or applying new WebXR patches. The snapshot AAR is referenced in `app/build.gradle` and resolved from a local Maven repo.
+
+## Branding
+
+User-facing branding is Framatome throughout:
+- App name: **Framatome VR** (launcher) / **Framatome VR Pro** (full title)
+- Package ID: `com.framatome.vr.pro`
+- App icons: Custom Framatome VR headset logo
+- In-app: Custom splash screen, tour menu, intro animation, VR button with Framatome goggles image
+- No first-run dialogs, terms of service, or privacy prompts
+
+String replacements are in `res/values/strings.xml`, `res/values/non_L10n.xml`, and `res/values/options_values.xml`.
+
+## Project Structure
+
+```
+framatome-vr-wolvic/
+├── app/
+│   ├── src/main/java/com/framatome/vr/tours/   # Framatome tour subsystem
+│   ├── src/main/java/com/igalia/wolvic/        # VR browser shell (upstream-derived, modified)
+│   ├── src/main/res/                           # Resources (Framatome branded)
+│   │   ├── drawable/                           # Logos, splash, backgrounds
+│   │   ├── raw/                                # VR goggles image asset
+│   │   └── values/                             # Strings, styles, colors
+│   └── build.gradle                            # Dependencies (custom GeckoView)
+├── gradle.properties                           # JVM heap (8GB for GeckoView AAR)
+└── build.gradle                                # Repositories (local Maven + Mozilla)
 ```
 
-### Fetch Git submodules
+## Release Checklist
 
-You may need to set up [two-factor authentication](https://blog.github.com/2013-09-03-two-factor-authentication/#how-does-it-work-for-command-line-git) for the command line.
+- [ ] Ensure all tours are tested on-device with WebXR immersion
+- [ ] Build signed release APK via Android Studio
+- [ ] Upload APK to Arbor XR under *Apps*, assign to headset group
+- [ ] Upload tour `.zip` files to Arbor XR under *Files* (extract enabled)
+- [ ] Verify tours auto-import and appear in the menu on target headsets
+- [ ] Confirm "Enter VR" button triggers full immersion on each tour
 
-```bash
-wolvic/third_party$ git submodule update --init --recursive
-```
+## Technical Notes
 
-You can build for different devices:
-
-- **`oculusvr`**: Oculus Quest
-- **`hvr`**: Huawei VR Glasses
-- **`picoxr`**: Pico 4 and (untested) Pico Neo 3
-- **`lynx`**: Lynx R1
-- **`spaces`**: Lenovo A3
-- **`visionglass`**: Huawei Vision Glass
-- **`aosp`**: MagicLeap2 (but should work for any other AOSP device using OpenXR)
-- **`pfdmxr`**: PFDM YVR1, PFDM YVR2 and PFDM MR
-
-For testing on a non-VR device:
-
-- **`noapi`**: Runs on standard Android phones without a headset
-
-Building for Huawei requires access to its SDKs which is not included in this repo.
-
-The command line version of `gradlew` requires JDK 11. If you see an error that Gradle doesn't understand your Java version, check which version of you're using by running `java -showversion` or `java -version`. You're probably using and older JDK, which won't work.
-
-*Open the project with [Android Studio](https://developer.android.com/studio/index.html)* then build and run it. Depending on what you already have installed in Android Studio, the build may fail and then may prompt you to install dependencies. Just keep doing as it suggests. To select the device to build for, go to `Tool Windows > Build Variants` and select a build variant corresponding to your device.
-
-## Local Development
-
-> By default Wolvic will try to download prebuilt GeckoView libraries from [Mozilla's maven repositories](https://maven.mozilla.org/maven2/org/mozilla/geckoview/?prefix=maven2/org/mozilla/geckoview/), where WebXR won't work and that should be used just for testing the 2D browser or to download browser features. If you want to have this, just skip the *GeckoView local substitution* part of the [Setup instructions](#setup-instructions).
-
-## Install dev and production builds on device simultaneously
-
-You can enable a dev applicationID sufix to install both dev and production builds simultaneously. You just need to add this property to your `user.properties` file:
-
-```ini
-simultaneousDevProduction=true
-```
-## Locally generate Android release builds
-
-Local release builds can be useful to measure performance or debug issues only happening in release builds. Insead of dealing with release keys you can make the testing easier just adding this property to your `user.properties` file:
-
-```ini
-useDebugSigningOnRelease=true
-```
-
-Note: the release APKs generated with a debug keystore can't be used for production.
-
-## Generate builds with a static version code
-
-By default, each build will be assigned an auto-generated version code, which is derived from the date when the build was created. This behavior interferes with Gradle's caching mechanism and unnecessarily re-runs tasks that depend on the version code, leading to longer build times. You can work around this by temporarily using a static version code that persists between builds. This can be done by setting this property in your `user.properties` file:
-
-```ini
-useStaticVersionCode=true
-```
-
-## Compress assets
-
-ETC2 compression is used to improve performance and memory usage. Raw assets are placed in the `uncompressed_assets` folder. You can generate the compressed textures using the compressor utility in `tools/compressor`. You need to set up [etc2comp](https://github.com/google/etc2comp) and make it available on your PATH before running the script. Run this command to generate the compressed assets:
-
-```bash
-cd tools/compressor
-npm install
-npm run compress
-```
-
-## Locale support
-
-For more info on localization, how it works in the Wolvic XR project, and how to correctly edit localizable text in the application, please see our [localization wiki page](https://github.com/Igalia/wolvic/wiki/Localization).
-
-## Development troubleshooting
-
-### `Device supports , but APK only supports armeabi-v7a[...]`
-
-Enable [USB Remote Debugging](https://github.com/MozillaReality/FirefoxReality/wiki/Developer-Info#remote-debugging) on the device.
-
-### **`Firefox > Web Developer > WebIDE > Performance`** gets stuck with greyed out "stop and show profile"
-
-Restart Wolvic XR and close and re-open the WebIDE page.
-
-### **`Tool Windows > Build Variants`** list is empty
-
-1. If you're not on the latest version, update Android Studio from **`Android Studio > Check for Updates…`**.
-2. Run **`File > Sync Project with Gradle Files`**.
-
-## Debugging tips
-
-- When using the native debugger you can ignore the first SIGSEGV: address access protected stop in GV thread. It's not a crash; you can click *Resume* to continue debugging.
-- On some platforms such as Oculus Go the native debugger stops on each input event. You can set this LLDB post-attach command in Android Studio to fix the problem: `pro hand -p true -s false SIGILL`
-- You can use `adb shell am start -a android.intent.action.VIEW -d "https://aframe.io" com.igalia.wolvic/com.igalia.wolvic.VRBrowserActivity` to load a URL from the command line
-- You can use `adb shell am start -a android.intent.action.VIEW  -n com.igalia.wolvic/com.igalia.wolvic.VRBrowserActivity -e homepage "https://example.com"` to override the homepage
-- You can use `adb shell setprop debug.oculus.enableVideoCapture 1` to record a video on the Oculus Go. Remember to run `adb shell setprop debug.oculus.enableVideoCapture 0` to stop recording the video.
-    - You can also record videos on the Oculus Go by exiting to the system library, and from the Oculus tray menu (toggle with the Oculus button on the controller): **`Sharing > Record Video`**
-- You can set `disableCrashRestart=true` in the gradle `user.properties` to disable app relaunch on crash.
+- The app runs in `FRAMATOME_MODE` (set via `BuildConfig`), which disables first-run legal dialogs, terms of service, and session restoration
+- Default VR environment is set to `void` (dark) to avoid distracting backgrounds
+- The local server injects a custom "Enter VR" button and "Home" button into every tour HTML page at serve time
+- JVM heap is set to 8GB in `gradle.properties` to handle the large GeckoView AAR during Jetifier transformation
+- Only the `oculusvrArm64GeckoGeneric` build variant is used for Quest 3 deployment

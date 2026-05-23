@@ -19,6 +19,10 @@ buildscript {
 
 allprojects {
     repositories {
+        maven {
+            name "LocalGeckoView"
+            url "/Users/kmfamini/.openclaw/workspace/firefox-128.14.0/obj-aarch64-unknown-linux-android/gradle/maven"
+        }
         google()
         maven { url 'https://maven.mozilla.org/maven2' }
         maven { url 'https://developer.huawei.com/repo/' }

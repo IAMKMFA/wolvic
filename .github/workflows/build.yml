@@ -32,17 +32,17 @@ on:
 
 jobs:
   build:
-    name: Build Wolvic ${{ inputs.flavour }} Flavour
+    name: Build Framatome VR Pro ${{ inputs.flavour }} Flavour
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Wolvic
+      - name: Checkout sources
         uses: actions/checkout@v4
         with:
           submodules: 'true'
 
       # Inspired by https://stackoverflow.com/questions/60679609/github-action-to-simply-cat-a-file-to-an-output
-      - name: Read wolvic third parties SHA
+      - name: Read vendor third-party bundle SHA
         if: inputs.internal == true
         run: echo "third_party_sha=$(cat third_party_hash)" >> $GITHUB_ENV
 

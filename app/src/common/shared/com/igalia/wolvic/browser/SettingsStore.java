@@ -158,7 +158,7 @@ public class SettingsStore {
 
     public final static @WindowSelectionMethod int WINDOW_SELECTION_METHOD_DEFAULT = WINDOW_SELECTION_METHOD_HOVER;
     public final static int POINTER_COLOR_DEFAULT_DEFAULT = Color.parseColor("#FFFFFF");
-    public final static String ENV_DEFAULT = "cyberpunk";
+    public final static String ENV_DEFAULT = BuildConfig.FRAMATOME_MODE ? "void" : "cyberpunk";
     public final static int MSAA_DEFAULT_LEVEL = 1;
     public final static boolean AUDIO_ENABLED = BuildConfig.FLAVOR_backend == "chromium";
     public final static boolean LATIN_AUTO_COMPLETE_ENABLED = false;
@@ -232,18 +232,20 @@ public class SettingsStore {
 
         mSettingsViewModel.refresh();
 
-        updateRemoteContent(BuildConfig.PROPS_ENDPOINT,
-                R.string.settings_key_remote_props,
-                mSettingsViewModel::setProps);
-        updateRemoteContent(BuildConfig.ANNOUNCEMENTS_ENDPOINT,
-                R.string.settings_key_remote_announcements,
-                mSettingsViewModel::setAnnouncements);
-        updateRemoteContent(BuildConfig.EXPERIENCES_ENDPOINT,
-                R.string.settings_key_remote_experiences,
-                mSettingsViewModel::setExperiences);
-        updateRemoteContent(BuildConfig.HEYVR_ENDPOINT,
-                R.string.settings_key_heyvr_experiences,
-                mSettingsViewModel::setHeyVRExperiences);
+        if (!BuildConfig.FRAMATOME_MODE) {
+            updateRemoteContent(BuildConfig.PROPS_ENDPOINT,
+                    R.string.settings_key_remote_props,
+                    mSettingsViewModel::setProps);
+            updateRemoteContent(BuildConfig.ANNOUNCEMENTS_ENDPOINT,
+                    R.string.settings_key_remote_announcements,
+                    mSettingsViewModel::setAnnouncements);
+            updateRemoteContent(BuildConfig.EXPERIENCES_ENDPOINT,
+                    R.string.settings_key_remote_experiences,
+                    mSettingsViewModel::setExperiences);
+            updateRemoteContent(BuildConfig.HEYVR_ENDPOINT,
+                    R.string.settings_key_heyvr_experiences,
+                    mSettingsViewModel::setHeyVRExperiences);
+        }
     }
 
     /**
@@ -251,6 +253,9 @@ public class SettingsStore {
      * Any consumer listening to the SettingsViewModel will get notified of the properties updates.
      */
     private void updateRemoteContent(String endpoint, int prefsKey, Consumer<String> onContentAvailable) {
+        if (BuildConfig.FRAMATOME_MODE || endpoint == null || endpoint.isEmpty()) {
+            return;
+        }
         ((VRBrowserApplication) mContext.getApplicationContext()).getExecutors().backgroundThread().post(() -> {
             Request request = new Request(
                     endpoint,
@@ -314,6 +319,9 @@ public class SettingsStore {
     }
 
     public boolean isCrashReportingEnabled() {
+        if (BuildConfig.FRAMATOME_MODE) {
+            return false;
+        }
         return mPrefs.getBoolean(mContext.getString(R.string.settings_key_crash), CRASH_REPORTING_DEFAULT);
     }
 
@@ -324,6 +332,9 @@ public class SettingsStore {
     }
 
     public boolean isTelemetryEnabled() {
+        if (BuildConfig.FRAMATOME_MODE) {
+            return false;
+        }
         // The first access to shared preferences will require a disk read.
         final StrictMode.ThreadPolicy threadPolicy = StrictMode.allowThreadDiskReads();
         try {
@@ -335,6 +346,13 @@ public class SettingsStore {
     }
 
     public void setTelemetryEnabled(boolean isEnabled) {
+        if (BuildConfig.FRAMATOME_MODE) {
+            SharedPreferences.Editor editor = mPrefs.edit();
+            editor.putBoolean(mContext.getString(R.string.settings_key_telemetry), false);
+            editor.apply();
+            setTelemetryPingUpdateSent(true);
+            return;
+        }
         SharedPreferences.Editor editor = mPrefs.edit();
         editor.putBoolean(mContext.getString(R.string.settings_key_telemetry), isEnabled);
         editor.apply();
@@ -1034,6 +1052,9 @@ public class SettingsStore {
     }
 
     public boolean isRestoreTabsEnabled() {
+        if (BuildConfig.FRAMATOME_MODE) {
+            return false;
+        }
         return mPrefs.getBoolean(mContext.getString(R.string.settings_key_restore_tabs), RESTORE_TABS_ENABLED);
     }
 

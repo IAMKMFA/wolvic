@@ -59,23 +59,23 @@ class EnvironmentsTest {
     @Test
     fun `Environment exist for the target version`() {
         settingStore.setRemoteProperties(TestFileUtils.readTextFile(javaClass.classLoader!!,"environments/targetVersionEnvs.json"))
-        val env = EnvironmentUtils.getExternalEnvironmentById(context, "wolvic", "1")
+        val env = EnvironmentUtils.getExternalEnvironmentById(context, "framatome_space", "1")
         assertNotNull(env)
-        assertEquals(env?.value, "wolvic")
-        assertEquals(env?.title, "Wolvic")
-        assertEquals(env?.thumbnail, "https://mixedreality.mozilla.org/FirefoxReality/envs/wolvic/thumbnail.jpg")
-        assertEquals(env?.payload, "https://mixedreality.mozilla.org/FirefoxReality/envs/wolvic/space.zip")
+        assertEquals(env?.value, "framatome_space")
+        assertEquals(env?.title, "Framatome VR")
+        assertEquals(env?.thumbnail, "https://mixedreality.mozilla.org/FirefoxReality/envs/framatome/thumbnail.jpg")
+        assertEquals(env?.payload, "https://mixedreality.mozilla.org/FirefoxReality/envs/framatome/space.zip")
     }
 
     @Test
     fun `Environment does not exist for the target version, we fallback to the most recent one`() {
         settingStore.setRemoteProperties(TestFileUtils.readTextFile(javaClass.classLoader!!,"environments/previousVersionEnvs.json"))
-        val env = EnvironmentUtils.getExternalEnvironmentById(context, "wolvic", "2")
+        val env = EnvironmentUtils.getExternalEnvironmentById(context, "framatome_space", "2")
         assertNotNull(env)
-        assertEquals(env?.value, "wolvic")
-        assertEquals(env?.title, "Wolvic")
-        assertEquals(env?.thumbnail, "https://mixedreality.mozilla.org/FirefoxReality/envs/wolvic/thumbnail.jpg")
-        assertEquals(env?.payload, "https://mixedreality.mozilla.org/FirefoxReality/envs/wolvic/space.zip")
+        assertEquals(env?.value, "framatome_space")
+        assertEquals(env?.title, "Framatome VR")
+        assertEquals(env?.thumbnail, "https://mixedreality.mozilla.org/FirefoxReality/envs/framatome/thumbnail.jpg")
+        assertEquals(env?.payload, "https://mixedreality.mozilla.org/FirefoxReality/envs/framatome/space.zip")
     }
 
     @Test
@@ -88,32 +88,32 @@ class EnvironmentsTest {
     @Test
     fun `Environment by payload url`() {
         settingStore.setRemoteProperties(TestFileUtils.readTextFile(javaClass.classLoader!!,"environments/targetVersionEnvs.json"))
-        val env = EnvironmentUtils.getExternalEnvironmentByPayload(context, "https://mixedreality.mozilla.org/FirefoxReality/envs/wolvic/space.zip", "11")
+        val env = EnvironmentUtils.getExternalEnvironmentByPayload(context, "https://mixedreality.mozilla.org/FirefoxReality/envs/framatome/space.zip", "11")
         assertNotNull(env)
-        assertEquals(env?.value, "wolvic")
-        assertEquals(env?.title, "Wolvic")
-        assertEquals(env?.thumbnail, "https://mixedreality.mozilla.org/FirefoxReality/envs/wolvic/thumbnail.jpg")
-        assertEquals(env?.payload, "https://mixedreality.mozilla.org/FirefoxReality/envs/wolvic/space.zip")
+        assertEquals(env?.value, "framatome_space")
+        assertEquals(env?.title, "Framatome VR")
+        assertEquals(env?.thumbnail, "https://mixedreality.mozilla.org/FirefoxReality/envs/framatome/thumbnail.jpg")
+        assertEquals(env?.payload, "https://mixedreality.mozilla.org/FirefoxReality/envs/framatome/space.zip")
     }
 
     @Test
     fun `Environment is builtin`() {
         assertTrue(EnvironmentUtils.isBuiltinEnvironment(context, "void"))
-        assertTrue(EnvironmentUtils.isBuiltinEnvironment(context, "wolvic"))
+        assertTrue(EnvironmentUtils.isBuiltinEnvironment(context, "framatome"))
         assertTrue(EnvironmentUtils.isBuiltinEnvironment(context, "cyberpunk"))
     }
 
     @Test
     fun `Environment is external`() {
         settingStore.setRemoteProperties(TestFileUtils.readTextFile(javaClass.classLoader!!,"environments/targetVersionEnvs.json"))
-        val isExternal = EnvironmentUtils.isExternalEnvironment(context, "wolvic", "1")
+        val isExternal = EnvironmentUtils.isExternalEnvironment(context, "framatome_space", "1")
         assertTrue(isExternal)
     }
 
     @Test
     fun `Environment is not external`() {
         settingStore.setRemoteProperties(TestFileUtils.readTextFile(javaClass.classLoader!!,"environments/testNoEnvs.json"))
-        val isExternal = EnvironmentUtils.isExternalEnvironment(context, "wolvic", "1")
+        val isExternal = EnvironmentUtils.isExternalEnvironment(context, "framatome_space", "1")
         assertFalse(isExternal)
     }
 
@@ -122,10 +122,10 @@ class EnvironmentsTest {
         val cacheDir = context.cacheDir.absolutePath
         assertNotNull(cacheDir)
 
-        val path = File(cacheDir, EnvironmentUtils.ENVS_FOLDER + "/wolvic")
+        val path = File(cacheDir, EnvironmentUtils.ENVS_FOLDER + "/framatome_space")
         assertNotNull(path)
 
-        val actualPath = EnvironmentUtils.getExternalEnvPath(context, "wolvic")
+        val actualPath = EnvironmentUtils.getExternalEnvPath(context, "framatome_space")
         assertNotNull(actualPath)
 
         assertEquals(path.absolutePath, actualPath)
@@ -133,13 +133,13 @@ class EnvironmentsTest {
 
     @Test
     fun `External environment is not ready`() {
-        val isReady = EnvironmentUtils.isExternalEnvReady(context, "wolvic")
+        val isReady = EnvironmentUtils.isExternalEnvReady(context, "framatome_space")
         assertFalse(isReady)
     }
 
     @Test
     fun `External environment is ready`() {
-        val actualPath = EnvironmentUtils.getExternalEnvPath(context, "wolvic")
+        val actualPath = EnvironmentUtils.getExternalEnvPath(context, "framatome_space")
         assertNotNull(actualPath)
 
         val dir = File(actualPath!!)
@@ -152,7 +152,7 @@ class EnvironmentsTest {
             assertTrue(file.createNewFile())
         }
 
-        val isReady = EnvironmentUtils.isExternalEnvReady(context, "wolvic")
+        val isReady = EnvironmentUtils.isExternalEnvReady(context, "framatome_space")
         assertTrue(isReady)
     }
 

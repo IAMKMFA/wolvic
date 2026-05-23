@@ -39,7 +39,7 @@
             android:exported="true"
             android:configChanges="density|keyboard|keyboardHidden|navigation|orientation|screenSize|uiMode|locale|layoutDirection"
             android:windowSoftInputMode="stateAlwaysHidden">
-            <!-- Declares Wolvic as a browser app -->
+            <!-- Declares Framatome VR as a browser app -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -48,14 +48,14 @@
                 <data android:scheme="https" />
                 <data android:scheme="http" />
             </intent-filter>
-            <!-- Used for the special wolvic:// links -->
+            <!-- Used for the special framatome:// links -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
-                    android:scheme="wolvic"
-                    android:host="com.igalia.wolvic" />
+                    android:scheme="framatome"
+                    android:host="com.framatome.vr.pro" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />

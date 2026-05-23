@@ -222,7 +222,7 @@ public class DownloadsManager {
         }
         Log.i(LOGTAG, "Saved " + job.getUri() + " to " + file.getName() + " (" + readBytes + " bytes)");
 
-        // TODO: Deprecated addCompletedDownload(...), see https://github.com/Igalia/wolvic/issues/798
+        // TODO: Deprecated addCompletedDownload(...), see upstream VR browser tracker (legacy issue #798)
         long downloadId = mDownloadManager.addCompletedDownload(file.getName(), file.getName(),
                 true, UrlUtils.getMimeTypeFromUrl(file.getPath()), file.getPath(), readBytes, true,
                 Uri.parse(job.getUri().replaceFirst("^blob:", "")), null);

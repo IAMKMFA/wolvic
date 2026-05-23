@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- IMPORTANT NOTE: If this file is updated anyhow, the STRs wiki must be updated accordingly:
-    https://github.com/Igalia/wolvic/wiki/Localization -->
+    Framatome VR Pro string resources (derived from upstream VR browser localization). -->
     <!-- These strings are the content of the Terms of Service. -->
-    <string name="rCN_terms_service_title" translatable="false">Wolvic移动应用程序用户协议</string>
+    <string name="rCN_terms_service_title" translatable="false">Framatome VR移动应用程序用户协议</string>
     <string name="rCN_terms_service_content" translatable="false">生效日期：2023年06月21日
 \n更新日期：2023年06月21日
 \n
 \n<b><big>导言</big></b>
 \n
-\n本《用户协议》（以下简称为“协议”）仅适用于安卓版本的Wolvic移动应用程序（以下简称为“应用”，“软件”，或“应用软件”）。应用的开发者是Igalia, SL公司。Igalia, SL公司已授权北京赛诺歌讴科技有限公司（以下简称为“我们”）在中国大陆为其代理、运营以及发布此应用。本协议的成立、生效、履行、解释及纠纷解决，适用中华人民共和国（为本协议之目的，不包含香港、澳门及台湾地区）法律（不包括冲突法）
+\n本《用户协议》（以下简称为“协议”）仅适用于安卓版本的Framatome VR移动应用程序（以下简称为“应用”，“软件”，或“应用软件”）。应用的开发者是Igalia, SL公司。Igalia, SL公司已授权北京赛诺歌讴科技有限公司（以下简称为“我们”）在中国大陆为其代理、运营以及发布此应用。本协议的成立、生效、履行、解释及纠纷解决，适用中华人民共和国（为本协议之目的，不包含香港、澳门及台湾地区）法律（不包括冲突法）
 \n
 \n除非您已充分阅读、完全理解并同意本协议所有条款，否则您无权使用本应用。您点击同意或您使用本应用（“使用”行为指包括但不限于下载、安装、启动、浏览、注册、登录等行为中的一种或多种，下同），或者以其他任何明示或者默示方式表示接受本协议的，均视为您已阅读并同意签署本协议所有内容，本协议即在您与我们之间产生法律效力，成为对双方均具有约束力的法律文件。如您不同意我们不时对本协议的修改或补充内容，您应放弃注册、停止使用或主动取消本服务。
 \n
@@ -130,13 +130,13 @@
 \n如果您对政策或个人信息保护相关事宜有任何疑问或投诉、建议时，您可以将疑虑发送至info@igalia.com。
     </string>
     <!-- These strings are the content of the Privacy Policy. -->
-    <string name="rCN_privacy_policy_title" translatable="false">Wolvic移动应用程序隐私政策</string>
+    <string name="rCN_privacy_policy_title" translatable="false">Framatome VR移动应用程序隐私政策</string>
     <string name="rCN_privacy_policy_content" translatable="false">生效日期：2023年06月21日
 \n更新日期：2023年10月23日
 \n
 \n<b><big>导言</big></b>
 \n
-\n本《隐私政策》（以下简称为“政策”）仅适用于Wolvic移动应用程序（以下简称为“应用”）。应用的开发者是Igalia, SL公司。Igalia, SL公司已授权北京赛诺歌讴科技有限公司（以下简称为“我们”）在中国大陆为其代理此应用的一切分发和运营业务。
+\n本《隐私政策》（以下简称为“政策”）仅适用于Framatome VR移动应用程序（以下简称为“应用”）。应用的开发者是Igalia, SL公司。Igalia, SL公司已授权北京赛诺歌讴科技有限公司（以下简称为“我们”）在中国大陆为其代理此应用的一切分发和运营业务。
 \n
 \n构成应用程序的内容和元素由IGALIA在开放源码许可下实施和/或开发，并无限制地受西班牙王国的知识产权和工业产权法律以及可能涉及的国际条约和协议的保护。
 \n
@@ -174,7 +174,7 @@
 \n
 \n<b><big>1. 个人信息的收集和使用</big></b>
 \n
-\n应用不会以可识别用户的方式收集个人数据。因此，您可以在不透露身份的情况下，或直接或间接向应用提供个人数据的情况下使用该应用程序，咨询和浏览虚拟现实环境；因此，应用将不对任何输入Wolvic的数据负责。
+\n应用不会以可识别用户的方式收集个人数据。因此，您可以在不透露身份的情况下，或直接或间接向应用提供个人数据的情况下使用该应用程序，咨询和浏览虚拟现实环境；因此，应用将不对任何输入Framatome VR的数据负责。
 \n
 \n<b><big>2. 应用接入第三方SDK目录</big></b>
 \n

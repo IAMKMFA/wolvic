@@ -14,7 +14,7 @@ prefs:
   dom.vr.webxr.enabled: true
   webgl.enable-draft-extensions: true
   # This does not really "force" MSAA in WebGL but instead, in the case of WebXR,
-  # it respects what the client (Wolvic) has specified in the Gecko session settings.
+  # it respects what the client app has specified in the Gecko session settings.
   webgl.msaa-force: true
   dom.webcomponents.customelements.enabled: true
   javascript.options.ion: true

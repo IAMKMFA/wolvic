@@ -1,6 +1,6 @@
 # Third Party Notice
 
-The Pico 4 controller assets used in Wolvic (both 3D model and 2D renders of the controllers) are based on models contained within the [Pico Unity Integration SDK](https://developer-global.pico-interactive.com/sdk?deviceId=1&platformId=1&itemId=12), available under the "PICO IMMERSIVE PTE. LTD – SDK LICENSE TERMS" printed below. Pico explicitly clarified that adaptation and redistribution of the controller model is permitted.
+The Pico 4 controller assets used in this app (both 3D model and 2D renders of the controllers) are based on models contained within the [Pico Unity Integration SDK](https://developer-global.pico-interactive.com/sdk?deviceId=1&platformId=1&itemId=12), available under the "PICO IMMERSIVE PTE. LTD – SDK LICENSE TERMS" printed below. Pico explicitly clarified that adaptation and redistribution of the controller model is permitted.
 
 
 ### PICO IMMERSIVE PTE. LTD – SDK LICENSE TERMS

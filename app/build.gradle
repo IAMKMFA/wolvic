@@ -102,7 +102,7 @@ def isWebKitAvailable = {
 }
 
 // Version names for Gecko and Chromium releases.
-def GECKO_RELEASE_VERSION_NAME = '1.9'
+def GECKO_RELEASE_VERSION_NAME = '1.0'
 def CHROMIUM_RELEASE_VERSION_NAME = '1.3'
 
 android {
@@ -113,7 +113,7 @@ android {
         minSdkVersion 29
         targetSdkVersion 34
         versionCode generatedVersionCode
-        versionName "1.0-wolvic"
+        versionName "1.0"
         buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""
         buildConfigField "Boolean", "DISABLE_CRASH_RESTART", getCrashRestartDisabled()
         buildConfigField "String", "AMO_COLLECTION", "\"fxr\""
@@ -126,9 +126,9 @@ android {
         buildConfigField "Float", "DEFAULT_WINDOW_DISTANCE", "0.0f"
         buildConfigField "Boolean", "ENABLE_PAGE_ZOOM", "false"
         buildConfigField "Boolean", "USE_SOUNDPOOL", "true"
-        buildConfigField 'String', 'ANNOUNCEMENTS_ENDPOINT', '"https://igalia.github.io/wolvic/announcements.json"'
-        buildConfigField 'String', 'EXPERIENCES_ENDPOINT', '"https://igalia.github.io/wolvic/experiences.json"'
-        buildConfigField 'String', 'HEYVR_ENDPOINT', '"https://api.heyvr.io/v1/public/global/feed/featured?limit=50"'
+        buildConfigField 'String', 'ANNOUNCEMENTS_ENDPOINT', '""'
+        buildConfigField 'String', 'EXPERIENCES_ENDPOINT', '""'
+        buildConfigField 'String', 'HEYVR_ENDPOINT', '""'
         buildConfigField "Boolean", "FRAMATOME_MODE", "true"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -206,9 +206,7 @@ android {
         }
     }
 
-    // Select the Glean from GeckoView.
-    // `service-sync-logins` requires Glean, which pulls in glean-native,
-    // but that's also provided by geckoview-omni, so now we need to select which one to use.
+    // Select the Glean from GeckoView (local geckoview-default includes Glean).
     project.configurations.configureEach {
         resolutionStrategy.capabilitiesResolution.withCapability("org.mozilla.telemetry:glean-native") {
             def toBeSelected = candidates.find { it.id instanceof ModuleComponentIdentifier && it.id.module.contains('geckoview') }
@@ -328,7 +326,7 @@ android {
         noapi {
             dimension "platform"
             applicationIdSuffix ".noapi"
-            resValue "string", "app_name", "Wolvic NoAPI"
+            resValue "string", "app_name", "Framatome VR NoAPI"
             externalNativeBuild {
                 cmake {
                     cppFlags " -DNOAPI"
@@ -341,7 +339,7 @@ android {
             dimension "platform"
             applicationId "com.igalia.wolvic"
             applicationIdSuffix ".visionglass"
-            resValue "string", "app_name", "Wolvic Vision"
+            resValue "string", "app_name", "Framatome VR Vision"
             targetSdkVersion 33
             externalNativeBuild {
                 cmake {
@@ -378,12 +376,12 @@ android {
                     arguments "-DGECKO=ON"
                 }
             }
-            buildConfigField 'String', 'PROPS_ENDPOINT', '"https://igalia.github.io/wolvic/props.json"'
+            buildConfigField 'String', 'PROPS_ENDPOINT', '""'
         }
 
         chromium {
             dimension "backend"
-            resValue "string", "app_name", "Wolvic Chromium"
+            resValue "string", "app_name", "Framatome VR Chromium"
             externalNativeBuild {
                 cmake {
                     cppFlags " -DCHROMIUM"
@@ -391,7 +389,7 @@ android {
                 }
             }
             buildConfigField "Boolean", "ENABLE_PAGE_ZOOM", "true"
-            buildConfigField 'String', 'PROPS_ENDPOINT', '"https://igalia.github.io/wolvic/props-chromium.json"'
+            buildConfigField 'String', 'PROPS_ENDPOINT', '""'
         }
 
         webkit {
@@ -717,17 +715,8 @@ dependencies {
     visionglassImplementation libs.huawei.agconnect.core.harmony
     visionglassImplementation libs.huawei.hms.mlcomputervoiceasr
 
-    // gecko
-    def branch = "nightly" // "release", "nightly" or "beta"
-    geckoImplementation libs.geckoview."${branch}".x64
-    geckoImplementation libs.geckoview."${branch}".arm64
-    configurations.all {
-         resolutionStrategy.capabilitiesResolution.withCapability('org.mozilla.geckoview:geckoview') {
-            def abi = getName().toLowerCase().contains('x64') ? 'x86_64' : 'arm64'
-            def candidate = branch == "release" ? "geckoview-omni-${abi}" : "geckoview-${branch}-omni-${abi}"
-            select(candidates.find { it.id.module.contains(candidate) })
-        }
-    }
+    // gecko — local WebXR-patched GeckoView (built from firefox-128.14.0 with Igalia patches)
+    geckoImplementation "org.mozilla.geckoview:geckoview-default:128.14.20260314224701-SNAPSHOT"
 
     // chromium
     if (isChromiumAvailable()) {
@@ -759,20 +748,7 @@ if (findProject(':servo')) {
     }
 }
 
-if (gradle.hasProperty('geckoViewLocalArm') || gradle.hasProperty('geckoViewLocalX86')) {
-    throw new GradleException("geckoViewLocal{Arm,X86} are deprecated: use geckoViewLocalTopsrcdir and geckoViewLocalTopobjdir")
-}
-
-if (gradle.hasProperty('localProperties.dependencySubstitutions.geckoviewTopsrcdir')) {
-    if (getGradle().getStartParameter().getTaskRequests().toString().toLowerCase().contains('x64')
-            && gradle.hasProperty('localProperties.dependencySubstitutions.geckoviewTopobjdirX64')) {
-        ext.topobjdir = gradle."localProperties.dependencySubstitutions.geckoviewTopobjdirX64"
-    } else if (gradle.hasProperty('localProperties.dependencySubstitutions.geckoviewTopobjdir')) {
-        ext.topobjdir = gradle."localProperties.dependencySubstitutions.geckoviewTopobjdir"
-    }
-    ext.topsrcdir = gradle."localProperties.dependencySubstitutions.geckoviewTopsrcdir"
-    apply from: "${topsrcdir}/substitute-local-geckoview.gradle"
-}
+// Local GeckoView substitution is handled by direct dependency above
 
 // -------------------------------------------------------------------------------------------------
 // MLS: Read token from local file if it exists
@@ -794,16 +770,16 @@ android.applicationVariants.configureEach { variant ->
     // HVR packages for mainland china must only use HVR speech recognition system.
     if (store == "mainlandChina") {
         if (platform.toLowerCase().startsWith('hvr')) {
-            variant.resValue 'string', 'HOMEPAGE_URL', '"https://wolvic.com/zh/start/index.html"'
+            variant.resValue 'string', 'HOMEPAGE_URL', '"http://localhost:18080"'
             variant.buildConfigField "String[]", "SPEECH_SERVICES", "{ com.igalia.wolvic.speech.SpeechServices.HUAWEI_ASR }"
         } else if (platform.toLowerCase().startsWith('visionglass')) {
-            variant.resValue 'string', 'HOMEPAGE_URL', '"https://wolvic.com/zh/start/hvg.html"'
+            variant.resValue 'string', 'HOMEPAGE_URL', '"http://localhost:18080"'
             variant.buildConfigField "String[]", "SPEECH_SERVICES", "{ com.igalia.wolvic.speech.SpeechServices.HUAWEI_ASR }"
         } else if (platform.toLowerCase().startsWith('picoxr')) {
-            variant.resValue 'string', 'HOMEPAGE_URL', '"https://wolvic.com/zh/start/pico.html"'
+            variant.resValue 'string', 'HOMEPAGE_URL', '"http://localhost:18080"'
             variant.buildConfigField "String[]", "SPEECH_SERVICES", "{ com.igalia.wolvic.speech.SpeechServices.MEETKAI }"
         }  else if (platform.toLowerCase().startsWith('pfdmxr')) {
-            variant.resValue 'string', 'HOMEPAGE_URL', '"https://wolvic.com/zh/start/pfdm.html"'
+            variant.resValue 'string', 'HOMEPAGE_URL', '"http://localhost:18080"'
             variant.buildConfigField "String[]", "SPEECH_SERVICES", "{ com.igalia.wolvic.speech.SpeechServices.MEETKAI }"
         }
     }

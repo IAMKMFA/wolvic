@@ -1,11 +1,11 @@
 {
   "manifest_version": 2,
-  "name": "Wolvic Launch Immersive",
+  "name": "Framatome VR Launch Immersive",
   "version": "1.0",
   "description": "Launch Immersive Experiences Automatically",
   "browser_specific_settings": {
     "gecko": {
-      "id": "wolvic-launchimmersive@igalia.com"
+      "id": "framatome-launchimmersive@framatome.com"
     }
   },
   "content_scripts": [

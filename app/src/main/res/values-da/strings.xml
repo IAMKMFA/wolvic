@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- IMPORTANT NOTE: If this file is updated anyhow, the STRs wiki must be updated accordingly:
-    https://github.com/Igalia/wolvic/wiki/Localization -->
+    Framatome VR Pro string resources (derived from upstream VR browser localization). -->
     <!-- This string is used on the virtual keyboard to label the 'Enter' key (stylized in uppercase letters as 'ENTER'). -->
     <string name="keyboard_enter_label">ENTER</string>
     <!-- This string is used on the virtual keyboard to label the 'Enter' key with a "Go" IME action.
@@ -160,13 +160,13 @@
          (e.g., `Español` is mapped to `es`) when configured in the 'Voice Search' system. -->
     <string name="settings_language_choose_language_voice_search">Vælg dit foretrukne sprog til stemme-søgning</string>
     <!-- This string is used to label a text label that appears in the header of 'Language Settings' ->
-         'Wolvic Display Language' dialog window (accessible from the browser's Settings dialog window).
+         'Framatome VR Display Language' dialog window (accessible from the browser's Settings dialog window).
          Below this string appears a list of locales for the user to choose as their preferred display
          language for the application UI.
          '%1$s' Will be replaced at runtime with the app name. -->
     <string name="settings_language_choose_display_language_title">%1$s visnings-sprog</string>
     <!-- This string is used to label a text label that appears in the header description of 'Language Settings' ->
-         'Wolvic Display Language' dialog window (accessible from the browser's Settings dialog window).
+         'Framatome VR Display Language' dialog window (accessible from the browser's Settings dialog window).
          Below this string appears a list of locales for the user to choose as their preferred display
          language for the application UI. -->
     <string name="settings_language_choose_language_display_description">Vælg sprog, der skal anvendes i menuer, meddelelser og beskeder.</string>
@@ -306,7 +306,7 @@
     <!-- This string is used to label a button in the 'Settings' dialog window that, when pressed,
         opens the Firfox Reality support web site in the browser window. -->
     <string name="settings_help">Hjælp</string>
-    <!-- This string is displayed in the settings header under the Wolvic logo. When clicked the settings panel is closed
+    <!-- This string is displayed in the settings header under the Framatome VR logo. When clicked the settings panel is closed
          a the survey web site in opened in the currently focused window -->
     <string name="settings_send_your_feedback">Send din feedback</string>
     <!-- This string is used in the 'Settings' window when user is signed-out of Mozilla Accounts -->
@@ -615,7 +615,7 @@
          webxr blocked sites. -->
     <string name="security_options_webxr_settings">Avanceret</string>
     <!-- This string is a label above the group of switches that indicates that the switches below
-         relate to Wolvic data collection and use.
+         relate to Framatome VR data collection and use.
          '%1$s' Will be replaced at runtime with the app name. -->
     <string name="security_options_speech_data_collection_title">%1$s Dataindsamling og -brug</string>
     <!-- This string labels an Allow/Don't Allow switch in the Privacy and Security settings dialog
@@ -1080,7 +1080,7 @@
          When clicked the current media playback is paused. -->
     <string name="media_pause_tooltip">Pause</string>
     <!-- This string is for the tooltip that appears upon hovering the 'Home' button in the browser's navigation bar.
-         'Home' refers to the browser's start page (e.g., the Wolvic Home Page). -->
+         'Home' refers to the browser's start page (e.g., the Framatome VR Home Page). -->
     <string name="home_tooltip">Hjem</string>
     <!-- This string is for the tooltip that appears upon hovering the 'Voice Search' (microphone) button in the
          browser's navigation bar. 'Voice Search' refers to the browser's system for searching the Web using
@@ -1327,7 +1327,7 @@
     <!-- This string is displayed as a description below the title of the pop-up blocking dialog. -->
     <string name="popup_block_description_v1">Vil du vise dem alligevel?</string>
     <!-- This string is displayed on the right of the checkbox in the the pop-up blocking dialog.
-         If the checkbox is checked Wolvic will never ask again to block pop-ups for this site -->
+         If the checkbox is checked Framatome VR will never ask again to block pop-ups for this site -->
     <string name="popup_block_checkbox">Spørg ikke igen for dette websted</string>
     <!-- This string is displayed on the left button of the pop-up blocking dialog.
          If the button is clicked the pop-up will be shown -->
@@ -1616,16 +1616,16 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="privacy_dialog_title">Privatliv</string>
     <string name="privacy_policy_subtitle_3">Lovvalg og original sprog</string>
     <string name="voice_service_metkai">MeetKai</string>
-    <string name="privacy_dialog_message">Dit privatliv er vigtigt for os. For at kunne bruge browseren skal du acceptere vores servicevilkår og privatlivspolitik. Tak fordi du bruger Wolvic!</string>
+    <string name="privacy_dialog_message">Dit privatliv er vigtigt for os. For at kunne bruge browseren skal du acceptere vores servicevilkår og privatlivspolitik. Tak fordi du bruger Framatome VR!</string>
     <string name="privacy_policy_title">Generel privatlivspolitik</string>
     <string name="voice_service_huawei_asr">Automatisk talegenkendelse fra Huawei (ASR)</string>
     <string name="external_open_uri_error_no_activity_body">Ingen app fundet til at åbne %1$s</string>
     <string name="privacy_policy_subtitle_2">Databeskyttelse</string>
     <string name="privacy_policy_subtitle_1">Generelle oplysninger</string>
-    <string name="privacy_dialog_disagree">Luk Wolvic</string>
+    <string name="privacy_dialog_disagree">Luk Framatome VR</string>
     <string name="hvr_enter_vr">Gå ind i VR</string>
     <string name="privacy_dialog_agree">Enig</string>
-    <string name="terms_service_subtitle_2">Wolvic Web-baserede Informationstjenester</string>
+    <string name="terms_service_subtitle_2">Framatome VR Web-baserede Informationstjenester</string>
     <string name="terms_service_title">Servicevilkår</string>
     <string name="language_options_voice_search_service_title">Stemmesøgningstjeneste</string>
     <string name="permissions_dialog_remember_choice">Husk denne beslutning</string>
@@ -1667,31 +1667,31 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="user_feedback_tooltip">Del ideer og feedback</string>
     <string name="upload_list_empty">Ingen filer tilgængelige til upload</string>
     <string name="deprecated_version_dialog_info_button">Læs mere…</string>
-    <string name="deprecated_version_dialog_body">Denne \"App Lab\"-version af Wolvic vil blive fjernet ved udgangen af oktober 2023.
+    <string name="deprecated_version_dialog_body">Denne \"App Lab\"-version af Framatome VR vil blive fjernet ved udgangen af oktober 2023.
 \n
-\nInstaller venligst den nyeste version af Wolvic fra Meta Quest Store.
+\nInstaller venligst den nyeste version af Framatome VR fra Meta Quest Store.
 \n
-\nVIGTIGT: Medmindre du bruger Sync, vil den nye Wolvic-app ikke have dine bogmærker og faner.</string>
+\nVIGTIGT: Medmindre du bruger Sync, vil den nye Framatome VR-app ikke have dine bogmærker og faner.</string>
     <string name="developer_options_center_windows">Centrer vinduer vertikalt</string>
     <string name="controller_options_haptic_feedback">Haptisk feedback</string>
-    <string name="security_options_permission_fine_location_warning">Wolvic kan kun få din omtrentlige placering. Dette kan ændres i systemindstillingerne.</string>
+    <string name="security_options_permission_fine_location_warning">Framatome VR kan kun få din omtrentlige placering. Dette kan ændres i systemindstillingerne.</string>
     <string name="voice_input_start">Hvad vil du gerne have input til?</string>
     <string name="device_name">%1$s på %2$s</string>
     <string name="video_mode_3d_top_bottom">3D Top Bund</string>
     <string name="hamburger_menu_toggle_passthrough">Passthrough</string>
     <string name="rCN_first_launch_confirmation_agree">Enig og fortsæt</string>
     <string name="rCN_first_launch_confirmation_disagree">Uenig og afslut</string>
-    <string name="terms_service_section_1">Wolvic er gratis og open source-software, bygget af et fællesskab af tusinder fra hele verden. Der er et par ting, du bør vide:
+    <string name="terms_service_section_1">Framatome VR er gratis og open source-software, bygget af et fællesskab af tusinder fra hele verden. Der er et par ting, du bør vide:
 \n
-\n\t- Wolvic stilles til rådighed for dig under betingelserne i Mozilla Public License. Det betyder, at du må bruge, kopiere og distribuere Wolvic til andre. Du er også velkommen til at ændre kildekoden til Wolvic, som du vil, for at opfylde dine behov. Mozilla Public License giver dig også ret til at distribuere dine modificerede versioner.
+\n\t- Framatome VR stilles til rådighed for dig under betingelserne i Mozilla Public License. Det betyder, at du må bruge, kopiere og distribuere Framatome VR til andre. Du er også velkommen til at ændre kildekoden til Framatome VR, som du vil, for at opfylde dine behov. Mozilla Public License giver dig også ret til at distribuere dine modificerede versioner.
 \n
-\n\t- Du får ikke tildelt nogen varemærkerettigheder eller licenser til varemærker tilhørende Igalia eller nogen anden part, herunder uden begrænsning Wolvic-navnet eller -logoet.
+\n\t- Du får ikke tildelt nogen varemærkerettigheder eller licenser til varemærker tilhørende Igalia eller nogen anden part, herunder uden begrænsning Framatome VR-navnet eller -logoet.
 \n
-\n\t- Nogle funktioner i Wolvic, såsom Crash Reporter, giver dig mulighed for at give feedback til Igalia. Ved at vælge at indsende feedback giver du Igalia tilladelse til at bruge feedbacken til at forbedre sine produkter, til at offentliggøre anonymiseret feedback på sine hjemmesider og til at distribuere den anonymiserede feedback.
+\n\t- Nogle funktioner i Framatome VR, såsom Crash Reporter, giver dig mulighed for at give feedback til Igalia. Ved at vælge at indsende feedback giver du Igalia tilladelse til at bruge feedbacken til at forbedre sine produkter, til at offentliggøre anonymiseret feedback på sine hjemmesider og til at distribuere den anonymiserede feedback.
 \n
-\n\t- Hvordan vi bruger dine personlige oplysninger og feedback indsendt til Igalia gennem Wolvic, er beskrevet i Wolvics privatlivspolitik.
+\n\t- Hvordan vi bruger dine personlige oplysninger og feedback indsendt til Igalia gennem Framatome VR, er beskrevet i Framatome VRs privatlivspolitik.
 \n
-\n\t- Nogle Wolvic-funktioner gør brug af webbaserede informationstjenester; vi kan dog ikke garantere, at de er 100 % nøjagtige eller fejlfri. Flere detaljer, herunder oplysninger om, hvordan du deaktiverer de funktioner, der bruger disse tjenester, kan findes i servicevilkårene (nedenfor).</string>
+\n\t- Nogle Framatome VR-funktioner gør brug af webbaserede informationstjenester; vi kan dog ikke garantere, at de er 100 % nøjagtige eller fejlfri. Flere detaljer, herunder oplysninger om, hvordan du deaktiverer de funktioner, der bruger disse tjenester, kan findes i servicevilkårene (nedenfor).</string>
     <string name="privacy_policy_section_1">Denne applikation er udviklet af Igalia, SL (herefter IGALIA), med hjemsted på Bugallal Marchesi, 22 - 1º, 15008, A Coruña, Galicia (Spanien), hvis kontaktoplysninger er:
 \n
 \n\t- Telefonnummer +34 981 913991;
@@ -1699,7 +1699,7 @@ the Select` button. When clicked it closes all the previously selected tabs -->
 \n
 \nIndholdet og elementerne, der udgør applikationen, er implementeret og/eller udviklet af IGALIA under open source-licenser og er beskyttet uden begrænsninger af lovgivningen om intellektuel og industriel ejendomsret i Kongeriget Spanien og af de internationale traktater og aftaler, der kan være resultatet af anvendelsen.</string>
     <string name="keyboardview_keycode_done">Færdig</string>
-    <string name="privacy_policy_section_3">Denne fortrolighedspolitik er underlagt spansk lov. Privatlivspolitikkens sprog i denne applikation er spansk. Af denne grund vil enhver mulig afvigelse mellem den originale version på spansk og dens oversættelse til et andet sprog blive betragtet som fremherskende i den spanske version, der kan findes her: https://wolvic.com/es/legal/privacy/ .</string>
+    <string name="privacy_policy_section_3">Denne fortrolighedspolitik er underlagt spansk lov. Privatlivspolitikkens sprog i denne applikation er spansk. Af denne grund vil enhver mulig afvigelse mellem den originale version på spansk og dens oversættelse til et andet sprog blive betragtet som fremherskende i den spanske version, der kan findes her: https://framatome.com/vr/privacy/ .</string>
     <string name="keyboardview_keycode_alt">Alt</string>
     <string name="keyboardview_keycode_mode_change">Ændring af tilstand</string>
     <string name="keyboardview_keycode_shift">Shift</string>
@@ -1707,9 +1707,9 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="clear_user_data_dialog_text">%1$s vil blive nulstillet. Alle data, inklusive gemte logins, historik og bogmærker, vil blive slettet permanent, hvis de ikke er blevet synkroniseret. %1$s lukker automatisk, når nulstillingen er fuldført. Ønsker du at fortsætte?</string>
     <string name="developer_options_clear_user_data_description">Alle brugerdata</string>
     <string name="security_options_use_system_root_ca">Brug rodcertifikater, som systemet har tillid til</string>
-    <string name="rCN_first_launch_body">Velkommen til \"Wolvic\"!
+    <string name="rCN_first_launch_body">Velkommen til \"Framatome VR\"!
 \n
-\nRegistrering og brug af \"Wolvic\" kræver, at du accepterer brugeraftalen og privatlivspolitikken, ellers kan vi ikke levere tjenester til dig. Læs venligst dokumenterne omhyggeligt og klik på \"Enig\" for at fortsætte. Hvis du klikker på \"Uenig\", vil du ikke kunne fortsætte med at bruge \"Wolvic\".
+\nRegistrering og brug af \"Framatome VR\" kræver, at du accepterer brugeraftalen og privatlivspolitikken, ellers kan vi ikke levere tjenester til dig. Læs venligst dokumenterne omhyggeligt og klik på \"Enig\" for at fortsætte. Hvis du klikker på \"Uenig\", vil du ikke kunne fortsætte med at bruge \"Framatome VR\".
 \n
 \nDu kan læse den komplette brugeraftale og privatlivspolitik.</string>
     <string name="rCN_first_launch_clickable_terms_text">Brugeraftale</string>

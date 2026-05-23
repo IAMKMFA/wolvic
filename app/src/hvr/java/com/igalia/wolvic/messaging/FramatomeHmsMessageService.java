@@ -18,19 +18,19 @@ import com.huawei.hms.push.RemoteMessage;
 import com.igalia.wolvic.BuildConfig;
 import com.igalia.wolvic.utils.SystemUtils;
 
-public class WolvicHmsMessageService extends HmsMessageService {
+public class FramatomeHmsMessageService extends HmsMessageService {
 
     private static final String HVR_APP_ID = BuildConfig.HVR_APP_ID;
     private static final String TOKEN_SCOPE = "HCM";
 
-    public static final String COMMAND = "WolvicHmsMessageService.command";
+    public static final String COMMAND = "FramatomeHmsMessageService.command";
     public static final int COMMAND_STOP_SERVICE = 1;
     public static final int COMMAND_GET_TOKEN = 2;
     public static final int COMMAND_DELETE_TOKEN = 3;
     public static final int COMMAND_AUTO_INIT = 4;
     public static final String ENABLED_EXTRA = "enabled";
 
-    public static final String MESSAGE_RECEIVED_ACTION = "WolvicHmsMessageService.messageReceived";
+    public static final String MESSAGE_RECEIVED_ACTION = "FramatomeHmsMessageService.messageReceived";
     public static final String MESSAGE_EXTRA = "message";
 
     protected final String LOGTAG = SystemUtils.createLogtag(this.getClass());
@@ -39,7 +39,6 @@ public class WolvicHmsMessageService extends HmsMessageService {
     private ServiceHandler mServiceHandler;
     private String mToken;
 
-    // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
             super(looper);
@@ -49,7 +48,7 @@ public class WolvicHmsMessageService extends HmsMessageService {
         public void handleMessage(Message msg) {
             switch (msg.arg1) {
                 case COMMAND_AUTO_INIT:
-                    HmsMessaging.getInstance(WolvicHmsMessageService.this).setAutoInitEnabled(true);
+                    HmsMessaging.getInstance(FramatomeHmsMessageService.this).setAutoInitEnabled(true);
                     break;
                 case COMMAND_GET_TOKEN:
                     getToken();
@@ -63,7 +62,7 @@ public class WolvicHmsMessageService extends HmsMessageService {
         }
     }
 
-    public WolvicHmsMessageService() {
+    public FramatomeHmsMessageService() {
         super();
     }
 
@@ -90,7 +89,6 @@ public class WolvicHmsMessageService extends HmsMessageService {
 
     @Override
     public IBinder onBind(Intent intent) {
-        // We don't provide binding, so return null
         return null;
     }
 
@@ -121,14 +119,12 @@ public class WolvicHmsMessageService extends HmsMessageService {
                 + "\n getDataMap: " + message.getDataOfMap()
                 + "\n getToken: " + message.getToken());
 
-        // notify the activity
         Intent intent = new Intent();
         intent.setAction(MESSAGE_RECEIVED_ACTION);
         intent.putExtra(MESSAGE_EXTRA, message);
         sendBroadcast(intent);
     }
 
-    // Request a PushKit token from the server.
     private void getToken() {
         try {
             String token = HmsInstanceId.getInstance(this).getToken(HVR_APP_ID, TOKEN_SCOPE);

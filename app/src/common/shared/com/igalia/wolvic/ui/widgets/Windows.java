@@ -16,6 +16,7 @@ import androidx.preference.PreferenceManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.igalia.wolvic.BuildConfig;
 import com.igalia.wolvic.R;
 import com.igalia.wolvic.VRBrowserApplication;
 import com.igalia.wolvic.browser.Accounts;
@@ -88,10 +89,10 @@ public class Windows implements TrayListener, TopBarWidget.Delegate, TitleBarWid
     private static final int WEB_APP_ADDED_NOTIFICATION_ID = 3;
 
     // launch Wolvic in immersive mode automatically
-    private static final String PARENT_ELEMENT_XPATH_PARAMETER = "wolvic-launchimmersive-parentElementXPath";
-    private static final String TARGET_ELEMENT_XPATH_PARAMETER = "wolvic-launchimmersive-targetElementXPath";
-    private static final String IMMERSIVE_EXTENSION_ID = "wolvic-launchimmersive@igalia.com";
-    private static final String IMMERSIVE_EXTENSION_URL = "resource://android/assets/extensions/wolvic_launchimmersive/";
+    private static final String PARENT_ELEMENT_XPATH_PARAMETER = "framatome-launchimmersive-parentElementXPath";
+    private static final String TARGET_ELEMENT_XPATH_PARAMETER = "framatome-launchimmersive-targetElementXPath";
+    private static final String IMMERSIVE_EXTENSION_ID = "framatome-launchimmersive@framatome.com";
+    private static final String IMMERSIVE_EXTENSION_URL = "resource://android/assets/extensions/framatome_launchimmersive/";
 
     class WindowState {
         WindowPlacement placement;
@@ -837,7 +838,10 @@ public class Windows implements TrayListener, TopBarWidget.Delegate, TitleBarWid
     }
 
     private void restoreWindows() {
-        if (mIsRestoreEnabled && mWindowsState != null) {
+        if (BuildConfig.FRAMATOME_MODE) {
+            WindowWidget window = addWindow();
+            focusWindow(window);
+        } else if (mIsRestoreEnabled && mWindowsState != null) {
             for (WindowState windowState : mWindowsState.regularWindowsState) {
                 addRestoredWindow(windowState, null);
             }
@@ -863,6 +867,10 @@ public class Windows implements TrayListener, TopBarWidget.Delegate, TitleBarWid
     }
 
     public void restoreSessions() {
+        if (BuildConfig.FRAMATOME_MODE) {
+            mAfterRestore = true;
+            return;
+        }
         if (mIsRestoreEnabled && mWindowsState != null) {
             ArrayList<Session> restoredSessions = new ArrayList<>();
             if (mWindowsState.tabs != null) {
@@ -1214,7 +1222,8 @@ public class Windows implements TrayListener, TopBarWidget.Delegate, TitleBarWid
                         break;
 
                     case SETTINGS:
-                        mWidgetManager.getTray().showSettingsDialog(FXA);
+                        if (mWidgetManager.getTray() != null)
+                            mWidgetManager.getTray().showSettingsDialog(FXA);
                         break;
                 }
             }
@@ -1281,11 +1290,13 @@ public class Windows implements TrayListener, TopBarWidget.Delegate, TitleBarWid
             mTabsWidget.setTabDelegate(this);
         }
 
-        mTabsWidget.getPlacement().parentHandle = mWidgetManager.getTray().getHandle();
-        mTabsWidget.setPrivateMode(mPrivateMode);
-        mTabsWidget.setDelegate(() -> mWidgetManager.getTray().setTabsWidgetVisible(false));
-        mWidgetManager.getTray().setTabsWidgetVisible(true);
-        mTabsWidget.show(UIWidget.KEEP_FOCUS);
+        if (mWidgetManager.getTray() != null) {
+            mTabsWidget.getPlacement().parentHandle = mWidgetManager.getTray().getHandle();
+            mTabsWidget.setPrivateMode(mPrivateMode);
+            mTabsWidget.setDelegate(() -> mWidgetManager.getTray().setTabsWidgetVisible(false));
+            mWidgetManager.getTray().setTabsWidgetVisible(true);
+            mTabsWidget.show(UIWidget.KEEP_FOCUS);
+        }
 
         // If we're signed-in, poll for any new device events (e.g. received tabs)
         // There's no push support right now, so this helps with the perception of speedy tab delivery.
@@ -1788,10 +1799,11 @@ public void selectTab(@NonNull Session aTab) {
 
     public void showTabAddedNotification() {
         if (mFocusedWindow.isFullScreen()) {
-            mWidgetManager.getNavigationBar().showTabAddedNotification();
+            if (mWidgetManager.getNavigationBar() != null)
+                mWidgetManager.getNavigationBar().showTabAddedNotification();
 
         } else {
-            if (mWidgetManager.getTray().isVisible()) {
+            if (mWidgetManager.getTray() != null && mWidgetManager.getTray().isVisible()) {
                 mWidgetManager.getTray().showTabAddedNotification();
 
             } else {
@@ -1807,10 +1819,11 @@ public void selectTab(@NonNull Session aTab) {
 
     public void showTabSentNotification() {
         if (mFocusedWindow.isFullScreen()) {
-            mWidgetManager.getNavigationBar().showTabSentNotification();
+            if (mWidgetManager.getNavigationBar() != null)
+                mWidgetManager.getNavigationBar().showTabSentNotification();
 
         } else {
-            if (mWidgetManager.getTray().isVisible()) {
+            if (mWidgetManager.getTray() != null && mWidgetManager.getTray().isVisible()) {
                 mWidgetManager.getTray().showTabSentNotification();
 
             } else {
@@ -1825,10 +1838,11 @@ public void selectTab(@NonNull Session aTab) {
 
     public void showBookmarkAddedNotification() {
         if (mFocusedWindow.isFullScreen()) {
-            mWidgetManager.getNavigationBar().showBookmarkAddedNotification();
+            if (mWidgetManager.getNavigationBar() != null)
+                mWidgetManager.getNavigationBar().showBookmarkAddedNotification();
 
         } else {
-            if (mWidgetManager.getTray().isVisible()) {
+            if (mWidgetManager.getTray() != null && mWidgetManager.getTray().isVisible()) {
                 mWidgetManager.getTray().showBookmarkAddedNotification();
 
             } else {
@@ -1843,10 +1857,11 @@ public void selectTab(@NonNull Session aTab) {
 
     public void showWebAppAddedNotification() {
         if (mFocusedWindow.isFullScreen()) {
-            mWidgetManager.getNavigationBar().showWebAppAddedNotification();
+            if (mWidgetManager.getNavigationBar() != null)
+                mWidgetManager.getNavigationBar().showWebAppAddedNotification();
 
         } else {
-            if (mWidgetManager.getTray().isVisible()) {
+            if (mWidgetManager.getTray() != null && mWidgetManager.getTray().isVisible()) {
                 mWidgetManager.getTray().showWebAppAddedNotification();
 
             } else {
