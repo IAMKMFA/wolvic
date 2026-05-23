@@ -7,7 +7,7 @@
 
     <application>
         <activity
-            android:name=".VRBrowserActivity"
+            android:name="com.framatome.vr.immersive.FramatomeImmersiveActivity"
             android:screenOrientation="portrait"
             android:exported="true">
             <intent-filter>

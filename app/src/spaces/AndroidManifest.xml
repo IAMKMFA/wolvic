@@ -38,7 +38,7 @@
 
     <application>
         <activity
-            android:name=".VRBrowserActivity"
+            android:name="com.framatome.vr.immersive.FramatomeImmersiveActivity"
             android:screenOrientation="landscape">
             <meta-data
                 android:name="android.app.lib_name"

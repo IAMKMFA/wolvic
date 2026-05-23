@@ -790,7 +790,7 @@
 
     <!-- This string is used in the FxA account manager panel as a header for the sync options for syncing
          history, bookmarks, passwords, etc. -->
-    <string name="fxa_account_options_sync_description">Choose what to synchronize on your devices using Firefox</string>
+    <string name="fxa_account_options_sync_description">Choose what to synchronize on your devices.</string>
 
     <!-- This string is used to in the FxA account manage panel as a description for the Bookmarks sync switch. -->
     <string name="fxa_account_options_bookmarks_sync">Bookmarks</string>
@@ -856,7 +856,7 @@
     <!-- This string labels an Allow/Don't Allow switch in the Logins And Passwords settings dialog
      and is used to enable or disable login sync with Mozilla Account. If disabled the logins
      won't be synced with the Mozilla Account. -->
-    <string name="security_options_login_sync">Sync logins with Mozilla Accounts</string>
+    <string name="security_options_login_sync">Sync logins with connected accounts</string>
 
     <!-- This string labels a button in the Logins And Passwords settings dialog
      that when clicked opens the Mozilla Accounts settings panel. -->
@@ -1039,7 +1039,7 @@
 
     <!-- This string explains why Mozilla would like the user to allow the crash data to be uploaded.
          '%1$s' will be replaced at runtime with the app's domain name. -->
-    <string name="crash_dialog_message"><![CDATA[Please help Mozilla improve %1$s by sending your crash data. <a href="more">Learn More</a>]]></string>
+    <string name="crash_dialog_message"><![CDATA[Please help Framatome improve %1$s by sending crash data. <a href="more">Learn More</a>]]></string>
 
     <!-- This string labels a checkbox in the crash dialog box. When checked, the user will no longer
          be prompted for permission to upload crash data after an application crash. -->
@@ -1282,6 +1282,8 @@
     <!-- This string is displayed as the title of the section that contains unsupported and locally installed addons. -->
     <string name="addons_experimental_section_title">Experimental</string>
 
+    <string name="mozac_feature_addons_not_yet_supported_caption">This add-on uses technology that is not supported in Framatome Player.</string>
+
     <!-- This string is displayed in the middle of the addons list while the addons is being loaded. -->
     <string name="addons_loading">Loading Add-ons</string>
 
@@ -1415,7 +1417,7 @@
     <string name="fxa_syncing">Syncing…</string>
 
     <!-- This string is displayed in the title of the FxA sign out dialog displayed when the user clicks on the Sign out button. -->
-    <string name="fxa_signout_confirmation_title">Sign out of your Mozilla Account?</string>
+    <string name="fxa_signout_confirmation_title">Sign out of your connected account?</string>
 
     <!-- This string is displayed in the body of the FxA sign out dialog displayed when the user clicks on the Sign out button. -->
     <string name="fxa_signout_confirmation_body">When you sign out, you won’t be able to send or receive tabs from other devices. Your bookmarks and history will also stop syncing.</string>
@@ -2142,11 +2144,11 @@ the Select` button. When clicked it bookmarks all the previously selected tabs -
 
     <!-- This string is displayed in the body of the what's new dialog that is displayed if the user has updated
          or updated the app and hasn't signed it yet. -->
-    <string name="whats_new_body_1">Sign in or create a new Mozilla Account to send tabs from Firefox on your desktop or mobile device to your headset.</string>
+    <string name="whats_new_body_1">Sign in to share viewer tabs and training resources across your devices.</string>
 
     <!-- This string is displayed in the body of the what's new dialog that is displayed if the user has updated
          or updated the app and hasn't signed it yet. -->
-    <string name="whats_new_body_sub_1">Mozilla Account also lets you sync bookmarks and history across all your devices.</string>
+    <string name="whats_new_body_sub_1">Connected accounts can sync bookmarks and history across approved devices.</string>
 
     <!-- This string is displayed a button of the what's new dialog that is displayed if the user has updated
          or updated the app and hasn't signed it yet. If clicked the user is redirected to the Mozilla Account sign-in page. -->
@@ -2157,8 +2159,8 @@ the Select` button. When clicked it bookmarks all the previously selected tabs -
     <string name="whats_new_button_start_browsing">Start Browsing</string>
 
     <string name="deprecated_version_dialog_title">Support ending soon</string>
-    <string name="deprecated_version_dialog_body">This \"App Lab\" version of Framatome VR will be removed by the end of October 2023.
-        \n\nPlease install the latest version of Framatome VR from the Meta Quest Store.
+    <string name="deprecated_version_dialog_body">This version of Framatome VR is no longer current.
+        \n\nPlease install the latest Framatome VR release from your managed deployment channel.
         \n\nIMPORTANT: unless you use Sync, the new Framatome VR app will not have your bookmarks and tabs.</string>
     <string name="deprecated_version_dialog_info_button">Learn more…</string>
     <string name="deprecated_version_dialog_info_url" translatable="false"></string>
@@ -2477,7 +2479,7 @@ the Select` button. When clicked it bookmarks all the previously selected tabs -
 
     <!-- These strings are displayed in the privacy dialog on first launch. -->
     <string name="privacy_dialog_title">Privacy</string>
-    <string name="privacy_dialog_message">Your privacy is important to us. In order to run the browser, please accept our terms of service and privacy policy. Thanks for using Framatome VR! </string>
+    <string name="privacy_dialog_message">Your privacy is important to us. To use Framatome Player, please accept our terms of service and privacy policy. Thanks for using Framatome VR! </string>
     <string name="privacy_dialog_agree">Agree</string>
     <string name="privacy_dialog_disagree">Close Framatome VR</string>
 
@@ -2526,7 +2528,7 @@ the Select` button. When clicked it bookmarks all the previously selected tabs -
     <string name="privacy_policy_section_1">
         This application has been developed by Framatome, SL (hereinafter FRAMATOME), with registered office at Bugallal Marchesi, 22 – 1º, 15008, A Coruña, Galicia (Spain), whose contact details are:
         \n\n\t\u2022 Phone number +34 981 913991;
-        \n\t\u2022 Email: info@igalia.com
+        \n\t\u2022 Email: support.framatome.com/vr
         \n\nThe content and elements that make up the application have been implemented and/or developed by FRAMATOME under open source licenses, being protected, without limitations, by the intellectual and industrial property laws of the Kingdom of Spain and by the international Treaties and Agreements that may result of application.</string>
     <string name="privacy_policy_subtitle_2">Data protection</string>
     <string name="privacy_policy_section_2">
@@ -2537,7 +2539,7 @@ the Select` button. When clicked it bookmarks all the previously selected tabs -
         \n\t\u2022 In order to capture and translate the voice into text, the user’s sound data is sent to the servers owned by the third party company responsible for each platform, through an API for this purpose: for example, in Oculus, from Facebook, a service that sends it to Oculus Voice SDK. At no time is the aforementioned data processed, accessed, or incorporated into the servers owned by FRAMATOME. The data transmitted will be the exclusive responsibility of the third party companies that own each platform (hereinafter, the Third Parties), which may be located outside the European Union and subject to a legal regime that is less protective of user privacy. We recommend that you carefully read the privacy policy and terms of use of each of these external platforms before accepting and using their services. FRAMATOME will not be directly or indirectly responsible for the processing of personal data by said Third Parties.
         \n\t\u2022 Geographic location information maybe be obtained from the browser, instead of the one used by the system. However, in order to do so, you must set the location permissions of your device through a specific notice in this regard and FRAMATOME will in no way link the aforementioned information to you as an identified or identifiable person, although the Third Parties mentioned in the previous point could do so, if applicable. We recommend you to pay attention to their legal terms.
         \n\t\u2022 FRAMATOME will not access or store, in any way, the addresses or URLs visited by you.
-        \n\t\u2022 Integration with Cloud services (such as Mozilla Accounts or Google Accounts) to synchronize data such as your browsing history or your user bookmarks may be possible. In this case, FRAMATOME will not access or process any information in any way, nor will it pass through FRAMATOME’s servers.
+        \n\t\u2022 Integration with approved cloud services may be possible to synchronize data such as browsing history or bookmarks. In this case, FRAMATOME will not access or process any information in any way, nor will it pass through FRAMATOME’s servers.
         \n\nWe remind you again that the Third Party platforms that you access or use with this application could collect this or other identifying data about you, either filling them in voluntarily or involuntarily and/or consciously or unconsciously, possibly outside the scope of European data protection legislation. Therefore, we recommend that you inform yourself and pay special attention to the legal terms of said Third Parties, such as, for example, the following:
         \n\n\t\u2022 Google: https://policies.google.com/privacy
         \n\t\u2022 Facebook: https://www.facebook.com/about/privacy/update
@@ -2545,7 +2547,7 @@ the Select` button. When clicked it bookmarks all the previously selected tabs -
         \n\nLikewise, FRAMATOME informs you that while using the voice recognition option of the browser, Meetkai will keep totally anonymized voice transcriptions of your voice with the purposes of improving the service provided by them. Your voice will not be kept or will be any way to connect the transcriptions with your identity. More information about MeetKai privacy policy in the following link: https://meetkai.com/es/privacy. Framatome neither has any interest in linking transcriptions with any user nor in affecting their privacy; consequently, Framatome requests that no personal or confidential information of any kind is included in their sound voice addresses.
         \nIn any case, FRAMATOME guarantees to the interested parties the exercise of the rights of access, rectification, deletion, opposition, limitation of treatment, and portability, regarding their personal data.
         \nFor such purposes, FRAMATOME has established an internal protocol/procedure to carry them out.
-        \nInterested parties can exercise their rights are as follows: by sending a request to FRAMATOME’s physical address: Calle Bugallal Marchesi, 22, 1o, 15008, A Coruña, Reference: “Data Protection”; or, to the following email address: info@igalia.com.
+        \nInterested parties can exercise their rights by sending a request to FRAMATOME’s published data-protection contact.
         \nIn both cases, the interested party must attach a copy of their national ID, passport, or identification document to prove their identity.
         \nThe Data Protection Officer or the department entrusted with the management of the rights will record the exercises of rights in the form, available for this purpose, in which the following data will be recorded:
         \n\n\t\u2022 Application number: a number will be assigned to each of the received applications.
@@ -2617,5 +2619,12 @@ the Select` button. When clicked it bookmarks all the previously selected tabs -
 
     <!-- Shown in the controller options view when disabling the hand tracking switch -->
     <string name="disable_hand_tracking_dialog_body">Hand tracking is disabled temporarily. It will be automatically re-enabled on next launch. This option is not persistent on purpose to avoid issues when controllers are unavailable.</string>
+
+    <!-- Add-on strings required by current Android Components versions in monorepo builds. -->
+    <string name="mozac_feature_addons_user_rating_count_2">%1$s ratings</string>
+    <string name="mozac_feature_addons_rating_content_description_2">%1$s out of %2$s stars</string>
+    <string name="mozac_feature_addons_enabled">Enabled</string>
+    <string name="mozac_feature_addons_disabled_section">Disabled</string>
+    <string name="mozac_feature_addons_recommended_section">Recommended</string>
 
 </resources>

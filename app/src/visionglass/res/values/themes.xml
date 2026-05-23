@@ -86,7 +86,7 @@
         <item name="android:paddingStart">8dp</item>
         <item name="android:paddingEnd">8dp</item>
         <item name="logoAdjustViewBounds">true</item>
-        <item name="navigationIcon">@drawable/ff_logo_icon_48</item>
+        <item name="navigationIcon">@drawable/framatome_header</item>
         <item name="popupTheme">@style/Theme.FramatomePhone.PopupOverlay</item>
     </style>
 

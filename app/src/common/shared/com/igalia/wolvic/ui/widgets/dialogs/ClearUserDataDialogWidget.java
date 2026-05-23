@@ -41,7 +41,7 @@ public class ClearUserDataDialogWidget extends PromptDialogWidget {
         setCheckboxVisible(false);
         setDescriptionVisible(false);
 
-        setIcon(R.drawable.ff_logo);
+        setIcon(R.drawable.framatome_header);
         setTitle(getContext().getString(R.string.clear_user_data_dialog_title, getContext().getString(R.string.app_name)));
         setBody(getContext().getString(R.string.clear_user_data_dialog_text, getContext().getString(R.string.app_name)));
         setBodyGravity(Gravity.NO_GRAVITY);

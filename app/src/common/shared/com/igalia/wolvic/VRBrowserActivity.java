@@ -956,6 +956,10 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
             }
         }
 
+        if (BuildConfig.FRAMATOME_MODE && targetUri == null) {
+            targetUri = Uri.parse(SettingsStore.getInstance(this).getHomepage());
+        }
+
         // If there is a target URI we open it
         if (targetUri != null && !targetUri.toString().isEmpty()) {
             Log.d(LOGTAG, "Loading URI from intent: " + targetUri);
@@ -965,7 +969,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
             if (openInKioskMode) {
                 // FIXME this might not work as expected if the app was already running
                 mWindows.openInKioskMode(targetUri.toString());
-            } if (mLaunchImmersive) {
+            } else if (mLaunchImmersive) {
                 mWindows.openInImmersiveMode(targetUri, mImmersiveParentElementXPath, mImmersiveTargetElementXPath);
             } else {
                 if (openInWindow) {

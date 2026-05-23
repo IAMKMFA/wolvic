@@ -34,14 +34,14 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
-            android:id="@+id/ff_logo_settings"
+            android:id="@+id/settings_brand_logo"
             android:layout_width="130dp"
             android:layout_height="84dp"
             android:layout_gravity="center"
             android:layout_marginTop="23dp"
             android:clickable="true"
             android:scaleType="fitCenter"
-            android:src="@drawable/ff_logo"
+            android:src="@drawable/framatome_header"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -59,7 +59,7 @@
             android:textSize="@dimen/text_big_size"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ff_logo_settings" />
+            app:layout_constraintTop_toBottomOf="@id/settings_brand_logo" />
 
         <TextView
             android:id="@+id/chinaLicenseNumber"

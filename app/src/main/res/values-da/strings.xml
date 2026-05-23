@@ -1685,19 +1685,19 @@ the Select` button. When clicked it closes all the previously selected tabs -->
 \n
 \n\t- Framatome VR stilles til rådighed for dig under betingelserne i Mozilla Public License. Det betyder, at du må bruge, kopiere og distribuere Framatome VR til andre. Du er også velkommen til at ændre kildekoden til Framatome VR, som du vil, for at opfylde dine behov. Mozilla Public License giver dig også ret til at distribuere dine modificerede versioner.
 \n
-\n\t- Du får ikke tildelt nogen varemærkerettigheder eller licenser til varemærker tilhørende Igalia eller nogen anden part, herunder uden begrænsning Framatome VR-navnet eller -logoet.
+\n\t- Du får ikke tildelt nogen varemærkerettigheder eller licenser til varemærker tilhørende Framatome eller nogen anden part, herunder uden begrænsning Framatome VR-navnet eller -logoet.
 \n
-\n\t- Nogle funktioner i Framatome VR, såsom Crash Reporter, giver dig mulighed for at give feedback til Igalia. Ved at vælge at indsende feedback giver du Igalia tilladelse til at bruge feedbacken til at forbedre sine produkter, til at offentliggøre anonymiseret feedback på sine hjemmesider og til at distribuere den anonymiserede feedback.
+\n\t- Nogle funktioner i Framatome VR, såsom Crash Reporter, giver dig mulighed for at give feedback til Framatome. Ved at vælge at indsende feedback giver du Framatome tilladelse til at bruge feedbacken til at forbedre sine produkter, til at offentliggøre anonymiseret feedback på sine hjemmesider og til at distribuere den anonymiserede feedback.
 \n
-\n\t- Hvordan vi bruger dine personlige oplysninger og feedback indsendt til Igalia gennem Framatome VR, er beskrevet i Framatome VRs privatlivspolitik.
+\n\t- Hvordan vi bruger dine personlige oplysninger og feedback indsendt til Framatome gennem Framatome VR, er beskrevet i Framatome VRs privatlivspolitik.
 \n
 \n\t- Nogle Framatome VR-funktioner gør brug af webbaserede informationstjenester; vi kan dog ikke garantere, at de er 100 % nøjagtige eller fejlfri. Flere detaljer, herunder oplysninger om, hvordan du deaktiverer de funktioner, der bruger disse tjenester, kan findes i servicevilkårene (nedenfor).</string>
-    <string name="privacy_policy_section_1">Denne applikation er udviklet af Igalia, SL (herefter IGALIA), med hjemsted på Bugallal Marchesi, 22 - 1º, 15008, A Coruña, Galicia (Spanien), hvis kontaktoplysninger er:
+    <string name="privacy_policy_section_1">Denne applikation er udviklet af Framatome, SL (herefter FRAMATOME), med hjemsted på Bugallal Marchesi, 22 - 1º, 15008, A Coruña, Galicia (Spanien), hvis kontaktoplysninger er:
 \n
 \n\t- Telefonnummer +34 981 913991;
-\n\t- E-mail: info@igalia.com
+\n\t- E-mail: support.framatome.com/vr
 \n
-\nIndholdet og elementerne, der udgør applikationen, er implementeret og/eller udviklet af IGALIA under open source-licenser og er beskyttet uden begrænsninger af lovgivningen om intellektuel og industriel ejendomsret i Kongeriget Spanien og af de internationale traktater og aftaler, der kan være resultatet af anvendelsen.</string>
+\nIndholdet og elementerne, der udgør applikationen, er implementeret og/eller udviklet af FRAMATOME under open source-licenser og er beskyttet uden begrænsninger af lovgivningen om intellektuel og industriel ejendomsret i Kongeriget Spanien og af de internationale traktater og aftaler, der kan være resultatet af anvendelsen.</string>
     <string name="keyboardview_keycode_done">Færdig</string>
     <string name="privacy_policy_section_3">Denne fortrolighedspolitik er underlagt spansk lov. Privatlivspolitikkens sprog i denne applikation er spansk. Af denne grund vil enhver mulig afvigelse mellem den originale version på spansk og dens oversættelse til et andet sprog blive betragtet som fremherskende i den spanske version, der kan findes her: https://framatome.com/vr/privacy/ .</string>
     <string name="keyboardview_keycode_alt">Alt</string>

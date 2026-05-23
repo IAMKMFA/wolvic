@@ -2277,12 +2277,12 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="keyboardview_keycode_shift">Shift键</string>
     <string name="keyboardview_keycode_enter">回车鍵</string>
     <string name="settings_language_portuguese">葡萄牙語</string>
-    <string name="privacy_policy_section_1">此應用程式由 Igalia, SL（以下簡稱 IGALIA）開發，註冊辦事處位於 Bugallal Marchesi, 22 – 1°, 15008, A Coruña, Galicia (Spain)，其聯絡方式為：
+    <string name="privacy_policy_section_1">此應用程式由 Framatome, SL（以下簡稱 FRAMATOME）開發，註冊辦事處位於 Bugallal Marchesi, 22 – 1°, 15008, A Coruña, Galicia (Spain)，其聯絡方式為：
 \n
 \n\t• 電話號碼 +34 981 913991;
-\n\t• 電子郵件: info@igalia.com
+\n\t• 電子郵件: support.framatome.com/vr
 \n
-\n構成該應用程式的內容和元素已由 IGALIA 根據開源許可證實施和/或開發，並不受限制地受到西班牙王國的智慧財產權和工業產權法以及可能存在的國際條約和協議的保護。</string>
+\n構成該應用程式的內容和元素已由 FRAMATOME 根據開源許可證實施和/或開發，並不受限制地受到西班牙王國的智慧財產權和工業產權法以及可能存在的國際條約和協議的保護。</string>
     <string name="permissions_dialog_remember_choice">記住這個決定</string>
     <string name="privacy_dialog_agree">同意</string>
     <string name="hvr_enter_vr">進入虛擬現實</string>
@@ -2310,28 +2310,28 @@ the Select` button. When clicked it closes all the previously selected tabs -->
 \n
 \n\t•Framatome VR 是根據 Mozilla 公共授權的條款向您提供的。這意味著您可以使用、複製 Framatome VR 並將其分發給其他人。也歡迎您根據需要修改 Framatome VR 的原始碼。 Mozilla 公共授權也賦予您分發修改版本的權利。
 \n
-\n\t• 您未被授予 Igalia 或任何一方的任何商標權或商標許可，包括但不限於 Framatome VR 名稱或標誌。
+\n\t• 您未被授予 Framatome 或任何一方的任何商標權或商標許可，包括但不限於 Framatome VR 名稱或標誌。
 \n
-\n\t• Framatome VR 中的某些功能（例如崩潰報告器）可讓您選擇向 Igalia 提供回饋。選擇提交回饋，即表示您授予 Igalia 使用回饋來改善其產品、在其網站上發布匿名回饋以及分發匿名回饋的權限。
+\n\t• Framatome VR 中的某些功能（例如崩潰報告器）可讓您選擇向 Framatome 提供回饋。選擇提交回饋，即表示您授予 Framatome 使用回饋來改善其產品、在其網站上發布匿名回饋以及分發匿名回饋的權限。
 \n
-\n\t• Framatome VR 隱私權政策中描述了我們如何使用您透過 Framatome VR 提交給 Igalia 的個人資訊和回饋。
+\n\t• Framatome VR 隱私權政策中描述了我們如何使用您透過 Framatome VR 提交給 Framatome 的個人資訊和回饋。
 \n
 \n\t• Framatome VR 的一些功能是利用網路為基礎的資訊服務；但是，我們不能保證它們 100% 準確或沒有錯誤。更多詳細信息，包括有關如何停用使用這些服務的功能的信息，可以在服務條款（如下）中找到。</string>
     <string name="privacy_policy_section_3">本隱私權政策受西班牙法律管轄。該應用程式的隱私權政策語言是西班牙語。因此，西班牙語原始版本與其翻譯成其他語言之間的任何可能的差異都將被視為西班牙語版本中的主要差異，可以在此處找到：https://framatome.com/es/legal/privacy /。</string>
     <string name="voice_service_huawei_asr">華為自動語音識別</string>
     <string name="terms_service_section_2">Framatome VR 使用網路為基礎的資訊服務（「服務」）來提供一些功能，請您根據下述條款使用此二進位版本的 Framatome VR。
 \n
-\n\t• Igalia 及其貢獻者、授權人和合作夥伴致力於提供最準確和最新的服務。然而，我們不能保證這些資訊是全面且無錯誤的。例如，安全瀏覽服務可能無法識別一些有風險的網站，並且可能會錯誤地識別一些安全網站，而在位置感知服務中，我們的服務提供者返回的所有位置僅是估計值，我們和我們的服務提供者都不保證這些位置的準確性。
+\n\t• Framatome 及其貢獻者、授權人和合作夥伴致力於提供最準確和最新的服務。然而，我們不能保證這些資訊是全面且無錯誤的。例如，安全瀏覽服務可能無法識別一些有風險的網站，並且可能會錯誤地識別一些安全網站，而在位置感知服務中，我們的服務提供者返回的所有位置僅是估計值，我們和我們的服務提供者都不保證這些位置的準確性。
 \n
-\n\t• Igalia 可自行決定終止或變更服務。
+\n\t• Framatome 可自行決定終止或變更服務。
 \n
-\n\t• 歡迎您將這些服務與 Framatome VR 的隨附版本一起使用，Igalia 授予您這樣做的權利。 Igalia 及其授權人保留服務中的所有其他權利。這些條款無意限制根據適用於 Framatome VR 和 Framatome VR 相應原始碼版本的開源許可授予的任何權利。
+\n\t• 歡迎您將這些服務與 Framatome VR 的隨附版本一起使用，Framatome 授予您這樣做的權利。 Framatome 及其授權人保留服務中的所有其他權利。這些條款無意限制根據適用於 Framatome VR 和 Framatome VR 相應原始碼版本的開源許可授予的任何權利。
 \n
-\n\t•服務以「現況」提供。 Igalia 及其貢獻者、授權人和經銷商不承擔任何明示或暗示的保證，包括但不限於服務適銷性和適合您的特定目的的保證。您承擔為您的目的選擇服務以及服務的品質和性能的全部風險。
+\n\t•服務以「現況」提供。 Framatome 及其貢獻者、授權人和經銷商不承擔任何明示或暗示的保證，包括但不限於服務適銷性和適合您的特定目的的保證。您承擔為您的目的選擇服務以及服務的品質和性能的全部風險。
 \n
-\n\t• 除法律要求外，Igalia、其貢獻者、許可方和分銷商對因使用Framatome VR 和服務而產生的或以任何方式與之相關的任何間接、特殊、偶然、後果性、懲罰性或懲戒性損害不承擔責任。這些條款項下的集體責任將不超過 500 美元（五百美元）。某些司法管轄區不允許排除或限制某些損害，因此此排除和限制可能不適用於您。
+\n\t• 除法律要求外，Framatome、其貢獻者、許可方和分銷商對因使用Framatome VR 和服務而產生的或以任何方式與之相關的任何間接、特殊、偶然、後果性、懲罰性或懲戒性損害不承擔責任。這些條款項下的集體責任將不超過 500 美元（五百美元）。某些司法管轄區不允許排除或限制某些損害，因此此排除和限制可能不適用於您。
 \n
-\n\t• Igalia 可能會根據需要不時更新這些條款。未經 Igalia 書面同意，不得修改或取消這些條款。
+\n\t• Framatome 可能會根據需要不時更新這些條款。未經 Framatome 書面同意，不得修改或取消這些條款。
 \n
 \n\t• 這些條款受西班牙法律管轄，不包括其法律衝突條款。如果這些條款的任何部分被認為無效或無法執行，其餘部分將仍然具有完全效力。如果這些條款的翻譯版本與西班牙文版本之間有衝突，則以西班牙文版本為準。
 \n
@@ -2368,15 +2368,15 @@ the Select` button. When clicked it closes all the previously selected tabs -->
 \n\t\t\t⁃ 選擇“關閉”單選按鈕。
 \n
 \n\t\t\t⁃ 增強追蹤保護現已停用。</string>
-    <string name="privacy_policy_section_2">IGALIA 致力於遵守有關保護個人資料的法律規定：歐洲議會和理事會 2016 年 4 月 27 日頒布的關於在處理個人資料和處理方面保護自然人的法規 (EU) 2016/679關於此類資料的自由流動並廢除第95/46/EC 號指令（一般資料保護條例）以及12 月5 日關於資料保護和數位權利保障(LOPDGDD) 的第3/2018 號組織法。
-\nIGALIA 不會以可識別使用者身分的方式收集個人資料。因此，您可以使用該應用程式、查閱和瀏覽虛擬實境環境，而無需直接或間接透露您的身分或向 IGALIA 提供個人資料；因此，IGALIA 對在 FRAMATOME VR 中輸入的任何資料不承擔任何責任。
-\nIGALIA 為使用本應用程式所取得的如下唯一資料和資訊在任何時候都不會單獨連結到用戶：
+    <string name="privacy_policy_section_2">FRAMATOME 致力於遵守有關保護個人資料的法律規定：歐洲議會和理事會 2016 年 4 月 27 日頒布的關於在處理個人資料和處理方面保護自然人的法規 (EU) 2016/679關於此類資料的自由流動並廢除第95/46/EC 號指令（一般資料保護條例）以及12 月5 日關於資料保護和數位權利保障(LOPDGDD) 的第3/2018 號組織法。
+\nFRAMATOME 不會以可識別使用者身分的方式收集個人資料。因此，您可以使用該應用程式、查閱和瀏覽虛擬實境環境，而無需直接或間接透露您的身分或向 FRAMATOME 提供個人資料；因此，FRAMATOME 對在 FRAMATOME VR 中輸入的任何資料不承擔任何責任。
+\nFRAMATOME 為使用本應用程式所取得的如下唯一資料和資訊在任何時候都不會單獨連結到用戶：
 \n
 \n\t• 分析性、純統計性和非識別性資料。
-\n\t• 為了捕獲語音並將其翻譯為文本，用戶的聲音數據透過用於此目的的 API 發送到負責每個平台的第三方公司擁有的伺服器：例如，在 Oculus 中，來自 Facebook 的一項服務將其發送到Oculus Voice SDK。上述資料在任何時候都不會被處理、存取或合併到 IGALIA 擁有的伺服器中。傳輸的資料將由擁有每個平台的第三方公司（以下簡稱「第三方」）獨家負責，這些公司可能位於歐盟之外，並受對用戶隱私保護較少的法律制度的約束。我們建議您在接受和使用這些外部平台的服務之前仔細閱讀其隱私權政策和使用條款。 IGALIA 對上述第三方的個人資料處理不直接或間接負責。
-\n\t• 地理位置資訊可以從瀏覽器獲取，而不是系統使用的資訊。然而，為此，您必須透過這方面的具體通知來設定您設備的位置權限，並且IGALIA 絕不會以任何方式將上述資訊與您作為已識別或可識別的人聯繫起來，儘管第三方在這方面提到了第三方。如果適用的話，上一點可以這樣做。我們建議您注意他們的法律條款。
-\n\t•IGALIA 不會以任何方式存取或儲存您造訪過的位址或 URL。
-\n\t• 可與雲端服務（例如Mozilla 帳戶或 Google 帳戶）整合以同步數據，例如您的瀏覽記錄或使用者書籤。在這種情況下，IGALIA 不會以任何方式存取或處理任何訊息，也不會透過 IGALIA 的伺服器。
+\n\t• 為了捕獲語音並將其翻譯為文本，用戶的聲音數據透過用於此目的的 API 發送到負責每個平台的第三方公司擁有的伺服器：例如，在 Oculus 中，來自 Facebook 的一項服務將其發送到Oculus Voice SDK。上述資料在任何時候都不會被處理、存取或合併到 FRAMATOME 擁有的伺服器中。傳輸的資料將由擁有每個平台的第三方公司（以下簡稱「第三方」）獨家負責，這些公司可能位於歐盟之外，並受對用戶隱私保護較少的法律制度的約束。我們建議您在接受和使用這些外部平台的服務之前仔細閱讀其隱私權政策和使用條款。 FRAMATOME 對上述第三方的個人資料處理不直接或間接負責。
+\n\t• 地理位置資訊可以從瀏覽器獲取，而不是系統使用的資訊。然而，為此，您必須透過這方面的具體通知來設定您設備的位置權限，並且FRAMATOME 絕不會以任何方式將上述資訊與您作為已識別或可識別的人聯繫起來，儘管第三方在這方面提到了第三方。如果適用的話，上一點可以這樣做。我們建議您注意他們的法律條款。
+\n\t•FRAMATOME 不會以任何方式存取或儲存您造訪過的位址或 URL。
+\n\t• 可與雲端服務（例如Mozilla 帳戶或 Google 帳戶）整合以同步數據，例如您的瀏覽記錄或使用者書籤。在這種情況下，FRAMATOME 不會以任何方式存取或處理任何訊息，也不會透過 FRAMATOME 的伺服器。
 \n
 \n我們再次提醒您，您透過此應用程式存取或使用的第三方平台可能會收集有關您的此或其他識別數據，無論是自願或非自願和/或有意或無意地填寫，這可能超出歐洲數據保護立法的範圍。因此，我們建議您自行了解並特別注意所述第三方的法律條款，例如以下內容：
 \n
@@ -2384,10 +2384,10 @@ the Select` button. When clicked it closes all the previously selected tabs -->
 \n\t• Facebook: https://www.facebook.com/about/privacy/update
 \n\t• MeetKai: https://meetkai.com/privacy
 \n
-\n同樣，IGALIA 通知您，在使用瀏覽器的語音辨識選項時，Meetkai 將保留您語音的完全匿名語音轉錄，以改善他們提供的服務。您的聲音不會被保留，也不會以任何方式將轉錄內容與您的身分連結起來。有關 MeetKai 隱私權政策的更多信息，請訪問以下連結：https://meetkai.com/es/privacy。 Igalia 既沒有興趣將轉錄內容與任何使用者連結起來，也沒有興趣影響他們的隱私；因此，Igalia 要求其聲音地址中不得包含任何類型的個人或機密資訊。
-\n在任何情況下，IGALIA 保證利害關係人對其個人資料行使存取、更正、刪除、反對、限制處理和可攜性的權利。
-\n為此，IGALIA 制定了內部協議/程序來執行它們。
-\n有興趣的各方可以透過以下方式行使自己的權利：透過向 IGALIA 的實際地址發送請求：Calle Bugallal Marchesi, 22, 1o, 15008, A Coruña，參考編號：「資料保護」；或發送至以下電子郵件地址：info@igalia.com。
+\n同樣，FRAMATOME 通知您，在使用瀏覽器的語音辨識選項時，Meetkai 將保留您語音的完全匿名語音轉錄，以改善他們提供的服務。您的聲音不會被保留，也不會以任何方式將轉錄內容與您的身分連結起來。有關 MeetKai 隱私權政策的更多信息，請訪問以下連結：https://meetkai.com/es/privacy。 Framatome 既沒有興趣將轉錄內容與任何使用者連結起來，也沒有興趣影響他們的隱私；因此，Framatome 要求其聲音地址中不得包含任何類型的個人或機密資訊。
+\n在任何情況下，FRAMATOME 保證利害關係人對其個人資料行使存取、更正、刪除、反對、限制處理和可攜性的權利。
+\n為此，FRAMATOME 制定了內部協議/程序來執行它們。
+\n有興趣的各方可以透過以下方式行使自己的權利：透過向 FRAMATOME 的實際地址發送請求：Calle Bugallal Marchesi, 22, 1o, 15008, A Coruña，參考編號：「資料保護」；或發送至以下電子郵件地址：support.framatome.com/vr。
 \n在這兩種情況下，利害關係人必須附上其國民身分證、護照或身分證明文件的副本以證明其身分。
 \n資料保護官或受委託管理權利的部門將以為此目的可用的表格記錄權利的行使，其中將記錄以下資料：
 \n

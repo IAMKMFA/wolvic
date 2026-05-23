@@ -24,7 +24,7 @@
                 android:protectionLevel="signature"/>
 
     <application
-        android:name="com.igalia.wolvic.VRBrowserApplication"
+        android:name="com.framatome.vr.immersive.FramatomeImmersiveApplication"
         android:allowBackup="false"
         android:usesCleartextTraffic="true"
         android:requestLegacyExternalStorage="true"
@@ -34,7 +34,7 @@
         android:supportsRtl="true"
         android:theme="@style/FxR.Dark">
         <activity
-            android:name="com.igalia.wolvic.VRBrowserActivity"
+            android:name="com.framatome.vr.immersive.FramatomeImmersiveActivity"
             android:launchMode="singleInstance"
             android:exported="true"
             android:configChanges="density|keyboard|keyboardHidden|navigation|orientation|screenSize|uiMode|locale|layoutDirection"

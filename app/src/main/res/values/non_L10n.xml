@@ -94,22 +94,22 @@
     <string name="settings_key_tabs_location" translatable="false">settings_key_tabs_location</string>
     <string name="environment_override_help_url" translatable="false">https://framatome.com/vr/support</string>
     <string name="private_policy_url" translatable="false">https://framatome.com/legal/privacy</string>
-    <string name="private_report_url" translatable="false">https://www.igalia.com/privacy/&amp;url=%1$s</string>
+    <string name="private_report_url" translatable="false">https://framatome.com/legal/privacy?url=%1$s</string>
     <string name="terms_service_url" translatable="false">https://framatome.com/legal/terms</string>
     <string name="help_url" translatable="false">https://framatome.com/vr/support</string>
-    <string name="sumo_language_voice_url" translatable="false">https://support.mozilla.org/kb/using-voice-search-firefox-reality</string>
-    <string name="sumo_language_display_url" translatable="false">https://support.mozilla.org/kb/use-firefox-another-language?as=u&amp;utm_source=inproduct</string>
-    <string name="sumo_language_content_url" translatable="false">https://support.mozilla.org/kb/choose-display-languages-multilingual-web-pages?as=u&amp;utm_source=inproduct</string>
-    <string name="sumo_etp_url" translatable="false">https://support.mozilla.org/kb/enhanced-tracking-protection-firefox-desktop</string>
-    <string name="sumo_drm_url" translatable="false">https://support.mozilla.org/kb/enable-drm</string>
-    <string name="sumo_webxr_url" translatable="false">https://support.mozilla.org/en-US/kb/webxr-permission-info-page</string>
-    <string name="sumo_addons_permissions" translatable="false">https://support.mozilla.org/kb/permission-request-messages-firefox-extensions</string>
+    <string name="sumo_language_voice_url" translatable="false">https://framatome.com/vr/support</string>
+    <string name="sumo_language_display_url" translatable="false">https://framatome.com/vr/support</string>
+    <string name="sumo_language_content_url" translatable="false">https://framatome.com/vr/support</string>
+    <string name="sumo_etp_url" translatable="false">https://framatome.com/vr/support</string>
+    <string name="sumo_drm_url" translatable="false">https://framatome.com/vr/support</string>
+    <string name="sumo_webxr_url" translatable="false">https://framatome.com/vr/support</string>
+    <string name="sumo_addons_permissions" translatable="false">https://framatome.com/vr/support</string>
     <string name="list_item_view_tag" translatable="false">view</string>
     <string name="position_tag" translatable="false">position</string>
     <string name="view_id_tag" translatable="false">view_id</string>
     <string name="up_id_tag" translatable="false">up_id</string>
     <string name="down_id_tag" translatable="false">down_id</string>
-    <string name="crash_dialog_learn_more_url" translatable="false">https://support.mozilla.org/kb/crash-reporting-firefox-reality</string>
+    <string name="crash_dialog_learn_more_url" translatable="false">https://framatome.com/vr/support</string>
     <string name="app_permission_name" translatable="false">CRASH_RECEIVER_PERMISSION</string>
     <string name="developer_options_by" translatable="false">x</string>
     <string name="crash_app_name" translatable="false">Framatome VR</string>
