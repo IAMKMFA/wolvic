@@ -216,51 +216,62 @@ else
 fi
 
 # =============================================================================
-# PHASE 3 — Apply the 13 WebXR patches (dry-run gate FIRST, fail-loud, idempotent)
+# PHASE 3 — Apply the 13 WebXR patches (SEQUENTIAL, fail-loud, idempotent)
 # =============================================================================
-step "Phase 3: apply WebXR patches (zero-fuzz, fail-loud)"
+step "Phase 3: apply WebXR patches (sequential, fail-loud)"
 cd "$SRC_DIR"
+
+# CRITICAL: give the source tree its OWN git repo. Two hard-won reasons:
+#   (1) `git apply` run INSIDE an outer repo (this build dir is gitignored under
+#       the superproject) silently NO-OPS on untracked files — exit 0, zero
+#       changes. A patchless "build" would compile a stock engine with no WebXR.
+#       An inner .git makes git apply resolve against THIS tree (correct).
+#   (2) A committed stock baseline lets us `git reset --hard` to recover from a
+#       partial/failed apply, and enables `git apply --3way` for re-pinning.
+GIT="git -c user.email=build@framatome.local -c user.name=FramatomeBuild"
+if [ ! -e .git ]; then
+  echo "  initializing stock baseline (git) — one-time, ~1-2 min ..."
+  git init -q
+  $GIT add -A
+  $GIT commit -qm "stock firefox-$MOZ_VERSION" >/dev/null
+  ok "stock baseline committed"
+else
+  ok "git baseline already present"
+fi
 
 if [ -f "$PATCH_SENTINEL" ]; then
   ok "patches already applied (sentinel present) — skipping"
 else
-  # 3a. DRY-RUN GATE: every patch must pass `git apply --check` with ZERO fuzz
-  #     before we touch the tree. A reject here means Mozilla shifted these files
-  #     between the patch base and 140.8.0 — STOP rather than mis-apply silently
-  #     three hours deep. --whitespace=nowarn neutralizes a user's global
-  #     apply.whitespace=error so only REAL context mismatches fail the gate.
-  echo "  [dry-run] git apply --check on all $EXPECT_PATCH_COUNT patches ..."
-  DRYFAIL=0
+  # Restore pristine stock (clears any partial apply from a prior failed run).
+  $GIT reset -q --hard >/dev/null; $GIT clean -qfd >/dev/null
+
+  # SEQUENTIAL apply — ORDER MATTERS. Later patches build on lines added by
+  # earlier ones (e.g. 0012/0013/0014 extend the controller switch 0010 opens;
+  # 0016 bumps kVRExternalVersion 20->21 only AFTER an earlier patch moves stock
+  # 19->20). An INDEPENDENT per-patch --check against stock falsely rejects ~7 of
+  # 13 — so we do NOT pre-check; the in-order real apply IS the gate. git apply
+  # is atomic per patch; the first failure resets to stock and aborts loud.
+  echo "  applying $EXPECT_PATCH_COUNT patches in order ..."
   while IFS= read -r p; do
-    if git apply --check -p1 --whitespace=nowarn "$p" 2>/dev/null; then
-      printf '    %sok%s  %s\n' "$c_grn" "$c_0" "$(basename "$p")"
+    if $GIT apply -p1 --whitespace=nowarn "$p"; then
+      printf '    %s✓%s  %s\n' "$c_grn" "$c_0" "$(basename "$p")"
     else
-      printf '    %sREJECT%s  %s\n' "$c_red" "$c_0" "$(basename "$p")"
-      git apply --check -p1 --whitespace=nowarn "$p" 2>&1 | sed 's/^/        /' | head -4
-      DRYFAIL=1
+      printf '    %s✗%s  %s\n' "$c_red" "$c_0" "$(basename "$p")"
+      $GIT apply -p1 --whitespace=nowarn "$p" 2>&1 | sed 's/^/        /' | head -4
+      $GIT reset -q --hard >/dev/null; $GIT clean -qfd >/dev/null
+      die "patch $(basename "$p") failed to apply IN SEQUENCE to $MOZ_VERSION.
+  Tree was reset to pristine stock. This patch set does not match this source.
+  Options: (a) confirm the source is exactly $MOZ_VERSION (hash already checked);
+  (b) re-pin gecko-patches/ to a commit cut against this point release;
+  (c) 3-way merge the offender: 'git apply --3way $(basename "$p")' then resolve.
+  See BUILD_PLAN.md > Troubleshooting > patch reject."
     fi
   done < <(find "$PATCHES_DIR" -maxdepth 1 -name '*.patch' | sort)
-  [ "$DRYFAIL" = "0" ] || die "one or more patches do not apply cleanly to $MOZ_VERSION.
-  Do NOT force them. A reject means the patch base != this source.
-  Options: (a) confirm the source is exactly $MOZ_VERSION (hash already checked);
-  (b) re-pin the patch set to a commit cut against this point release;
-  (c) 3-way: 'git init && git add -A && git commit -qm base' then
-  'git apply --3way' each patch. See BUILD_PLAN.md > Troubleshooting > patch reject."
 
-  # 3b. REAL APPLY. git apply is atomic per patch (all-or-nothing, no .rej); a
-  #     failure leaves that file untouched and exits non-zero, caught here.
-  echo "  [apply] git apply -p1 in order ..."
-  while IFS= read -r p; do
-    git apply -p1 --whitespace=nowarn "$p" \
-      || die "git apply failed on real apply (dry-run passed?!): $(basename "$p")"
-    printf '    applied  %s\n' "$(basename "$p")"
-  done < <(find "$PATCHES_DIR" -maxdepth 1 -name '*.patch' | sort)
-
-  # 3c. Defensive: assert no stray .rej (git apply never makes them, but check).
   REJ="$(find . -name '*.rej' 2>/dev/null | head -5)"
   [ -z "$REJ" ] || die "found .rej files after apply: $REJ"
   touch "$PATCH_SENTINEL"
-  ok "all $EXPECT_PATCH_COUNT patches applied cleanly"
+  ok "all $EXPECT_PATCH_COUNT patches applied cleanly, in sequence"
 fi
 
 # =============================================================================
@@ -269,8 +280,10 @@ fi
 step "Phase 4: assert ExternalVR ABI matches the app"
 HDR="gfx/vr/external_api/moz_external_vr.h"
 [ -f "$HDR" ] || die "patched header not found: $HDR"
-GOT_VER="$(grep -E 'kVRExternalVersion *=' "$HDR" | grep -oE '[0-9]+' | head -1)"
-GOT_SHMEM="$(grep -E '#define +SHMEM_VERSION' "$HDR" | grep -oE '0\.[0-9]+\.[0-9]+' | head -1)"
+# Extract the value AFTER the '=' — NOT the first number on the line, which would
+# wrongly grab the 32 in "int32_t" (the type) from `... int32_t kVRExternalVersion = 21;`.
+GOT_VER="$(sed -nE 's/.*kVRExternalVersion[[:space:]]*=[[:space:]]*([0-9]+).*/\1/p' "$HDR" | head -1)"
+GOT_SHMEM="$(sed -nE 's/.*SHMEM_VERSION[[:space:]]+"([0-9.]+)".*/\1/p' "$HDR" | head -1)"
 [ "$GOT_VER" = "$EXPECT_VREXTERNAL_VERSION" ] \
   || die "kVRExternalVersion is '$GOT_VER', expected '$EXPECT_VREXTERNAL_VERSION'. Patch 0016 did not take, or the patch set bumped the protocol. The app header ($APP_HEADER) must move in lockstep — see ENGINE_OWNERSHIP.md Track 2."
 [ "$GOT_SHMEM" = "$EXPECT_SHMEM_VERSION" ] \
@@ -279,7 +292,7 @@ ok "patched engine ABI: kVRExternalVersion=$GOT_VER SHMEM_VERSION=$GOT_SHMEM (ma
 
 # Cross-check the app header still agrees (catches drift the other direction).
 if [ -f "$APP_HEADER" ]; then
-  APP_VER="$(grep -E 'kVRExternalVersion *=' "$APP_HEADER" | grep -oE '[0-9]+' | head -1)"
+  APP_VER="$(sed -nE 's/.*kVRExternalVersion[[:space:]]*=[[:space:]]*([0-9]+).*/\1/p' "$APP_HEADER" | head -1)"
   [ "$APP_VER" = "$GOT_VER" ] || die "app header $APP_HEADER reports kVRExternalVersion=$APP_VER but engine is $GOT_VER — ABI MISMATCH. Reconcile before building."
   ok "app header agrees: kVRExternalVersion=$APP_VER"
 fi
