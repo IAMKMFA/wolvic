@@ -35,6 +35,57 @@ OpenXRSwapChain::InitFBO(vrb::RenderContextPtr &aContext, XrSession aSession, co
     images.push_back(reinterpret_cast<XrSwapchainImageBaseHeader*>(&image));
   }
   CHECK_XRCMD(xrEnumerateSwapchainImages(swapchain, imageCount, &imageCount, images[0]));
+
+  // FRAMATOME PHASE 3: apply Fixed Foveated Rendering to the eye-buffer
+  // swapchain. Only InitFBO (the per-eye render target) is foveated — never the
+  // Android-surface (video) or cubemap (skybox) swapchains.
+  ApplyFoveation();
+}
+
+// FRAMATOME PHASE 3: trade peripheral sharpness for fill-rate headroom (frees
+// GPU for higher refresh / denser content). HIGH with DYNAMIC lets the runtime
+// dial foveation back automatically when there is spare GPU, so quality is best
+// when affordable and aggressive only under load. No-op unless the runtime
+// advertised XR_FB_foveation + XR_FB_swapchain_update_state (function pointers
+// loaded in OpenXRExtensions); any failure leaves the swapchain unfoveated.
+void
+OpenXRSwapChain::ApplyFoveation() {
+  const XrFoveationLevelFB kFoveationLevel = XR_FOVEATION_LEVEL_HIGH_FB;
+
+  if (!OpenXRExtensions::sXrCreateFoveationProfileFB ||
+      !OpenXRExtensions::sXrUpdateSwapchainFB ||
+      session == XR_NULL_HANDLE || swapchain == XR_NULL_HANDLE) {
+    return;
+  }
+
+  XrFoveationLevelProfileCreateInfoFB levelProfile{XR_TYPE_FOVEATION_LEVEL_PROFILE_CREATE_INFO_FB};
+  levelProfile.level = kFoveationLevel;
+  levelProfile.verticalOffset = 0.0f;
+  levelProfile.dynamic = XR_FOVEATION_DYNAMIC_LEVEL_ENABLED_FB;
+
+  XrFoveationProfileCreateInfoFB profileInfo{XR_TYPE_FOVEATION_PROFILE_CREATE_INFO_FB};
+  profileInfo.next = &levelProfile;
+
+  XrFoveationProfileFB profile = XR_NULL_HANDLE;
+  XrResult result = OpenXRExtensions::sXrCreateFoveationProfileFB(session, &profileInfo, &profile);
+  if (XR_FAILED(result) || profile == XR_NULL_HANDLE) {
+    VRB_ERROR("OpenXR FFR: xrCreateFoveationProfileFB failed (%d)", (int)result);
+    return;
+  }
+
+  XrSwapchainStateFoveationFB foveationState{XR_TYPE_SWAPCHAIN_STATE_FOVEATION_FB};
+  foveationState.profile = profile;
+  result = OpenXRExtensions::sXrUpdateSwapchainFB(
+      swapchain, reinterpret_cast<XrSwapchainStateBaseHeaderFB*>(&foveationState));
+  if (XR_FAILED(result)) {
+    VRB_ERROR("OpenXR FFR: xrUpdateSwapchainFB failed (%d)", (int)result);
+    if (OpenXRExtensions::sXrDestroyFoveationProfileFB)
+      OpenXRExtensions::sXrDestroyFoveationProfileFB(profile);
+    return;
+  }
+  // Retain the profile for this swapchain's lifetime (released in Destroy()).
+  foveationProfile = profile;
+  VRB_DEBUG("OpenXR FFR applied (level=%d, dynamic) to %dx%d swapchain", (int)kFoveationLevel, info.width, info.height);
 }
 
 void
@@ -158,6 +209,12 @@ OpenXRSwapChain::Destroy() {
   fbos.clear();
   imageBuffer.clear();
   images.clear();
+  // FRAMATOME PHASE 3: release the FFR profile before the swapchain it backs.
+  if (foveationProfile != XR_NULL_HANDLE) {
+    if (OpenXRExtensions::sXrDestroyFoveationProfileFB)
+      OpenXRExtensions::sXrDestroyFoveationProfileFB(foveationProfile);
+    foveationProfile = XR_NULL_HANDLE;
+  }
   if (swapchain != XR_NULL_HANDLE) {
     xrDestroySwapchain(swapchain);
     swapchain = XR_NULL_HANDLE;

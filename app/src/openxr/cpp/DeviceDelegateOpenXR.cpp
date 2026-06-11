@@ -185,6 +185,16 @@ struct DeviceDelegateOpenXR::State {
     if (OpenXRExtensions::IsExtensionSupported(XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME)) {
         extensions.push_back(XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME);
     }
+    // FRAMATOME PHASE 3: Fixed Foveated Rendering. All three are needed to apply
+    // a leveled foveation profile to the eye swapchains; IsExtensionSupported is
+    // false on non-Meta runtimes, so this is a no-op there.
+    if (OpenXRExtensions::IsExtensionSupported(XR_FB_FOVEATION_EXTENSION_NAME) &&
+        OpenXRExtensions::IsExtensionSupported(XR_FB_FOVEATION_CONFIGURATION_EXTENSION_NAME) &&
+        OpenXRExtensions::IsExtensionSupported(XR_FB_SWAPCHAIN_UPDATE_STATE_EXTENSION_NAME)) {
+        extensions.push_back(XR_FB_FOVEATION_EXTENSION_NAME);
+        extensions.push_back(XR_FB_FOVEATION_CONFIGURATION_EXTENSION_NAME);
+        extensions.push_back(XR_FB_SWAPCHAIN_UPDATE_STATE_EXTENSION_NAME);
+    }
 #if defined(OCULUSVR) || defined(PFDMXR)
     if (OpenXRExtensions::IsExtensionSupported(XR_KHR_COMPOSITION_LAYER_EQUIRECT2_EXTENSION_NAME)) {
       extensions.push_back(XR_KHR_COMPOSITION_LAYER_EQUIRECT2_EXTENSION_NAME);
@@ -742,7 +752,15 @@ struct DeviceDelegateOpenXR::State {
 
     float suggestedRefreshRate = 0.0;
     switch (deviceType) {
+      // FRAMATOME PHASE 3: target 120 Hz on Quest 3 for smoother media/tours.
+      // selectValidRefreshRate() below picks the first advertised rate >= target
+      // and falls back to the highest available, so this degrades to 90 Hz when
+      // the 120 Hz system mode is off — never requests an unsupported rate.
+      // Paired with FFR (frees the GPU headroom 120 Hz needs). Revert to 90.0 if
+      // dense content can't sustain it (see fme-player-headset-checklist.md).
       case device::MetaQuest3:
+        suggestedRefreshRate = 120.0;
+        break;
       case device::OculusQuest2:
       case device::MetaQuestPro:
       // Pico4x default is 72hz, but has an experimental setting to set it to 90hz. If the setting

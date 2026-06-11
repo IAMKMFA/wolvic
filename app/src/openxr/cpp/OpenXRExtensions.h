@@ -45,6 +45,13 @@ namespace crow {
     static PFN_xrEnumerateRenderModelPathsFB sXrEnumerateRenderModelPathsFB;
     static PFN_xrGetRenderModelPropertiesFB sXrGetRenderModelPropertiesFB;
     static PFN_xrLoadRenderModelFB sXrLoadRenderModelFB;
+
+    // FRAMATOME PHASE 3: Fixed Foveated Rendering (XR_FB_foveation +
+    // XR_FB_foveation_configuration + XR_FB_swapchain_update_state). Null on
+    // runtimes that don't advertise the extensions; callers must null-check.
+    static PFN_xrCreateFoveationProfileFB sXrCreateFoveationProfileFB;
+    static PFN_xrDestroyFoveationProfileFB sXrDestroyFoveationProfileFB;
+    static PFN_xrUpdateSwapchainFB sXrUpdateSwapchainFB;
   private:
      static std::unordered_set<std::string> sSupportedExtensions;
      static std::unordered_set<std::string> sSupportedApiLayers;

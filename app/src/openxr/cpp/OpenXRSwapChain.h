@@ -31,6 +31,10 @@ private:
   jobject surface = nullptr;
   XrSession session = XR_NULL_HANDLE;
   uint32_t cubeTexture = 0;
+  // FRAMATOME PHASE 3: Fixed Foveated Rendering profile owned by this swapchain
+  // (created in InitFBO, released in Destroy). XR_NULL_HANDLE when FFR is off.
+  XrFoveationProfileFB foveationProfile = XR_NULL_HANDLE;
+  void ApplyFoveation();
 public:
   ~OpenXRSwapChain();
 

@@ -28,6 +28,10 @@ PFN_xrQuerySystemTrackedKeyboardFB OpenXRExtensions::xrQuerySystemTrackedKeyboar
 PFN_xrEnumerateRenderModelPathsFB OpenXRExtensions::sXrEnumerateRenderModelPathsFB = nullptr;
 PFN_xrGetRenderModelPropertiesFB OpenXRExtensions::sXrGetRenderModelPropertiesFB = nullptr;
 PFN_xrLoadRenderModelFB OpenXRExtensions::sXrLoadRenderModelFB = nullptr;
+// FRAMATOME PHASE 3: Fixed Foveated Rendering function pointers.
+PFN_xrCreateFoveationProfileFB OpenXRExtensions::sXrCreateFoveationProfileFB = nullptr;
+PFN_xrDestroyFoveationProfileFB OpenXRExtensions::sXrDestroyFoveationProfileFB = nullptr;
+PFN_xrUpdateSwapchainFB OpenXRExtensions::sXrUpdateSwapchainFB = nullptr;
 
 void OpenXRExtensions::Initialize() {
     // Extensions.
@@ -142,6 +146,25 @@ void OpenXRExtensions::LoadExtensions(XrInstance instance) {
                                           reinterpret_cast<PFN_xrVoidFunction *>(&sXrGetRenderModelPropertiesFB)));
         CHECK_XRCMD(xrGetInstanceProcAddr(instance, "xrLoadRenderModelFB",
                                           reinterpret_cast<PFN_xrVoidFunction *>(&sXrLoadRenderModelFB)));
+    }
+
+    // FRAMATOME PHASE 3: Fixed Foveated Rendering. This guard MUST match the
+    // instance-enable guard in DeviceDelegateOpenXR (all three extensions) — a
+    // function pointer can only be loaded for an extension that was enabled at
+    // xrCreateInstance, and the instance only enables foveation when all three
+    // are supported. Gating the load on fewer extensions could request a proc
+    // for a disabled extension, which xrGetInstanceProcAddr fails and
+    // CHECK_XRCMD turns into a hard abort. (foveation_configuration defines the
+    // level-profile struct/enums but no functions, so nothing loads for it.)
+    if (IsExtensionSupported(XR_FB_FOVEATION_EXTENSION_NAME) &&
+        IsExtensionSupported(XR_FB_FOVEATION_CONFIGURATION_EXTENSION_NAME) &&
+        IsExtensionSupported(XR_FB_SWAPCHAIN_UPDATE_STATE_EXTENSION_NAME)) {
+        CHECK_XRCMD(xrGetInstanceProcAddr(instance, "xrCreateFoveationProfileFB",
+                                          reinterpret_cast<PFN_xrVoidFunction *>(&sXrCreateFoveationProfileFB)));
+        CHECK_XRCMD(xrGetInstanceProcAddr(instance, "xrDestroyFoveationProfileFB",
+                                          reinterpret_cast<PFN_xrVoidFunction *>(&sXrDestroyFoveationProfileFB)));
+        CHECK_XRCMD(xrGetInstanceProcAddr(instance, "xrUpdateSwapchainFB",
+                                          reinterpret_cast<PFN_xrVoidFunction *>(&sXrUpdateSwapchainFB)));
     }
 }
 
