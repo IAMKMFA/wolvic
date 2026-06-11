@@ -385,22 +385,33 @@ echo "  end:   $(date)"
 ok "compile complete"
 
 # =============================================================================
-# PHASE 8 — Publish AAR pair to Maven-local
+# PHASE 8 — Locate the published AAR pair
 # =============================================================================
-step "Phase 8: publish AARs to ~/.m2 (WithGeckoBinaries embeds the native .so)"
-rm -rf "$M2" 2>/dev/null || true   # clear stale local-maven copies so detection is unambiguous
+step "Phase 8: locate the published GeckoView AARs"
 
-publish_pair() {
-  # $1 = variant word: Release | Debug
-  local v="$1"
-  echo "  trying ${v} publication ..."
-  "$PYBIN" mach gradle \
-    "geckoview:publishWithGeckoBinaries${v}PublicationToMavenLocal" \
-    "exoplayer2:publish${v}PublicationToMavenLocal"
-}
-if publish_pair Release; then ok "published Release variant"
-elif publish_pair Debug;   then warn "Release task unavailable — published Debug variant"
-else die "both Release and Debug publish tasks failed. Inspect: $PYBIN mach gradle geckoview:tasks --all | grep -i publish"; fi
+# `mach build` already publishes geckoview + exoplayer2 to the objdir's own maven
+# repo ($topobjdir/gradle/maven), per geckoview/build.gradle's `repositories { maven
+# { url = "${topobjdir}/gradle/maven" } }`. So normally NO publish task is needed.
+# (NB: GeckoView 140 dropped the old `withGeckoBinaries<Variant>` flavor — the
+# publish tasks are now geckoview:publish{Release,Debug}PublicationToMavenLocal,
+# used only as the fallback below.)
+OBJDIR="$(ls -d "$SRC_DIR"/obj-* 2>/dev/null | head -1)"
+SRC_MAVEN="$OBJDIR/gradle/maven/org/mozilla/geckoview"
+
+if ! find "$SRC_MAVEN" -name 'geckoview-*.aar' 2>/dev/null | grep -q .; then
+  warn "no AARs in objdir maven ($SRC_MAVEN) — publishing explicitly to ~/.m2 ..."
+  rm -rf "$M2" 2>/dev/null || true
+  ( cd "$SRC_DIR" && "$PYBIN" mach gradle \
+        geckoview:publishReleasePublicationToMavenLocal \
+        exoplayer2:publishReleasePublicationToMavenLocal ) \
+  || ( cd "$SRC_DIR" && "$PYBIN" mach gradle \
+        geckoview:publishDebugPublicationToMavenLocal \
+        exoplayer2:publishDebugPublicationToMavenLocal ) \
+  || die "publish failed. List the real task names with:
+    $PYBIN mach gradle geckoview:tasks --all | grep -i publish"
+  SRC_MAVEN="$M2"
+fi
+ok "AAR source repo: $SRC_MAVEN"
 
 # =============================================================================
 # PHASE 9 — Locate, verify internals, normalize coordinate
@@ -411,7 +422,7 @@ step "Phase 9: verify + normalize the published artifacts"
 GV_AAR=""
 while IFS= read -r a; do
   if unzip -l "$a" 2>/dev/null | grep -q 'jni/arm64-v8a/libxul.so'; then GV_AAR="$a"; break; fi
-done < <(find "$M2" -name 'geckoview*-*.aar' ! -name 'geckoview-exoplayer2*' | sort)
+done < <(find "$SRC_MAVEN" -name 'geckoview*-*.aar' ! -name 'geckoview-exoplayer2*' | sort)
 [ -n "$GV_AAR" ] || die "no published geckoview AAR contains jni/arm64-v8a/libxul.so — WithGeckoBinaries did not embed the engine. Check the publish task variant."
 ok "engine AAR: $(basename "$GV_AAR")"
 
@@ -421,7 +432,7 @@ unzip -l "$GV_AAR" 2>/dev/null | grep -q 'assets/omni.ja' \
 ok "engine AAR contains assets/omni.ja + libxul.so"
 
 # 9c. Find the exoplayer2 AAR (may or may not be a separate artifact).
-EXO_AAR="$(find "$M2" -name 'geckoview-exoplayer2*-*.aar' | sort | head -1)"
+EXO_AAR="$(find "$SRC_MAVEN" -name 'geckoview-exoplayer2*-*.aar' | sort | head -1)"
 HAVE_EXO="no"; [ -n "$EXO_AAR" ] && HAVE_EXO="yes"
 [ "$HAVE_EXO" = "yes" ] && ok "exoplayer2 AAR: $(basename "$EXO_AAR")" \
                         || warn "no separate exoplayer2 AAR — classes are bundled in geckoview; will drop the POM dependency"

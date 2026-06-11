@@ -44,11 +44,10 @@ class WebExtensionControllerImpl implements WWebExtensionController {
         }
 
         mController.setPromptDelegate(new org.mozilla.geckoview.WebExtensionController.PromptDelegate() {
-            @Nullable
-            @Override
-            public GeckoResult<AllowOrDeny> onInstallPrompt(@NonNull org.mozilla.geckoview.WebExtension extension, @NonNull String[] permissions, @NonNull String[] origins) {
-                return Utils.map(ResultImpl.from(mPromptDelegate.onInstallPrompt(new GeckoWebExtension(extension, mRuntime))));
-            }
+            // GeckoView 140 renamed onInstallPrompt -> onInstallPromptRequest and changed its
+            // return type (AllowOrDeny -> WebExtension.PermissionPromptResponse). The Framatome
+            // kiosk never installs WebExtensions, so we leave that new method on its default
+            // (null = no response) instead of wiring the AllowOrDeny-based app delegate to it.
 
             @Nullable
             @Override

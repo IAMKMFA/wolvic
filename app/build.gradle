@@ -725,8 +725,9 @@ dependencies {
     visionglassImplementation libs.huawei.agconnect.core.harmony
     visionglassImplementation libs.huawei.hms.mlcomputervoiceasr
 
-    // gecko — local WebXR-patched GeckoView (built from firefox-128.14.0 with Igalia patches)
-    geckoImplementation "org.mozilla.geckoview:geckoview-default:128.14.20260314224701-SNAPSHOT"
+    // gecko — local WebXR-patched GeckoView (built from firefox-140.8.0esr + Igalia
+    // gecko-140esr patches via build-gecko-webxr.sh; see gecko-patches/BUILD_PROVENANCE.txt)
+    geckoImplementation "org.mozilla.geckoview:geckoview-default:140.8.0"
 
     // chromium
     if (isChromiumAvailable()) {
