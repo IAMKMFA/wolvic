@@ -57,7 +57,10 @@ EXPECT_PATCH_COUNT=13
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PATCHES_DIR="$SCRIPT_DIR/gecko-patches/gecko-140esr"
 PINNED_FILE="$SCRIPT_DIR/gecko-patches/PINNED.txt"
-WORK_DIR="${FRAMATOME_GECKO_WORK:-$SCRIPT_DIR/../.gecko-build}"   # big; outside the repo by default
+# Mozilla's mach build FORBIDS spaces in the source path, so the work dir must
+# default OUTSIDE the (possibly space-containing) repo. $HOME is space-free on a
+# normal macOS install. Override with FRAMATOME_GECKO_WORK=<space-free path>.
+WORK_DIR="${FRAMATOME_GECKO_WORK:-$HOME/.framatome-gecko-build}"
 DL_DIR="$WORK_DIR/downloads"
 SRC_DIR="$WORK_DIR/firefox-${MOZ_VERSION%esr}"                    # tarball extracts to firefox-140.8.0 (no 'esr')
 GECKO_MAVEN="$SCRIPT_DIR/gecko-maven"
@@ -121,11 +124,39 @@ if [ "$HOST_ARCH" = "arm64" ]; then
   fi
 fi
 
+# SPACE GUARD (hard): mach's build system aborts if the source path contains a
+# space ("contains a space, which is not supported"). The work dir holds the
+# source tree, so it MUST be space-free. Fail loud here, not 0 phases into mach.
+case "$WORK_DIR" in
+  *" "*) die "build work dir contains a space: '$WORK_DIR'
+  Mozilla's mach build does NOT support spaces in the source path. Point the work
+  dir at a space-free location and re-run, e.g.:
+    export FRAMATOME_GECKO_WORK=\"\$HOME/.framatome-gecko-build\"" ;;
+esac
+ok "work dir is space-free: $WORK_DIR"
+
+# mach Python: Firefox 140's mach supports Python <= 3.12 ("Consider running Mach
+# with Python 3.12 or lower"). The host `python3` may be newer (3.13/3.14), which
+# warns and risks a mid-build failure. Select the best <=3.12 interpreter and run
+# mach under it explicitly. Fall back (with a warning) if none is installed.
+PYBIN=""
+for c in python3.12 python3.11 python3.10 python3.9; do
+  command -v "$c" >/dev/null 2>&1 && { PYBIN="$(command -v "$c")"; break; }
+done
+if [ -z "$PYBIN" ]; then
+  for c in python3.13 python3; do command -v "$c" >/dev/null 2>&1 && { PYBIN="$(command -v "$c")"; break; }; done
+  warn "no Python <=3.12 found; using $("$PYBIN" --version 2>&1) — mach prefers <=3.12."
+  warn "If the build fails on a Python error, install the recommended one: brew install python@3.12"
+fi
+[ -n "$PYBIN" ] || die "no python3 interpreter found at all"
+ok "mach Python: $("$PYBIN" --version 2>&1)  ($PYBIN)"
+
 # Patches are applied with `git apply` — they are git-diff format, so git apply is
 # the native tool: zero-fuzz, atomic (all-or-nothing, no .rej), fails loud on any
 # mismatch, and never drops to an interactive skip-prompt. (BSD `patch` on macOS
 # returns exit 0 when it SKIPS a not-found file — a silent false-positive we must
-# not build on. git apply needs no repo for --check / working-tree apply.)
+# not build on. The source tree gets its OWN git repo in Phase 3 so git apply is
+# not a silent no-op when the work dir happens to sit inside another repo.)
 ok "patch applier: git apply (zero-fuzz, fail-loud)"
 
 # gpg is a soft gate (SHA256 is the hard gate). Full sig verification if present.
@@ -340,7 +371,7 @@ ok "wrote mozconfig (Android arm64, opt, omni)"
 # =============================================================================
 step "Phase 6: mach bootstrap (GeckoView/Firefox for Android)"
 echo "  this provisions JDK 17, Android SDK, NDK r28b, and Rust targets into ~/.mozbuild ..."
-./mach --no-interactive bootstrap --application-choice="GeckoView/Firefox for Android" \
+"$PYBIN" mach --no-interactive bootstrap --application-choice="GeckoView/Firefox for Android" \
   || die "mach bootstrap failed. If it errored fetching host tooling, install Rosetta and retry."
 ok "bootstrap complete"
 
@@ -349,7 +380,7 @@ ok "bootstrap complete"
 # =============================================================================
 step "Phase 7: mach build (cross-compile to Android arm64 — hours)"
 echo "  start: $(date)"
-./mach build || die "mach build failed — see the error above. Incremental rebuilds are fast; fix and re-run."
+"$PYBIN" mach build || die "mach build failed — see the error above. Incremental rebuilds are fast; fix and re-run."
 echo "  end:   $(date)"
 ok "compile complete"
 
@@ -363,13 +394,13 @@ publish_pair() {
   # $1 = variant word: Release | Debug
   local v="$1"
   echo "  trying ${v} publication ..."
-  ./mach gradle \
+  "$PYBIN" mach gradle \
     "geckoview:publishWithGeckoBinaries${v}PublicationToMavenLocal" \
     "exoplayer2:publish${v}PublicationToMavenLocal"
 }
 if publish_pair Release; then ok "published Release variant"
 elif publish_pair Debug;   then warn "Release task unavailable — published Debug variant"
-else die "both Release and Debug publish tasks failed. Inspect: ./mach gradle geckoview:tasks --all | grep -i publish"; fi
+else die "both Release and Debug publish tasks failed. Inspect: $PYBIN mach gradle geckoview:tasks --all | grep -i publish"; fi
 
 # =============================================================================
 # PHASE 9 — Locate, verify internals, normalize coordinate
