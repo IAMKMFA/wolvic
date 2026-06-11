@@ -1,0 +1,45 @@
+# Vendored WebXR patch set — provenance pin
+#
+# These are Igalia's WebXR patches for Gecko/Firefox ESR 140, vendored into this
+# repo so the Framatome Player engine is reproducible WITHOUT depending on
+# Igalia's repository staying online. They are MPL-2.0 (file-level copyleft);
+# license headers in each patched source file are preserved by the patches.
+#
+# build-gecko-webxr.sh applies exactly this directory (gecko-140esr/) onto a
+# verified firefox-140.8.0esr source tree. If you re-pull a newer patch set,
+# update this file in the same commit.
+
+source_repo      = https://github.com/Igalia/wolvic-gecko-patches
+source_branch    = main
+pinned_commit    = 25472ba3d3e114ec14ff7c7b6fb4ab7b24818f52
+pinned_commit_msg= Add patches for 140 ESR
+pinned_commit_date = 2026-04-06T18:20:01Z
+patch_dir        = gecko-140esr
+patch_count      = 13
+license          = MPL-2.0
+vendored_on      = 2026-06-11
+
+# Target Gecko source (what these patches were cut against / apply cleanly onto):
+gecko_version    = 140.8.0esr            # Firefox ESR; Wolvic v1.9 marketing version = 140.8.0
+source_tarball   = https://archive.mozilla.org/pub/firefox/releases/140.8.0esr/source/firefox-140.8.0esr.source.tar.xz
+source_sha256    = 57a7f339ef68273f6597d8074a841fa053f63a21d1f609ab0074a26c063282e6
+
+# Numbering gaps (no 0001/0007/0008/0011) are EXPECTED — those were upstreamed or
+# are build-system patches not needed for our target. The present 13 are
+# self-consistent and apply standalone with `patch -p1 --fuzz=0`.
+#
+# Patch format note: filenames look like `git format-patch` output but the
+# contents are BARE `git diff` (start at `diff --git`, no From/Subject header).
+# `git am` FAILS on them; apply with `patch -p1` or `git apply -p1` (zero-fuzz).
+#
+# The ABI patch (0016-bump-externalvr-version) sets:
+#   SHMEM_VERSION       "0.0.13"
+#   kVRExternalVersion  21
+# which MUST equal app/src/main/cpp/moz_external_vr.h. If a future patch set
+# bumps these, the app header must move in lockstep (that is the trigger to also
+# rebase the app — see ENGINE_OWNERSHIP.md Track 2).
+
+# Files touched (all VR/WebXR plumbing — nothing else):
+#   dom/vr/*  gfx/vr/*  gfx/gl/SharedSurfaceEGL.h  toolkit/moz.configure
+#   mobile/android/geckoview/.../GeckoAppShell.java
+#   mobile/android/exoplayer2/.../{WakeLockManager,util/Util}.java

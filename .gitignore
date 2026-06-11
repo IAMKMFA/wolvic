@@ -81,12 +81,17 @@ app/agconnect-services.json
 
 # Token files
 .mls_token
-gecko-patches/
-gecko-patches/
 third_party/
 release/
 local.properties
 user.properties
 
-# Local WebXR-patched GeckoView Maven repo (see build.gradle geckoMavenRepo)
+# Engine build work tree (firefox source + obj dir, tens of GB) — never commit.
+.gecko-build/
+
+# NOTE: gecko-patches/ IS tracked now (MPL-2.0 WebXR patches, ~76 KB; see PINNED.txt)
+# and so is gecko-patches/BUILD_PROVENANCE.txt — it's the committed text record of
+# the engine's sha256 (the disclosable supply-chain proxy for the ignored AAR).
+
+# Local WebXR-patched GeckoView Maven repo (the 2 GB AARs; see build.gradle geckoMavenRepo)
 gecko-maven/
