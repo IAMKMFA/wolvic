@@ -7,6 +7,8 @@ import com.framatome.vr.content.library.LibraryItem
 import com.framatome.vr.content.library.LibraryScanner
 import java.io.File
 import java.util.Locale
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Player-side view of the shared media library. Scans the SAME storage tree
@@ -34,25 +36,72 @@ object MediaLibraryIndex {
 
   @Volatile
   private var cached: Snapshot? = null
+  private val refreshing = AtomicBoolean(false)
+  // Single daemon thread keeps library scans off the NanoHTTPD request threads.
+  private val scanExecutor = Executors.newSingleThreadExecutor { r ->
+    Thread(r, "media-library-index").apply { isDaemon = true }
+  }
 
   fun libraryRoots(): List<File> = listOf(
     File(Environment.getExternalStorageDirectory(), "FramatomeVR/Library"),
     File(Environment.getExternalStorageDirectory(), "FramatomeVR/Data")
   )
 
-  @Synchronized
+  /**
+   * Stale-while-revalidate: returns the cached snapshot immediately and, when it
+   * has gone stale, refreshes on a background thread. Only the first call (cold
+   * cache) does a synchronous scan — and [prewarm] front-runs even that at
+   * server start. Request threads (hub HTML, playlists, /health polls) therefore
+   * never block on the directory walk.
+   */
   fun snapshot(force: Boolean = false): Snapshot {
     val now = System.currentTimeMillis()
     val stamp = rootsStamp()
-    cached?.let { snapshot ->
-      if (!force && now - snapshot.scannedAtMs < TTL_MS && snapshot.rootsStamp == stamp) {
-        return snapshot
+    val current = cached
+    if (current == null || force) {
+      return scanNow(stamp)
+    }
+    val fresh = now - current.scannedAtMs < TTL_MS && current.rootsStamp == stamp
+    if (!fresh) triggerRefresh()
+    return current
+  }
+
+  /** Kick a background scan at startup so the first hub load is already warm. */
+  fun prewarm() {
+    triggerRefresh()
+  }
+
+  @Synchronized
+  private fun scanNow(stamp: Long): Snapshot {
+    // Re-check under lock in case another thread populated it while we waited.
+    val now = System.currentTimeMillis()
+    cached?.let { c ->
+      if (now - c.scannedAtMs < TTL_MS && c.rootsStamp == rootsStamp()) return c
+    }
+    val fresh = buildSnapshot()
+    cached = fresh
+    return fresh
+  }
+
+  private fun triggerRefresh() {
+    if (!refreshing.compareAndSet(false, true)) return
+    scanExecutor.execute {
+      try {
+        val fresh = buildSnapshot()
+        cached = fresh
+      } catch (t: Throwable) {
+        // Leave the previous snapshot in place; try again next staleness check.
+      } finally {
+        refreshing.set(false)
       }
     }
+  }
 
+  private fun buildSnapshot(): Snapshot {
+    val now = System.currentTimeMillis()
     val items = runCatching { LibraryScanner.scan(libraryRoots()) }.getOrDefault(emptyList())
     val byTitle = compareBy<LibraryItem> { it.title.lowercase(Locale.US) }
-    val fresh = Snapshot(
+    return Snapshot(
       videos = items
         .filter { it.contentType == ContentType.Video360 || it.contentType == ContentType.Video2D }
         .sortedWith(byTitle),
@@ -63,11 +112,9 @@ object MediaLibraryIndex {
         .filter { it.contentType == ContentType.Model3D }
         .sortedWith(byTitle),
       scannedAtMs = now,
-      rootsStamp = stamp,
+      rootsStamp = rootsStamp(),
       storageGranted = isStorageGranted()
     )
-    cached = fresh
-    return fresh
   }
 
   fun isStorageGranted(): Boolean {
@@ -78,8 +125,9 @@ object MediaLibraryIndex {
     }
   }
 
-  /** Cheap change signal: a file added/removed in a root bumps its mtime. */
-  private fun rootsStamp(): Long {
+  /** Cheap change signal: a file added/removed in a root bumps its mtime.
+   *  Public so the hub can fold it into its own HTML-cache stamp. */
+  fun rootsStamp(): Long {
     return libraryRoots().sumOf { root -> if (root.exists()) root.lastModified() else 0L }
   }
 }

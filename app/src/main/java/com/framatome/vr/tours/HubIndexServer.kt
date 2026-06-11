@@ -35,6 +35,14 @@ object HubIndexServer {
     // hub doesn't re-walk every tour on every request.
     private val tourSizeCache = ConcurrentHashMap<String, Pair<Long, String>>()
 
+    // The hub HTML is rebuilt only when the content (or its enablement) changes,
+    // not on every GET /. Stamp = tours+media filesystem mtimes; the short TTL
+    // also picks up settings-sheet enable/disable toggles within a few seconds.
+    private const val HTML_TTL_MS = 3_000L
+    @Volatile private var cachedHtml: String? = null
+    @Volatile private var cachedHtmlStamp = 0L
+    @Volatile private var cachedHtmlAtMs = 0L
+
     fun generateIndexHtml(context: Context): String {
         // Discover tours from the SAME directory LocalWebServer serves so every
         // card the hub renders resolves at runtime instead of 404-ing.
@@ -42,6 +50,33 @@ object HubIndexServer {
         if (!toursRoot.exists()) {
             toursRoot.mkdirs()
         }
+
+        val stamp = hubStamp(toursRoot)
+        val now = System.currentTimeMillis()
+        cachedHtml?.let { html ->
+            if (cachedHtmlStamp == stamp && now - cachedHtmlAtMs < HTML_TTL_MS) {
+                return html
+            }
+        }
+
+        val html = renderIndexHtml(context, toursRoot)
+        cachedHtml = html
+        cachedHtmlStamp = stamp
+        cachedHtmlAtMs = now
+        return html
+    }
+
+    /** Cheap content-change signal for the HTML cache: tour dir mtimes + the
+     *  media library stamp. No directory walk, no scan. */
+    private fun hubStamp(toursRoot: File): Long {
+        var s = toursRoot.lastModified()
+        toursRoot.listFiles()?.forEach { child ->
+            if (child.isDirectory && !child.name.startsWith(".")) s = s * 31 + child.lastModified()
+        }
+        return s * 31 + MediaLibraryIndex.rootsStamp()
+    }
+
+    private fun renderIndexHtml(context: Context, toursRoot: File): String {
         val settingsStore = (context.applicationContext as? android.app.Application)
             ?.let(::TourSettingsStore)
         val dateFormat = SimpleDateFormat("MMM d, yyyy", Locale.US)

@@ -6,8 +6,10 @@ import com.framatome.vr.content.ImmersiveIntentFactory
 import com.framatome.vr.tours.injection.TourHtmlInjector
 import com.igalia.wolvic.R
 import fi.iki.elonen.NanoHTTPD
+import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
+import java.io.RandomAccessFile
 import java.net.URLConnection
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -25,6 +27,9 @@ class LocalWebServer private constructor(
     // WebXR viewer can reach Library/* as well as Tours/*.
     private val mediaRootCanonical: File = (baseDir.parentFile ?: baseDir).canonicalFile
     private val gogglesUuidCache = ConcurrentHashMap<String, TourHtmlInjector.GogglesUuidEntry>()
+    // Cached bytes for immutable bundled assets (access-ordered LRU, byte-bounded
+    // in cacheAsset). Guarded by synchronized(assetCache) on writes.
+    private val assetCache = object : LinkedHashMap<String, ByteArray>(16, 0.75f, true) {}
 
     override fun serve(session: IHTTPSession): Response {
         return try {
@@ -186,11 +191,22 @@ class LocalWebServer private constructor(
                     addHeader("Content-Range", "bytes */$fileLength")
                 }
 
-            val fis = FileInputStream(file).apply { skipFully(range.first) }
+            // RandomAccessFile.seek is an explicit O(1) lseek; route the body
+            // through the channel so closing the response stream (NanoHTTPD does
+            // this even on client disconnect) closes the underlying file. Any
+            // failure before handoff closes the RAF so it can't leak.
+            val raf = RandomAccessFile(file, "r")
+            val stream = try {
+                raf.seek(range.first)
+                BufferedInputStream(java.nio.channels.Channels.newInputStream(raf.channel))
+            } catch (t: Throwable) {
+                runCatching { raf.close() }
+                throw t
+            }
             return newFixedLengthResponse(
                 Response.Status.PARTIAL_CONTENT,
                 mime,
-                fis,
+                stream,
                 range.last - range.first + 1
             ).apply {
                 addHeader("Accept-Ranges", "bytes")
@@ -219,7 +235,14 @@ class LocalWebServer private constructor(
 
     private fun serveAsset(assetPath: String): Response {
         return try {
-            val bytes = appContext.assets.open(assetPath).use { it.readBytes() }
+            // Bundled assets (viewer.js, the model viewer + ~1.9MB three.js
+            // vendor, CSS, wasm) are immutable for the process lifetime, so cache
+            // the bytes once instead of re-reading + re-allocating per request.
+            val bytes = assetCache[assetPath] ?: run {
+                val read = appContext.assets.open(assetPath).use { it.readBytes() }
+                cacheAsset(assetPath, read)
+                read
+            }
             val mime = URLConnection.guessContentTypeFromName(assetPath) ?: defaultMime(assetPath)
             newFixedLengthResponse(
                 Response.Status.OK,
@@ -229,6 +252,21 @@ class LocalWebServer private constructor(
             ).apply { addHeader("Cache-Control", "no-cache") }
         } catch (e: java.io.FileNotFoundException) {
             notFound()
+        }
+    }
+
+    private fun cacheAsset(path: String, bytes: ByteArray) {
+        // Skip pathologically large assets; bound the total cache footprint.
+        if (bytes.size > ASSET_CACHE_MAX_BYTES) return
+        synchronized(assetCache) {
+            assetCache[path] = bytes
+            var total = assetCache.values.sumOf { it.size.toLong() }
+            val it = assetCache.entries.iterator()
+            while (total > ASSET_CACHE_MAX_BYTES && it.hasNext()) {
+                val e = it.next()
+                total -= e.value.size.toLong()
+                it.remove()
+            }
         }
     }
 
@@ -343,6 +381,8 @@ class LocalWebServer private constructor(
         private const val HOST = "127.0.0.1"
         const val PORT: Int = 18080
         private const val HEALTH_JSON = """{"status":"ok"}"""
+        // Total bundled-asset cache cap (three.js vendor + viewer/model JS+CSS ≈ 2.5MB).
+        private const val ASSET_CACHE_MAX_BYTES = 24L * 1024 * 1024
 
         // Route prefixes (no leading slash, matched after removePrefix("/")).
         private const val VIEWER_PREFIX = "__viewer__/"
@@ -408,20 +448,5 @@ class LocalWebServer private constructor(
         }
 
         fun baseUrl(): String = "http://$HOST:$PORT"
-    }
-}
-
-private fun FileInputStream.skipFully(bytesToSkip: Long) {
-    var remaining = bytesToSkip
-    while (remaining > 0L) {
-        val skipped = skip(remaining)
-        if (skipped <= 0L) {
-            if (read() == -1) {
-                break
-            }
-            remaining--
-        } else {
-            remaining -= skipped
-        }
     }
 }

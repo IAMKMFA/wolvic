@@ -15,6 +15,8 @@ object FramatomeInitializer {
     fun init(context: Context) {
         Log.i(TAG, "Starting Framatome Player local web server")
         LocalWebServer.ensureRunning(context.applicationContext)
+        // Warm the library index off-thread so the first hub load is instant.
+        MediaLibraryIndex.prewarm()
     }
 
     @JvmStatic
