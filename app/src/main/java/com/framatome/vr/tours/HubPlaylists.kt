@@ -53,7 +53,9 @@ object HubPlaylists {
       right = item.rightEyeFile()?.let { MediaViewerUrls.mediaRelativePath(it.absolutePath) },
       badge = ContentBadges.labelFor(item.contentType, item.projection),
       thumb = ThumbnailStore.thumbUrlFor(item),
-      description = item.description
+      description = item.description,
+      audio = item.audio,
+      captions = item.captionsFile()?.let { MediaViewerUrls.mediaRelativePath(it.absolutePath) }
     )
   }
 }

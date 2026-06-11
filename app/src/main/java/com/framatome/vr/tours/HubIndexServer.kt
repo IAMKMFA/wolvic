@@ -209,6 +209,8 @@ $body
             stereo = item.stereo,
             right = item.rightEyeFile()?.let { MediaViewerUrls.mediaRelativePath(it.absolutePath) },
             id = src,
+            captions = item.captionsFile()?.let { MediaViewerUrls.mediaRelativePath(it.absolutePath) },
+            audio = item.audio,
             playlistKey = playlistKey,
             playlistIndex = index
         )

@@ -1,10 +1,11 @@
-# Vendored third-party runtime — Framatome Player model viewer
+# Vendored third-party runtime — Framatome Player media & model viewers
 
 Fetched by [`scripts/vendor-three.sh`](../../../../../../../scripts/vendor-three.sh)
-(pinned version + fixed file list + automatic transitive-import resolution).
-The headset has no network: everything the model viewer imports ships in the
-APK from this directory. Never edit vendored files; bump the version in the
-script, re-run it, and refresh the manifest below.
+(model viewer) and [`scripts/vendor-omnitone.sh`](../../../../../../../scripts/vendor-omnitone.sh)
+(spatial audio) — each pins a version + fixed file list. The headset has no
+network: everything the viewers load ships in the APK from this directory.
+Never edit vendored files; bump the version in the relevant script, re-run it,
+and refresh the matching manifest below.
 
 ## Components & licenses
 
@@ -16,13 +17,22 @@ script, re-run it, and refresh the manifest below.
 | meshoptimizer decoder | `three/addons/libs/meshopt_decoder.module.js` (if present) | bundled with three 0.180.0 | MIT © Arseny Kapoulkine |
 | ktx-parse | `three/addons/libs/ktx-parse.module.js` | bundled with three 0.180.0 | MIT © Don McCurdy |
 | zstddec (embedded zstd wasm) | `three/addons/libs/zstddec.module.js` | bundled with three 0.180.0 | MIT wrapper; zstd BSD-3-Clause © Meta Platforms |
+| Omnitone (spatial/ambisonic audio) | `omnitone/omnitone.min.js`, `omnitone/LICENSE` | npm `omnitone@1.3.0` | Apache-2.0 © Google Inc. |
 
 All licenses permit redistribution inside a commercial APK provided notices are
 preserved — this file is that notice. Upstream license texts:
 <https://github.com/mrdoob/three.js/blob/dev/LICENSE>,
 <https://github.com/google/draco/blob/main/LICENSE>,
 <https://github.com/BinomialLLC/basis_universal/blob/master/LICENSE>,
-<https://github.com/zeux/meshoptimizer/blob/master/LICENSE.md>.
+<https://github.com/zeux/meshoptimizer/blob/master/LICENSE.md>,
+<https://github.com/GoogleChrome/omnitone/blob/master/LICENSE>.
+
+**Omnitone HRIR is offline-safe.** The First-Order Ambisonic head-related
+impulse responses are embedded as base64 WAV inside `omnitone.min.js`;
+`createFOARenderer(ctx)` with no config decodes them locally, so no `.wav`
+resources are fetched and nothing needs a network. The viewer lazy-loads this
+bundle only when an item is flagged `audio: "ambisonic"` — the default audio
+path never touches it.
 
 ## SHA-256 manifest (three@0.180.0)
 
@@ -44,4 +54,11 @@ fda7e946b8e0b5ab39b779206589e7a1079a22eb24efb89d7223e03fdfb1f751  three/addons/u
 5ac7095fd566bc9ae48376055fd66edf27cb9ebbf9e1269dc206bfd4933ae9eb  three/addons/utils/WorkerPool.js
 61ba0df005b05991361d040d8ff670e1aadfd0ce7aeebd1fdb0725957a8957de  three/three.core.min.js
 e2b5ee6bccd38fd6d8a2428546b83c5f2426d84b152ef82be8055556e3b40eb6  three/three.module.min.js
+```
+
+## SHA-256 manifest (omnitone@1.3.0)
+
+```
+6dd846d6373bc9eeee3ac951b0f2c918b65cc405dca6bbeca29ded68339a6787  omnitone/LICENSE
+8000ccca03511b3fbe1734f8a9da3314da7ab00439573edae0d7a25995ddfd9c  omnitone/omnitone.min.js
 ```
