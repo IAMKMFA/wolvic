@@ -449,34 +449,41 @@ cp "$GV_AAR" "$GV_DST/geckoview-default-$GV_VERSION.aar"
 GV_SRC_POM="${GV_AAR%.aar}.pom"
 [ -f "$GV_SRC_POM" ] && cp "$GV_SRC_POM" "$GV_DST/geckoview-default-$GV_VERSION.mozilla-generated.pom.bak"
 
-# 9e. Write the minimal POM (matches the proven-good 128 shape; bump version only).
-cat > "$GV_DST/geckoview-default-$GV_VERSION.pom" <<EOF
+# 9e. Write the geckoview-default POM by NORMALIZING Mozilla's generated POM.
+#     This is load-bearing: GeckoView 140's runtime (GeckoRuntime.init ->
+#     DebugConfig.fromFile) needs org.yaml:snakeyaml, plus androidx core/lifecycle
+#     and play-services-fido. A minimal POM drops those -> ClassNotFoundException
+#     at launch. We transform the generated POM's coordinate (omni->default,
+#     snapshot version -> $GV_VERSION for the project AND the exoplayer2 dep) and
+#     keep ALL its transitive dependencies.
+GV_POM="$GV_DST/geckoview-default-$GV_VERSION.pom"
+SRC_ART="$(sed -nE 's@.*<artifactId>(geckoview-[a-z0-9-]*)</artifactId>.*@\1@p' "$GV_SRC_POM" 2>/dev/null | head -1)"
+SRC_VER="$(sed -nE 's@.*<version>([0-9][^<]*-SNAPSHOT)</version>.*@\1@p' "$GV_SRC_POM" 2>/dev/null | head -1)"
+if [ -f "$GV_SRC_POM" ] && [ -n "$SRC_ART" ] && [ -n "$SRC_VER" ]; then
+  sed -e "s/${SRC_ART}/geckoview-default/g" -e "s/${SRC_VER}/$GV_VERSION/g" "$GV_SRC_POM" > "$GV_POM"
+  # sanity: must name geckoview-default at GV_VERSION, carry snakeyaml, no SNAPSHOT left.
+  grep -q "<artifactId>geckoview-default</artifactId>" "$GV_POM" \
+    && grep -q "snakeyaml" "$GV_POM" \
+    && ! grep -q "SNAPSHOT" "$GV_POM" \
+    || die "POM normalization failed (artifactId/snakeyaml/SNAPSHOT check). Inspect $GV_POM"
+  ok "geckoview POM derived from Mozilla's generated POM (full transitive deps incl. snakeyaml)"
+else
+  warn "Mozilla generated POM unavailable — writing MINIMAL POM (RISK: GeckoRuntime needs snakeyaml et al.)"
+  cat > "$GV_POM" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.mozilla.geckoview</groupId>
   <artifactId>geckoview-default</artifactId>
   <version>$GV_VERSION</version>
   <packaging>aar</packaging>
-  <name>GeckoView</name>
-  <description>Framatome WebXR-patched GeckoView (Firefox ESR $MOZ_VERSION + Igalia gecko-140esr patches). Built from source; see gecko-patches/BUILD_PROVENANCE.txt.</description>
-EOF
-if [ "$HAVE_EXO" = "yes" ]; then
-  cat >> "$GV_DST/geckoview-default-$GV_VERSION.pom" <<EOF
   <dependencies>
-    <dependency>
-      <groupId>org.mozilla.geckoview</groupId>
-      <artifactId>geckoview-exoplayer2-default</artifactId>
-      <version>$GV_VERSION</version>
-      <type>aar</type>
-      <scope>runtime</scope>
-    </dependency>
+    <dependency><groupId>org.mozilla.geckoview</groupId><artifactId>geckoview-exoplayer2-default</artifactId><version>$GV_VERSION</version><type>aar</type><scope>runtime</scope></dependency>
+    <dependency><groupId>org.yaml</groupId><artifactId>snakeyaml</artifactId><version>2.2</version></dependency>
   </dependencies>
+</project>
 EOF
 fi
-echo "</project>" >> "$GV_DST/geckoview-default-$GV_VERSION.pom"
 
 if [ "$HAVE_EXO" = "yes" ]; then
   cp "$EXO_AAR" "$EXO_DST/geckoview-exoplayer2-default-$GV_VERSION.aar"

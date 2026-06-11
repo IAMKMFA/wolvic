@@ -162,8 +162,16 @@ find_library( # Sets the name of the path variable.
               android )
 
 add_library(ovrplatform-lib SHARED IMPORTED)
-set_target_properties(ovrplatform-lib PROPERTIES IMPORTED_LOCATION
-                      ${CMAKE_SOURCE_DIR}/../third_party/OVRPlatformSDK/Android/libs/${ANDROID_ABI}/libovrplatformloader.so )
+# libovrplatformloader.so (a Meta prebuilt) carries NO DT_SONAME. Without
+# IMPORTED_NO_SONAME, newer NDK lld records the full IMPORTED_LOCATION *path* as
+# libnative-lib's DT_NEEDED (../../../../../third_party/.../libovrplatformloader.so),
+# so the Android loader can't find it at runtime even though it's bundled in
+# lib/arm64-v8a/ — UnsatisfiedLinkError at VRBrowserActivity.<clinit>. This makes
+# CMake link by basename (-l form) so DT_NEEDED is just libovrplatformloader.so.
+set_target_properties(ovrplatform-lib PROPERTIES
+                      IMPORTED_LOCATION
+                      ${CMAKE_SOURCE_DIR}/../third_party/OVRPlatformSDK/Android/libs/${ANDROID_ABI}/libovrplatformloader.so
+                      IMPORTED_NO_SONAME TRUE )
 
 add_library(hvr-lib SHARED IMPORTED)
 set_target_properties(hvr-lib PROPERTIES IMPORTED_LOCATION

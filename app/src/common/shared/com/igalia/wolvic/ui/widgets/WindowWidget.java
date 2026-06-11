@@ -794,11 +794,17 @@ public class WindowWidget extends UIWidget implements SessionChangeListener,
                 session.getTextInput().setView(this);
             }
             mSession.updateLastUse();
-            mWidgetManager.getNavigationBar().addNavigationBarListener(mNavigationBarListener);
+            // FRAMATOME_MODE has no navigation bar (VRBrowserActivity skips creating it);
+            // guard like the other getNavigationBar() call sites or this NPEs on window activate.
+            if (mWidgetManager.getNavigationBar() != null) {
+                mWidgetManager.getNavigationBar().addNavigationBarListener(mNavigationBarListener);
+            }
             mViewModel.setIsDesktopMode(mSession.getUaMode() == WSessionSettings.USER_AGENT_MODE_DESKTOP);
 
         } else {
-            mWidgetManager.getNavigationBar().removeNavigationBarListener(mNavigationBarListener);
+            if (mWidgetManager.getNavigationBar() != null) {
+                mWidgetManager.getNavigationBar().removeNavigationBarListener(mNavigationBarListener);
+            }
             updateBookmarked();
 
         }
@@ -1181,7 +1187,9 @@ public class WindowWidget extends UIWidget implements SessionChangeListener,
             mTexture.release();
             mTexture = null;
         }
-        mWidgetManager.getNavigationBar().removeNavigationBarListener(mNavigationBarListener);
+        if (mWidgetManager.getNavigationBar() != null) {
+            mWidgetManager.getNavigationBar().removeNavigationBarListener(mNavigationBarListener);
+        }
         SessionStore.get().getBookmarkStore().removeListener(mBookmarksListener);
         mPromptDelegate.detachFromWindow();
         super.releaseWidget();
