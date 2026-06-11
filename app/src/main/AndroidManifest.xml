@@ -39,6 +39,10 @@
             android:exported="true"
             android:configChanges="density|keyboard|keyboardHidden|navigation|orientation|screenSize|uiMode|locale|layoutDirection"
             android:windowSoftInputMode="stateAlwaysHidden">
+            <intent-filter>
+                <action android:name="com.framatome.vr.pro.action.LAUNCH_CONTENT" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
             <!-- Declares Framatome VR as a browser app -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

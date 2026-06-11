@@ -31,12 +31,12 @@ Standard browsers on Quest can render 3DVista tours, but they lack true WebXR im
 │  └─────────────────┬─────────────────────────┘  │
 │                    │                             │
 │  ┌─────────────────▼─────────────────────────┐  │
-│  │       Framatome Tour Subsystem (Kotlin)   │  │
+│  │       Framatome Player Subsystem (Kotlin) │  │
 │  │  - NanoHTTPD on localhost:18080           │  │
-│  │  - Zip import pipeline (auto-extract)     │  │
-│  │  - HTML tour menu with intro animation    │  │
-│  │  - Branded "Enter VR" overlay injection   │  │
-│  │  - Tour enable/disable, delete, rescan    │  │
+│  │  - Serves /sdcard/FramatomeVR/Tours/      │  │
+│  │  - 3DVista/FME skin injection             │  │
+│  │  - Native media viewers (360/2D)          │  │
+│  │  - Unified LAUNCH_CONTENT routing         │  │
 │  └───────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────┘
 ```
@@ -45,14 +45,16 @@ Standard browsers on Quest can render 3DVista tours, but they lack true WebXR im
 
 | Component | Location | Purpose |
 |---|---|---|
-| `LocalWebServer` | `tours/LocalWebServer.kt` | NanoHTTPD server on `localhost:18080`, serves tour files and injects the VR button overlay |
-| `TourIndexServer` | `tours/TourIndexServer.kt` | Generates the branded HTML tour menu with intro animation |
-| `PublicInboxImporter` | `tours/PublicInboxImporter.kt` | Scans external storage for `.zip` tour packages, extracts and validates them |
-| `FramatomeInitializer` | `tours/FramatomeInitializer.kt` | Bootstraps the server and runs initial import on app launch |
-| `TourListViewModel` | `tours/TourListViewModel.kt` | Tour state management — rescan, delete, enable/disable |
-| `TourSettingsStore` | `tours/TourSettingsStore.kt` | Persists per-tour enable/disable preferences |
+| `LocalWebServer` | `tours/LocalWebServer.kt` | NanoHTTPD on `localhost:18080`; serves tours + `/health`; injects 3DVista/FME overrides |
+| `FramatomeInitializer` | `tours/FramatomeInitializer.kt` | Starts the player web server on app boot |
+| `MediaLaunchRouter` | `immersive/MediaLaunchRouter.kt` | Routes `LAUNCH_CONTENT` to WebXR or native viewer Activities |
+| `FramatomeImmersiveActivity` | `immersive/FramatomeImmersiveActivity.java` | Framatome entry point; kiosk tour relaunch on new intents |
+| `TourIndexServer` | `tours/TourIndexServer.kt` | Optional branded HTML tour menu at `/` |
 
-All Framatome code lives under `app/src/main/java/com/framatome/vr/tours/`.
+Zip ingest and the operator menu live in the **launcher APK** (`com.framatome.vr`). This
+player APK receives typed launch intents and handles all playback.
+
+Framatome-owned code lives under `app/src/main/java/com/framatome/vr/`.
 
 ## User Experience
 
@@ -65,37 +67,29 @@ All Framatome code lives under `app/src/main/java/com/framatome/vr/tours/`.
 
 ### Deploying Tours
 
-Tours are standard 3DVista web exports (folder with `index.html` + assets). Three delivery methods:
+Tours are standard 3DVista web exports (folder with `index.html` + assets). Production
+delivery is through the **Framatome VR launcher** (`com.framatome.vr`), which ingests
+zips into `/sdcard/FramatomeVR/Tours/`. Framatome Player serves those folders on
+`:18080` when a tour is launched.
 
 **Via Arbor XR (production)**
-1. Export tour from 3DVista as a web package (`.zip`)
-2. Upload to Arbor XR under *Content > Files*
-3. Enable "Extract Zip on Device"
-4. Target path: device external storage under `FramatomeVR/Tours/` or `FramatomeVRPro/Tours/`
-5. The app auto-detects and imports on next launch or rescan
+1. Install both launcher and Framatome Player APKs on the headset group
+2. Export tour from 3DVista as a web package (`.zip`)
+3. Upload to Arbor XR under *Content > Files*
+4. Target path: `/sdcard/FramatomeVR/Data/`
+5. The launcher ingests on next scan; tap the tour card to open in Framatome Player
 
 **Via ADB (development)**
 ```bash
-# Push a zip — app will auto-extract it
-adb push MyTour.zip /sdcard/FramatomeVR/inbox/
+# Push a zip to the launcher drop folder
+adb push MyTour.zip /sdcard/FramatomeVR/Data/
 
 # Or push an already-extracted tour folder
-adb push ./MyTourExport/ /sdcard/Android/data/com.framatome.vr.pro/files/tours/MyTour
+adb push ./MyTourExport/ /sdcard/FramatomeVR/Tours/MyTour
 ```
 
 **Via USB file transfer**
-Drop `.zip` files into `FramatomeVR/`, `FramatomeVR/inbox/`, `FramatomeVR/Tours/`, or `FramatomeVRPro/` on the headset's shared storage.
-
-### Import Pipeline
-
-The `PublicInboxImporter` handles all the complexity:
-- Scans multiple well-known directories on external storage
-- Extracts zips with 4GB safety cap and path traversal protection
-- Handles nested zips (up to 5 levels deep)
-- Flattens unnecessary wrapper folders to find `index.html`
-- Strips macOS/Windows junk files (`__MACOSX`, `.DS_Store`, `Thumbs.db`)
-- Deduplication via import ledger — won't re-extract unchanged zips
-- Purges invalid tours (no `index.html` = removed)
+Drop `.zip` files into `/sdcard/FramatomeVR/Data/` on the headset's shared storage.
 
 ### Tour Requirements
 
@@ -181,6 +175,6 @@ framatome-vr-wolvic/
 
 - The app runs in `FRAMATOME_MODE` (set via `BuildConfig`), which disables first-run legal dialogs, terms of service, and session restoration
 - Default VR environment is set to `void` (dark) to avoid distracting backgrounds
-- The local server injects a custom "Enter VR" button and "Home" button into every tour HTML page at serve time
+- The local server injects Quest device shims and 3DVista goggle overrides (FME-compatible) into tour HTML at serve time
 - JVM heap is set to 8GB in `gradle.properties` to handle the large GeckoView AAR during Jetifier transformation
 - Only the `oculusvrArm64GeckoGeneric` build variant is used for Quest 3 deployment

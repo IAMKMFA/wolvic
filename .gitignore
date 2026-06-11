@@ -87,3 +87,6 @@ third_party/
 release/
 local.properties
 user.properties
+
+# Local WebXR-patched GeckoView Maven repo (see build.gradle geckoMavenRepo)
+gecko-maven/

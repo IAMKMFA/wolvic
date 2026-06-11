@@ -19,9 +19,16 @@ buildscript {
 
 allprojects {
     repositories {
+        // WebXR-patched GeckoView (geckoview-default:…-SNAPSHOT) is consumed from a
+        // local Maven repository — the `…/gradle/maven` directory produced by
+        // build-gecko-webxr.sh. Configure the location without editing this file:
+        //   • -PgeckoMavenRepo=/abs/path/to/gradle/maven   (CLI), or
+        //   • geckoMavenRepo=/abs/path/to/gradle/maven      (gradle.properties)
+        // Defaults to <root>/gecko-maven so the artifact can simply be dropped in.
+        def geckoMavenRepo = project.findProperty('geckoMavenRepo') ?: "${rootDir}/gecko-maven"
         maven {
             name "LocalGeckoView"
-            url "/Users/kmfamini/.openclaw/workspace/firefox-128.14.0/obj-aarch64-unknown-linux-android/gradle/maven"
+            url geckoMavenRepo
         }
         google()
         maven { url 'https://maven.mozilla.org/maven2' }

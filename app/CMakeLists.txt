@@ -7,6 +7,13 @@ cmake_minimum_required(VERSION 3.4.1)
 project(wolvic)
 set(CMAKE_CXX_STANDARD 17)
 
+# Core include dirs (formerly passed as raw -I via gradle cppFlags). Declared
+# here so CMake quotes paths correctly even when the project path contains
+# spaces. Applies to vrb (added below) and native-lib.
+include_directories(
+    ${CMAKE_SOURCE_DIR}/src/main/cpp
+    ${CMAKE_SOURCE_DIR}/src/main/cpp/vrb/include)
+
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.

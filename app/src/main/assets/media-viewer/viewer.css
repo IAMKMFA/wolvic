@@ -1,0 +1,447 @@
+/* Framatome VR — immersive media viewer UI.
+ * Dependency-free, GeckoView-rendered. Designed for controller-as-pointer on a
+ * headset (large hit targets) and a calm, premium dark theme. */
+
+/* Brand tokens — keep in sync with core-ui FramatomeColors and the launcher's
+   glass design language (bg_launcher_window.xml). See BRANDING.md. */
+:root {
+  --fr-midnight: #0B1730;      /* FramatomeColors.BlueMidnight */
+  --fr-blue: #003F87;          /* FramatomeColors.BluePrimary */
+  --fr-bg-2: #163761;          /* FramatomeColors.BlueSurface */
+  --fr-surface: rgba(255, 255, 255, 0.10);     /* frosted glass chip */
+  --fr-surface-2: rgba(255, 255, 255, 0.08);
+  --fr-border: rgba(255, 255, 255, 0.18);
+  --fr-border-strong: rgba(255, 255, 255, 0.30);
+  --fr-accent: #F04E23;        /* FramatomeColors.Orange */
+  --fr-accent-2: #FF7A30;      /* FramatomeColors.OrangeLight */
+  --fr-accent-ink: #1a0d03;
+  --fr-text: #FFFFFF;          /* FramatomeColors.TextOnDark */
+  --fr-muted: #B8C7DC;         /* FramatomeColors.TextOnDarkSoft */
+  --fr-danger: #FFB4AB;        /* FramatomeColors.Error */
+  --fr-radius: 18px;
+  --fr-radius-sm: 12px;
+  --fr-shadow: 0 24px 70px rgba(2, 8, 20, 0.55);
+  --fr-ring: 0 0 0 3px rgba(240, 78, 35, 0.45);
+  --fr-font: "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background:
+    radial-gradient(620px 460px at 100% 0%, rgba(255, 255, 255, 0.10), transparent 70%),
+    radial-gradient(760px 560px at 0% 110%, rgba(240, 78, 35, 0.14), transparent 70%),
+    linear-gradient(135deg, var(--fr-midnight) 0%, var(--fr-blue) 52%, var(--fr-bg-2) 100%);
+  color: var(--fr-text);
+  font-family: var(--fr-font);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* The GL canvas only matters in preview/immersive modes. Its context is
+   created with alpha:false, which composites as opaque black — so it must be
+   hidden on the launch page for the glass window gradient to show through. */
+#gl {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #000;
+  z-index: 0;
+  visibility: hidden;
+}
+body.preview #gl,
+body.immersive #gl { visibility: visible; }
+
+/* ----------------------------------------------------------------- layout -- */
+
+#app {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(14px, 2.4vh, 28px);
+  padding: clamp(16px, 3.2vh, 34px) clamp(20px, 5vw, 64px);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: linear-gradient(150deg, var(--fr-accent), #d9480f);
+  display: grid;
+  place-items: center;
+  color: var(--fr-accent-ink);
+  font-weight: 900;
+  font-size: 18px;
+  box-shadow: 0 8px 22px rgba(240, 78, 35, 0.35);
+}
+.brand-text { display: flex; align-items: baseline; gap: 7px; letter-spacing: 0.24em; }
+.brand-mark { font-weight: 800; font-size: 15px; }
+.brand-sub { font-weight: 700; font-size: 15px; color: var(--fr-accent); }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fr-text);
+  white-space: nowrap;
+}
+.badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fr-accent); box-shadow: 0 0 10px var(--fr-accent); }
+.badge[hidden] { display: none; }
+
+/* ------------------------------------------------------------------ stage -- */
+
+.stage-wrap {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 2vh, 20px);
+}
+
+#title {
+  margin: 0;
+  font-size: clamp(20px, 3.4vw, 34px);
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  text-align: center;
+  max-width: 90vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#stage {
+  position: relative;
+  width: min(78vw, 1040px);
+  height: min(52vh, 600px);
+  border-radius: var(--fr-radius);
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(45deg, #0c1a28 0 18px, #0a1622 18px 36px);
+  box-shadow: var(--fr-shadow);
+  border: 1px solid var(--fr-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#preview { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+#preview img, #preview video, #preview canvas {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Loader overlay -------------------------------------------------------- */
+#loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(11, 23, 48, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: opacity 0.35s ease;
+}
+#loader[hidden] { display: none; }
+.spinner {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.12);
+  border-top-color: var(--fr-accent);
+  animation: fr-spin 0.9s linear infinite;
+}
+.loader-label { color: var(--fr-muted); font-size: 14px; letter-spacing: 0.03em; }
+@keyframes fr-spin { to { transform: rotate(360deg); } }
+
+/* Error card ------------------------------------------------------------ */
+#errorCard {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 8% 12%;
+  text-align: center;
+  background: rgba(11, 23, 48, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.error-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(255, 180, 171, 0.14);
+  border: 1px solid rgba(255, 180, 171, 0.4);
+  color: var(--fr-danger);
+}
+.error-title { font-size: 19px; font-weight: 700; margin: 0; }
+.error-message { color: var(--fr-muted); font-size: 14px; margin: 0; max-width: 460px; }
+.error-file {
+  color: var(--fr-text);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0;
+  max-width: 460px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.error-file:empty { display: none; }
+.error-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+body.error #errorCard { display: flex; }
+body.error #loader { display: none; }
+
+/* ------------------------------------------------------------- video bar -- */
+
+#controls {
+  width: min(78vw, 1040px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+#controls[hidden] { display: none; }
+
+.time { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--fr-muted); min-width: 46px; text-align: center; }
+
+/* Scrubber */
+#scrub {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  outline: none;
+  cursor: pointer;
+}
+#scrub::-moz-range-progress { background: var(--fr-accent); height: 6px; border-radius: 999px; }
+#scrub::-moz-range-track { background: transparent; height: 6px; border-radius: 999px; }
+#scrub::-moz-range-thumb {
+  width: 18px; height: 18px; border: none; border-radius: 50%;
+  background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+#scrub::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+#scrub:focus-visible { box-shadow: var(--fr-ring); }
+
+/* ----------------------------------------------------------------- footer -- */
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.actions { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; align-items: center; }
+
+#status { color: var(--fr-muted); margin: 0; min-height: 1.2em; font-size: 14px; text-align: center; }
+.vr-hint {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--fr-muted); font-size: 13px;
+}
+.vr-hint[hidden] { display: none; }
+
+/* ----------------------------------------------------------------- buttons - */
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  transition: transform 0.08s ease, background 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--fr-text);
+}
+button:active { transform: scale(0.96); }
+button:focus-visible { outline: none; box-shadow: var(--fr-ring); }
+button svg { display: block; }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--fr-accent), var(--fr-accent-2));
+  color: var(--fr-accent-ink);
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  padding: 15px 30px;
+  font-size: 16px;
+  box-shadow: 0 12px 30px rgba(240, 78, 35, 0.32);
+}
+.btn-primary:hover { filter: brightness(1.06); }
+.btn-primary[hidden] { display: none; }
+
+.btn-ghost {
+  background: var(--fr-surface-2);
+  border-color: var(--fr-border-strong);
+  padding: 14px 26px;
+  font-weight: 600;
+}
+.btn-ghost:hover { border-color: var(--fr-text); }
+.btn-ghost[hidden] { display: none; }
+
+.btn-icon {
+  width: 46px; height: 46px; padding: 0;
+  background: var(--fr-surface-2);
+  border-color: var(--fr-border);
+  flex: none;
+}
+.btn-icon:hover { border-color: var(--fr-border-strong); }
+.btn-icon .icon-pause, .btn-icon.playing .icon-play { display: none; }
+.btn-icon .icon-play, .btn-icon.playing .icon-pause { display: block; }
+.btn-icon .icon-muted { display: none; }
+.btn-icon.muted .icon-muted { display: block; }
+.btn-icon.muted .icon-sound { display: none; }
+
+/* ------------------------------------------------------------------ states - */
+
+body.immersive #app { display: none; }
+body.immersive { cursor: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  .spinner { animation: none; border-top-color: var(--fr-accent); }
+}
+
+/* Short viewports (headset 2D panel can be wide & short). */
+@media (max-height: 560px) {
+  #stage { height: 58vh; }
+}
+
+/* ------------------------------------------------- desktop 3D preview ----- */
+/* Active only in the non-headset test harness (?preview / demo.html). */
+
+body.preview #stage,
+body.preview #title,
+body.preview .footer { display: none; }
+
+body.preview #gl { cursor: grab; }
+body.preview.grabbing, body.preview.grabbing #gl { cursor: grabbing; }
+
+body.preview #controls {
+  position: fixed;
+  left: 50%;
+  bottom: 66px;
+  transform: translateX(-50%);
+  width: min(82vw, 760px);
+  z-index: 5;
+}
+
+.preview-exit {
+  position: fixed;
+  top: clamp(16px, 3vh, 28px);
+  right: clamp(20px, 5vw, 64px);
+  z-index: 6;
+}
+.preview-exit[hidden], .preview-hint[hidden] { display: none; }
+
+.preview-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 5;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--fr-muted);
+  font-size: 12.5px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+/* In-view filmstrip — a compact rail of the other items, docked under the
+ * media/transport bar so you can hop around without leaving the open media. */
+.filmstrip {
+  position: fixed;
+  left: 50%;
+  bottom: 52px;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  max-width: min(88vw, 920px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-radius: 16px;
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+  scroll-behavior: smooth;
+}
+.filmstrip[hidden] { display: none; }
+.filmstrip::-webkit-scrollbar { height: 6px; }
+.filmstrip::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 999px; }
+
+.strip-item {
+  flex: 0 0 auto;
+  width: 104px;
+  height: 65px;
+  padding: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: #0a1622;
+  opacity: 0.7;
+}
+.strip-item canvas { width: 100%; height: 100%; object-fit: cover; display: block; }
+.strip-item:hover { opacity: 1; transform: translateY(-2px); }
+.strip-item.active {
+  opacity: 1;
+  border-color: var(--fr-accent);
+  box-shadow: 0 0 0 1px var(--fr-accent), 0 10px 24px rgba(240, 78, 35, 0.3);
+}
+
+/* Lift the transport bar above the filmstrip when both are showing. */
+body.preview.strip #controls { bottom: 150px; }

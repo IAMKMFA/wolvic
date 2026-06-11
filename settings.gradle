@@ -1,4 +1,41 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    // PREFER_SETTINGS makes these authoritative and ignores per-project repositories,
+    // so every repo the build needs must be declared here — including the local
+    // WebXR-patched GeckoView repo. Configure its location with -PgeckoMavenRepo=…
+    // or geckoMavenRepo=… in gradle.properties; defaults to <root>/gecko-maven.
+    def geckoMavenRepo = providers.gradleProperty('geckoMavenRepo').getOrElse("${settingsDir}/gecko-maven")
+    repositories {
+        maven {
+            name "LocalGeckoView"
+            url geckoMavenRepo
+        }
+        google()
+        mavenCentral()
+        maven { url 'https://maven.mozilla.org/maven2' }
+        maven { url 'https://developer.huawei.com/repo/' }
+        maven { url 'https://storage.googleapis.com/r8-releases/raw' }
+    }
+}
+
+def repoRoot = settingsDir.parentFile
+
 include ':app'
+
+['content-contract', 'core-ui', 'tour-injection',
+ 'feature-native-image360', 'feature-native-image2d',
+ 'feature-native-video360', 'feature-flat-video'].each { name ->
+    include ":$name"
+    project(":$name").projectDir = new File(repoRoot, name)
+}
 
 Properties userProperties = null;
 if (file('user.properties').canRead()) {

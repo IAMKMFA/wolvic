@@ -107,7 +107,7 @@ def CHROMIUM_RELEASE_VERSION_NAME = '1.3'
 
 android {
     namespace 'com.igalia.wolvic'
-    compileSdkVersion 35
+    compileSdkVersion 36
     defaultConfig {
         applicationId "com.framatome.vr.pro"
         minSdkVersion 29
@@ -137,8 +137,10 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags "-std=c++14 -fexceptions -frtti -Werror" +
-                         " -I" + file("src/main/cpp").absolutePath +
-                         " -I" + file("src/main/cpp/vrb/include").absolutePath +
+                         // Include dirs for src/main/cpp and vrb/include are declared
+                         // via include_directories() in CMakeLists.txt instead of raw
+                         // -I here, so CMake quotes them correctly even when the
+                         // project path contains spaces.
                          // CMake 3.10+ needs "-DANDROID" flag, since ANDROID
                          // flag has been removed in favor of __ANDROID__. But
                          // vrb still uses "#if defined(ANDROID)"
@@ -257,7 +259,7 @@ android {
             dimension "platform"
             externalNativeBuild {
                 cmake {
-                    cppFlags " -DPICOXR -DOPENXR -I" + file("src/openxr/cpp").absolutePath
+                    cppFlags " -DPICOXR -DOPENXR"
                     arguments "-DVR_SDK_LIB=picoxr-lib", "-DPICOXR=ON", "-DOPENXR=ON"
                 }
             }
@@ -267,7 +269,7 @@ android {
             dimension "platform"
             externalNativeBuild {
                 cmake {
-                    cppFlags " -DPFDMXR -DOPENXR  -I" + file("src/openxr/cpp").absolutePath
+                    cppFlags " -DPFDMXR -DOPENXR"
                     arguments "-DPFDMXR=ON", "-DOPENXR=ON"
                 }
             }
@@ -277,7 +279,7 @@ android {
             dimension "platform"
             externalNativeBuild {
                 cmake {
-                    cppFlags " -DLYNX -DOPENXR -I" + file("src/openxr/cpp").absolutePath
+                    cppFlags " -DLYNX -DOPENXR"
                     arguments "-DLYNX=ON", "-DOPENXR=ON"
                 }
             }
@@ -288,7 +290,7 @@ android {
             targetSdkVersion 29
             externalNativeBuild {
                 cmake {
-                    cppFlags " -DSPACES -DOPENXR -I" + file("src/openxr/cpp").absolutePath
+                    cppFlags " -DSPACES -DOPENXR"
                     arguments "-DSPACES=ON", "-DOPENXR=ON"
                 }
             }
@@ -299,7 +301,7 @@ android {
             targetSdkVersion 29
             externalNativeBuild {
                 cmake {
-                    cppFlags " -DAOSP -DOPENXR -I" + file("src/openxr/cpp").absolutePath
+                    cppFlags " -DAOSP -DOPENXR"
                     arguments "-DAOSP=ON", "-DOPENXR=ON"
                 }
             }
@@ -310,7 +312,7 @@ android {
             dimension "platform"
             externalNativeBuild {
                 cmake {
-                    cppFlags " -DHVR -DOPENXR -I" + file("src/openxr/cpp").absolutePath
+                    cppFlags " -DHVR -DOPENXR"
                     arguments "-DVR_SDK_LIB=hvr-lib", "-DHVR=ON", "-DOPENXR=ON"
                 }
             }
@@ -609,6 +611,14 @@ dependencies {
     implementation "androidx.compose.material3:material3:1.3.0"
     implementation "androidx.activity:activity-compose:1.9.3"
     implementation "org.nanohttpd:nanohttpd:2.3.1"
+
+    implementation project(':content-contract')
+    implementation project(':core-ui')
+    implementation project(':tour-injection')
+    implementation project(':feature-native-image360')
+    implementation project(':feature-native-image2d')
+    implementation project(':feature-native-video360')
+    implementation project(':feature-flat-video')
 
     // Common
     implementation libs.lifecycle.runtime

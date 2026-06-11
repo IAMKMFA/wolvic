@@ -193,7 +193,6 @@ public class SettingsWidget extends UIDialog implements SettingsView.Delegate {
             mIsFirstVersionDetail = !mIsFirstVersionDetail;
             mBinding.buildText.setText(mIsFirstVersionDetail ? mVersionDetail.first : mVersionDetail.second);
         };
-        mBinding.ffLogoSettings.setOnClickListener(updateVersionDetail);
         mBinding.versionText.setOnClickListener(updateVersionDetail);
 
         if (DeviceType.getStoreType() == DeviceType.StoreType.MAINLAND_CHINA) {

@@ -113,7 +113,7 @@ public class VRBrowserApplication extends Application implements AppServicesProv
         if (BuildConfig.FRAMATOME_MODE) {
             com.igalia.wolvic.browser.SettingsStore.getInstance(this).setTermsServiceAccepted(true);
             com.igalia.wolvic.browser.SettingsStore.getInstance(this).setPrivacyPolicyAccepted(true);
-            com.framatome.vr.tours.FramatomeInitializer.INSTANCE.init(this);
+            com.framatome.vr.tours.FramatomeInitializer.init(this);
         }
     }
 

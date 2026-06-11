@@ -2,6 +2,8 @@ package com.framatome.vr.tours
 
 import android.content.Context
 import android.util.Log
+import com.framatome.vr.content.ImmersiveIntentFactory
+import com.framatome.vr.tours.injection.TourHtmlInjector
 import com.igalia.wolvic.R
 import fi.iki.elonen.NanoHTTPD
 import java.io.File
@@ -9,6 +11,7 @@ import java.io.FileInputStream
 import java.net.URLConnection
 import java.net.URLDecoder
 import java.net.URLEncoder
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 import kotlin.text.Charsets
@@ -18,6 +21,10 @@ class LocalWebServer private constructor(
     private val appContext: Context
 ) : NanoHTTPD(HOST, PORT) {
     private val baseCanonical: File = baseDir.canonicalFile
+    // Media is streamed from the shared FramatomeVR root (parent of Tours) so the
+    // WebXR viewer can reach Library/* as well as Tours/*.
+    private val mediaRootCanonical: File = (baseDir.parentFile ?: baseDir).canonicalFile
+    private val gogglesUuidCache = ConcurrentHashMap<String, TourHtmlInjector.GogglesUuidEntry>()
 
     override fun serve(session: IHTTPSession): Response {
         return try {
@@ -29,17 +36,60 @@ class LocalWebServer private constructor(
                 return serveLaunch(session)
             }
 
+            if (pathOnly == "/health") {
+                return serveHealth()
+            }
+
             val uriPath = pathOnly.removePrefix("/")
             if (uriPath.isEmpty() || uriPath == "index.html") {
                 return serveDynamicIndex()
             }
 
-            if (uriPath == "__assets__/vr-goggles.png") {
+            if (uriPath == "__assets__/vr-goggles.png" || uriPath == TourHtmlInjector.GOGGLES_OVERRIDE_PATH) {
                 return serveRawResource(R.raw.framatome_vr_goggles, "image/png")
             }
 
             if (uriPath == "__assets__/app-icon.png") {
                 return serveRawResource(R.raw.framatome_app_icon, "image/png")
+            }
+
+            // Framatome WebXR media viewer (served from bundled assets).
+            if (uriPath.startsWith(VIEWER_PREFIX)) {
+                val assetRel = uriPath.removePrefix(VIEWER_PREFIX).ifBlank { "index.html" }
+                if (assetRel.split('/').any { it == ".." }) return forbidden()
+                return serveAsset("$VIEWER_ASSET_DIR/$assetRel")
+            }
+
+            // Raw media files streamed to the viewer from the shared storage tree.
+            if (uriPath.startsWith(MEDIA_PREFIX)) {
+                return serveMediaFile(session, uriPath.removePrefix(MEDIA_PREFIX))
+            }
+
+            // Generated/downscaled thumbnails for hub cards. Keys are content
+            // hashes only — no path input, no traversal surface.
+            if (uriPath.startsWith(THUMBS_PREFIX)) {
+                val key = uriPath.removePrefix(THUMBS_PREFIX)
+                val thumbFile = ThumbnailStore.resolve(appContext, key)
+                return if (thumbFile != null) {
+                    serveFile(session, thumbFile)
+                } else {
+                    notFound()
+                }
+            }
+
+            // Playlist JSON for in-viewer gallery navigation. Keys come from the
+            // registry (intent launches); a missing key is a normal condition the
+            // viewer degrades from, not an error worth logging.
+            if (uriPath.startsWith(PLAYLIST_PREFIX)) {
+                val key = uriPath.removePrefix(PLAYLIST_PREFIX).removeSuffix(".json")
+                val json = PlaylistRegistry.get(key) ?: servePlaylistFallback(key)
+                return if (json != null) {
+                    newFixedLengthResponse(Response.Status.OK, "application/json", json).apply {
+                        addHeader("Cache-Control", "no-cache")
+                    }
+                } else {
+                    notFound()
+                }
             }
 
             if (uriPath.split('/').any { it.startsWith(".") }) {
@@ -72,8 +122,25 @@ class LocalWebServer private constructor(
     }
 
     private fun serveDynamicIndex(): Response {
-        val html = TourIndexServer.generateIndexHtml(appContext)
+        val html = HubIndexServer.generateIndexHtml(appContext)
         return newFixedLengthResponse(Response.Status.OK, "text/html", html)
+    }
+
+    private fun serveHealth(): Response {
+        // Counts come from the TTL-cached snapshot — health polls never rescan.
+        val json = runCatching {
+            val snapshot = MediaLibraryIndex.snapshot()
+            val toursCount = TourStorage.sharedToursDir()
+                .listFiles()?.count { it.isDirectory && !it.name.startsWith(".") } ?: 0
+            """{"status":"ok","toursCount":$toursCount,"mediaCount":${snapshot.mediaCount},""" +
+                """"videosCount":${snapshot.videos.size},"imagesCount":${snapshot.images.size},""" +
+                """"modelsCount":${snapshot.models.size},""" +
+                """"storageGranted":${snapshot.storageGranted},""" +
+                """"version":"${com.igalia.wolvic.BuildConfig.VERSION_NAME}"}"""
+        }.getOrDefault(HEALTH_JSON)
+        return newFixedLengthResponse(Response.Status.OK, "application/json", json).apply {
+            addHeader("Cache-Control", "no-cache")
+        }
     }
 
     private fun serveLaunch(session: IHTTPSession): Response {
@@ -93,7 +160,7 @@ class LocalWebServer private constructor(
             <title>Framatome VR</title>
             <script>window.location.replace("$url");</script>
             </head>
-            <body style="font-family:sans-serif;background:#0a1f44;color:white;display:flex;align-items:center;justify-content:center;height:100vh;">
+            <body style="font-family:sans-serif;background:#081E3F;color:white;display:flex;align-items:center;justify-content:center;height:100vh;">
             <div>Launching Framatome VR…</div>
             </body></html>
         """.trimIndent()
@@ -139,112 +206,53 @@ class LocalWebServer private constructor(
     }
 
     private fun serveHtmlWithVROverride(file: File): Response {
-        var html = file.readText(Charsets.UTF_8)
-        val vrInjection = """
-<style>
-#framatome-vr-btn{
-  position:fixed;bottom:28px;right:28px;z-index:999999;
-  width:120px;height:120px;
-  background:radial-gradient(ellipse at 50% 40%,rgba(10,31,68,.92),rgba(5,15,35,.96));
-  border:2px solid rgba(255,95,5,.35);border-radius:28px;
-  cursor:pointer;display:none;flex-direction:column;align-items:center;justify-content:center;gap:6px;
-  padding:10px;
-  box-shadow:0 8px 40px rgba(255,95,5,.35),0 0 80px rgba(255,95,5,.12),inset 0 1px 0 rgba(255,255,255,.08);
-  transition:transform .15s ease,box-shadow .15s ease;
-  animation:framatomeVRPulse 3s ease-in-out infinite;
-}
-#framatome-vr-btn:hover{
-  transform:scale(1.08);
-  box-shadow:0 10px 50px rgba(255,95,5,.5),0 0 100px rgba(255,95,5,.2),inset 0 1px 0 rgba(255,255,255,.12);
-}
-#framatome-vr-btn:active{transform:scale(.95)}
-#framatome-vr-btn.fvr-hidden{display:none !important}
-#framatome-vr-btn img{width:72px;height:72px;object-fit:contain;pointer-events:none;filter:drop-shadow(0 2px 8px rgba(255,95,5,.3))}
-#framatome-vr-btn span{
-  color:white;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
-  text-shadow:0 1px 4px rgba(0,0,0,.5);pointer-events:none;
-}
-@keyframes framatomeVRPulse{
-  0%,100%{box-shadow:0 8px 40px rgba(255,95,5,.35),0 0 80px rgba(255,95,5,.12),inset 0 1px 0 rgba(255,255,255,.08)}
-  50%{box-shadow:0 8px 40px rgba(255,95,5,.55),0 0 100px rgba(255,95,5,.22),inset 0 1px 0 rgba(255,255,255,.12)}
-}
-#framatome-vr-home{
-  position:fixed;bottom:32px;left:32px;z-index:999999;
-  width:56px;height:56px;border-radius:16px;
-  background:rgba(0,28,61,.85);border:1px solid rgba(230,237,245,.15);
-  color:rgba(230,237,245,.8);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  backdrop-filter:blur(8px);transition:all .15s;
-}
-#framatome-vr-home:hover{background:rgba(0,59,112,.9);border-color:rgba(255,95,5,.3)}
-</style>
-<script>
-(function(){
-  var vrBtn, homeBtn, xrSession = null;
-
-  function createUI(){
-    vrBtn = document.createElement('button');
-    vrBtn.id = 'framatome-vr-btn';
-    var img = document.createElement('img');
-    img.src = '/__assets__/vr-goggles.png';
-    img.alt = 'Enter VR';
-    var lbl = document.createElement('span');
-    lbl.textContent = 'Enter VR';
-    vrBtn.appendChild(img);
-    vrBtn.appendChild(lbl);
-    vrBtn.onclick = enterVR;
-    document.body.appendChild(vrBtn);
-
-    homeBtn = document.createElement('button');
-    homeBtn.id = 'framatome-vr-home';
-    homeBtn.title = 'Back to Tour Menu';
-    homeBtn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
-    homeBtn.onclick = function(){ window.location.href = '/'; };
-    document.body.appendChild(homeBtn);
-  }
-
-  function checkVR(){
-    if(!navigator.xr) return;
-    navigator.xr.isSessionSupported('immersive-vr').then(function(ok){
-      if(ok && vrBtn){
-        vrBtn.style.display = 'flex';
-        document.documentElement.setAttribute('data-framatome-vr','ready');
-      }
-    });
-  }
-
-  function enterVR(){
-    if(!navigator.xr || xrSession) return;
-    navigator.xr.requestSession('immersive-vr').then(function(session){
-      xrSession = session;
-      vrBtn.classList.add('fvr-hidden');
-      session.addEventListener('end', function(){
-        xrSession = null;
-        vrBtn.classList.remove('fvr-hidden');
-      });
-      var existing = document.querySelector('canvas');
-      if(existing && existing.getContext){
-        var gl = existing.getContext('webgl2') || existing.getContext('webgl');
-        if(gl) session.updateRenderState({baseLayer: new XRWebGLLayer(session, gl)});
-      }
-    }).catch(function(e){ console.warn('Framatome VR session request failed:', e); });
-  }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){ createUI(); checkVR(); });
-  } else {
-    createUI(); checkVR();
-  }
-})();
-</script>"""
-        val insertPoint = html.indexOf("</head>", ignoreCase = true)
-        html = if (insertPoint >= 0) {
-            html.substring(0, insertPoint) + vrInjection + html.substring(insertPoint)
-        } else {
-            vrInjection + html
-        }
+        val tourRoot = file.parentFile ?: baseDir
+        val tourUuid = TourHtmlInjector.findTourGogglesUuid(
+            tourRoot = tourRoot,
+            cache = gogglesUuidCache,
+            logInfo = { message -> Log.i(TAG, message) },
+            logWarn = { message, ex -> Log.w(TAG, message, ex) }
+        )
+        val html = TourHtmlInjector.injectSkinOverrides(file.readText(Charsets.UTF_8), tourUuid)
         return newFixedLengthResponse(Response.Status.OK, "text/html", html)
+    }
+
+    private fun serveAsset(assetPath: String): Response {
+        return try {
+            val bytes = appContext.assets.open(assetPath).use { it.readBytes() }
+            val mime = URLConnection.guessContentTypeFromName(assetPath) ?: defaultMime(assetPath)
+            newFixedLengthResponse(
+                Response.Status.OK,
+                mime,
+                java.io.ByteArrayInputStream(bytes),
+                bytes.size.toLong()
+            ).apply { addHeader("Cache-Control", "no-cache") }
+        } catch (e: java.io.FileNotFoundException) {
+            notFound()
+        }
+    }
+
+    private fun serveMediaFile(session: IHTTPSession, relativePath: String): Response {
+        val rel = relativePath.trim().trimStart('/')
+        if (rel.isEmpty() || rel.split('/').any { it == ".." }) {
+            return forbidden()
+        }
+        val requested = File(mediaRootCanonical, rel).canonicalFile
+        if (
+            requested != mediaRootCanonical &&
+            !requested.path.startsWith(mediaRootCanonical.path + File.separator)
+        ) {
+            return forbidden()
+        }
+        if (!requested.isFile) {
+            return notFound()
+        }
+        return serveFile(session, requested)
+    }
+
+    /** Hook for computed playlists (e.g. the hub's section playlists). */
+    private fun servePlaylistFallback(key: String): String? {
+        return HubPlaylists.jsonFor(appContext, key)
     }
 
     private fun serveRawResource(resId: Int, mime: String): Response {
@@ -334,6 +342,14 @@ class LocalWebServer private constructor(
         private const val TAG = "FramatomeVRServer"
         private const val HOST = "127.0.0.1"
         const val PORT: Int = 18080
+        private const val HEALTH_JSON = """{"status":"ok"}"""
+
+        // Route prefixes (no leading slash, matched after removePrefix("/")).
+        private const val VIEWER_PREFIX = "__viewer__/"
+        private const val VIEWER_ASSET_DIR = "media-viewer"
+        private val MEDIA_PREFIX = ImmersiveIntentFactory.MEDIA_ROUTE_PREFIX.removePrefix("/")
+        private val PLAYLIST_PREFIX = ImmersiveIntentFactory.PLAYLIST_ROUTE_PREFIX.removePrefix("/")
+        private val THUMBS_PREFIX = ImmersiveIntentFactory.THUMBS_ROUTE_PREFIX.removePrefix("/")
         private var server: LocalWebServer? = null
         private val started = AtomicBoolean(false)
 
@@ -342,22 +358,46 @@ class LocalWebServer private constructor(
             synchronized(this) {
                 if (started.get()) return
                 val appCtx = context.applicationContext
-                val dir = TourStorage.appStorageRoot(appCtx)
-                if (!dir.exists()) dir.mkdirs()
-                Log.d(TAG, "ensureRunning baseDir=${dir.absolutePath}")
-                val srv = LocalWebServer(dir, appCtx)
-                srv.start(SOCKET_READ_TIMEOUT, false)
-                server = srv
-                started.set(true)
-                Log.i(TAG, "Server started on ${baseUrl()} serving ${dir.absolutePath}")
+                val dir = sharedToursDir()
+                // Never let a bind/permission failure propagate: this is invoked
+                // from Application.onCreate, so an uncaught exception here would
+                // crash the whole player before any UI. On failure we leave
+                // `started` false so the next tour launch retries cleanly.
+                try {
+                    if (!dir.exists()) dir.mkdirs()
+                    // Standalone hub: make sure the media library root exists too.
+                    // Data/ stays launcher-owned (its ingest creates and manages it).
+                    File(dir.parentFile, "Library").takeIf { !it.exists() }?.mkdirs()
+                    Log.d(TAG, "ensureRunning baseDir=${dir.absolutePath}")
+                    val srv = LocalWebServer(dir, appCtx)
+                    srv.start(SOCKET_READ_TIMEOUT, false)
+                    server = srv
+                    started.set(true)
+                    Log.i(TAG, "Server started on ${baseUrl()} serving ${dir.absolutePath}")
+                } catch (t: Throwable) {
+                    Log.e(TAG, "Failed to start local web server on ${baseUrl()}", t)
+                    runCatching { server?.stop() }
+                    server = null
+                    started.set(false)
+                }
             }
         }
 
-        fun buildTourUrl(relativePath: String, entryFileName: String): String {
-            val targetPath = (relativePath.trimEnd('/') + "/" + entryFileName).trimStart('/')
-            val encodedPath = URLEncoder.encode(targetPath, Charsets.UTF_8.name()).replace("+", "%20")
-            return "${baseUrl()}/$encodedPath"
+        /** True once the local web server is bound and serving. */
+        fun isRunning(): Boolean = started.get()
+
+        fun buildTourUrl(folderName: String, entryRelative: String): String {
+            val entry = entryRelative.trim().trimStart('/').ifBlank { "index.html" }
+            val encodedFolder = URLEncoder.encode(folderName, Charsets.UTF_8.name()).replace("+", "%20")
+            val encodedEntry = entry.split('/').joinToString("/") { segment ->
+                URLEncoder.encode(segment, Charsets.UTF_8.name()).replace("+", "%20")
+            }
+            return com.framatome.vr.content.ImmersiveIntentFactory.appendVrAutoStartParam(
+                "${baseUrl()}/$encodedFolder/$encodedEntry"
+            )
         }
+
+        private fun sharedToursDir(): File = TourStorage.sharedToursDir()
 
         fun stop() {
             synchronized(this) {

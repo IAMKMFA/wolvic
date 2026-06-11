@@ -1,0 +1,32 @@
+/* Framatome VR — model viewer page additions (loads after viewer.css).
+ * Brand tokens come from viewer.css :root — keep in sync via BRANDING.md. */
+
+/* Determinate load progress under the spinner. */
+.progress-track {
+  width: min(46vw, 420px);
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--fr-accent), var(--fr-accent-2));
+  transition: width 0.15s ease;
+}
+.progress-track[hidden] { display: none; }
+
+/* Placeholder glyph in the stage well before/around preview. */
+.model-preview-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--fr-muted);
+  opacity: 0.45;
+}
+body.preview .model-preview-hint,
+body.error .model-preview-hint { display: none; }

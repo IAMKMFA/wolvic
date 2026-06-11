@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Framatome VR — Viewer Preview Gallery</title>
+  <link rel="stylesheet" href="viewer.css" />
+  <style>
+    /* This page is a desktop test harness only; it is never shown on the headset. */
+    html, body { overflow: auto; }
+    .gallery { max-width: 1120px; margin: 0 auto; padding: 6vh 5vw 10vh; }
+    .brandbar { display: flex; align-items: center; gap: 12px; margin-bottom: 30px; }
+    .gallery h1 { font-size: clamp(24px, 4vw, 40px); margin: 0 0 8px; }
+    .gallery .sub { color: var(--fr-muted); margin: 0 0 34px; max-width: 720px; line-height: 1.5; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px; }
+    .card {
+      display: flex; flex-direction: column; gap: 10px; padding: 22px;
+      border-radius: var(--fr-radius); background: var(--fr-surface);
+      border: 1px solid var(--fr-border);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    }
+    .card .tag { font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fr-accent); font-weight: 700; }
+    .card h2 { margin: 0; font-size: 19px; font-weight: 650; }
+    .card p { margin: 0; color: var(--fr-muted); font-size: 13.5px; line-height: 1.45; flex: 1; }
+    .card .open {
+      margin-top: 6px; text-decoration: none; text-align: center;
+      padding: 13px 18px; border-radius: 999px; font-weight: 750; letter-spacing: 0.02em;
+      color: var(--fr-accent-ink);
+      background: linear-gradient(135deg, var(--fr-accent), var(--fr-accent-2));
+      box-shadow: 0 10px 26px rgba(240, 78, 35, 0.28);
+    }
+    .card .open.alt { color: var(--fr-text); background: var(--fr-surface-2); border: 1px solid var(--fr-border-strong); box-shadow: none; padding: 10px 18px; font-weight: 600; }
+    .card .links { display: flex; flex-direction: column; gap: 8px; }
+    .note { margin-top: 30px; color: var(--fr-muted); font-size: 12.5px; line-height: 1.5; }
+    .card.feature {
+      grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 20px;
+      background: linear-gradient(135deg, rgba(240, 78, 35, 0.15), var(--fr-surface));
+      border-color: var(--fr-border-strong);
+    }
+    .card.feature .copy { flex: 1 1 340px; display: flex; flex-direction: column; gap: 8px; }
+    .card.feature h2 { font-size: clamp(20px, 2.4vw, 26px); }
+    .card.feature .links { flex-direction: row; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <div class="gallery">
+    <div class="brandbar">
+      <span class="brand-logo" aria-hidden="true">F</span>
+      <span class="brand-text"><span class="brand-mark">FRAMATOME</span> <span class="brand-sub">VR</span></span>
+    </div>
+    <h1>Viewer preview gallery</h1>
+    <p class="sub">
+      Open any scenario in <strong>desktop 3D preview</strong> — it renders the exact scene and in‑VR HUD the headset
+      shows, driven by a mouse‑look camera so you can test the look &amp; feel without putting on the headset.
+      Drag to look around; for video use the transport bar and the spacebar. Sample media is generated on the fly.
+    </p>
+
+    <div class="grid">
+      <div class="card feature">
+        <div class="copy">
+          <span class="tag">New · Browse</span>
+          <h2>Media Library — Coverflow rolodex</h2>
+          <p>The full browse experience: a curved shelf of mixed 2D / 360° photos and videos. Drag to spin it like a
+            rolodex, click the centered card to dive in, then flip between items with <strong>←/→</strong> and press
+            <strong>G</strong> to fly back to the shelf. On the headset this maps to thumbstick + trigger.</p>
+        </div>
+        <div class="links">
+          <a class="open" href="index.html?demo=gallery&preview=1">Open the carousel</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="tag">Flat</span>
+        <h2>2D Image</h2>
+        <p>A flat image panel floating in 3D space with the title HUD.</p>
+        <div class="links">
+          <a class="open" href="index.html?demo=2d_image&preview=1">Open 3D preview</a>
+          <a class="open alt" href="index.html?demo=2d_image">2D launch screen</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="tag">Flat · Video</span>
+        <h2>2D Video</h2>
+        <p>Flat video panel with the full transport bar: play/pause, scrub, time, mute.</p>
+        <div class="links">
+          <a class="open" href="index.html?demo=2d_video&preview=1">Open 3D preview</a>
+          <a class="open alt" href="index.html?demo=2d_video">2D launch screen</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="tag">Immersive</span>
+        <h2>360° Image</h2>
+        <p>Equirectangular sphere with cardinal labels — drag to look in every direction.</p>
+        <div class="links">
+          <a class="open" href="index.html?demo=360_image&preview=1">Open 3D preview</a>
+          <a class="open alt" href="index.html?demo=360_image">2D launch screen</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="tag">Immersive · Video</span>
+        <h2>360° Video</h2>
+        <p>Animated equirectangular sphere with a moving sweep and live timecode.</p>
+        <div class="links">
+          <a class="open" href="index.html?demo=360_video&preview=1">Open 3D preview</a>
+          <a class="open alt" href="index.html?demo=360_video">2D launch screen</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="tag">Immersive · Stereo</span>
+        <h2>360° Stereo Image</h2>
+        <p>Top/bottom stereo packing. Desktop preview shows the left‑eye crop; the headset renders both eyes.</p>
+        <div class="links">
+          <a class="open" href="index.html?demo=360_image_3d&preview=1">Open 3D preview</a>
+          <a class="open alt" href="index.html?demo=360_image_3d">2D launch screen</a>
+        </div>
+      </div>
+    </div>
+
+    <p class="note">
+      This harness uses procedurally generated test media and a non‑XR camera so the visual design matches the headset
+      build. Production launches from the Framatome launcher load real device media and render per‑eye in WebXR — none of
+      the <code>?demo</code> / <code>?preview</code> code runs in that path.
+    </p>
+  </div>
+</body>
+</html>
