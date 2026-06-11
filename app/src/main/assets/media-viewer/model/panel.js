@@ -177,7 +177,15 @@ export class GlassPanel {
     this.mesh.visible = a > 0;
     this.mesh.material.opacity = a;
     if (!this.mesh.visible) return;
-    if (this.state.mode === "loading") { this.draw(now); return; }
+    if (this.state.mode === "loading") {
+      // The spinner animates, but 30 fps is plenty — redrawing + uploading the
+      // 1024x512 canvas every frame during a multi-second GLB load is wasteful.
+      if (now - (this._lastSpinnerDraw || 0) >= 33) {
+        this._lastSpinnerDraw = now;
+        this.draw(now);
+      }
+      return;
+    }
     if (this.state.mode === "media" && this.state.playing) {
       const key = this.state.timeLabel;
       if (key !== this.lastSecondKey) { this.lastSecondKey = key; this.dirty = true; }

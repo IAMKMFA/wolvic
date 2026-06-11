@@ -689,6 +689,11 @@ function createTexture() {
 function uploadTexture(tex, source) {
   gl.bindTexture(gl.TEXTURE_2D, tex);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+  // Any full (re)allocation invalidates the video sub-image fast path, so the
+  // next video frame re-allocates at the correct dimensions (see
+  // refreshVideoTexture). __vw/__vh track the dimensions a texture is sized for.
+  tex.__vw = 0;
+  tex.__vh = 0;
 }
 
 // Still-image uploads go through here (NOT the per-frame video path): clamps
@@ -806,8 +811,15 @@ function defaultHudHint() {
   return "Trigger \u2192 Show info";
 }
 
+let _hudKey = "";
 function renderHud(title, line) {
   if (!hudCtx) return;
+  // flashHud can fire every frame (e.g. while seeking). Skip the full canvas
+  // redraw + texture upload when the text is unchanged — the HUD already shows
+  // it. drawHud still composites the existing hudTex each frame.
+  const key = (title || "") + " " + (line || "");
+  if (key === _hudKey) return;
+  _hudKey = key;
   const c = hudCtx, w = hudCanvas.width, h = hudCanvas.height;
   c.clearRect(0, 0, w, h);
   // Glass chip: BlueSurface fill + frosted white stroke (launcher language).
@@ -1183,9 +1195,14 @@ function uploadPanel() {
 
 // Redraw only when something the user can see changed; ≤1 upload/s while a
 // video simply plays. The loading spinner animates, so it redraws each frame.
+let _panelSpinnerDraw = 0;
 function maybeRenderPanel(now) {
   if (!panelCtx) return;
-  if (panelMode === "loading") { renderPanel(now); return; }
+  if (panelMode === "loading") {
+    // Spinner animates, but cap its redraw+upload at ~30 fps.
+    if (now - _panelSpinnerDraw >= 33) { _panelSpinnerDraw = now; renderPanel(now); }
+    return;
+  }
   if (panelMode === "media" && isVideo && mediaEl && !mediaEl.paused) {
     const second = Math.floor(mediaEl.currentTime || 0);
     if (second !== panelLastSecond) { panelLastSecond = second; panelDirty = true; }
@@ -1419,8 +1436,8 @@ function drawPanel(projection, viewMatrix, alpha) {
     gl.uniform1i(uniforms.tex, 0);
     gl.uniform1f(uniforms.alpha, alpha);
     gl.uniform4fv(uniforms.tint, WHITE_TINT);
-    gl.uniform2fv(uniforms.uvScale, [1, 1]);
-    gl.uniform2fv(uniforms.uvOffset, [0, 0]);
+    gl.uniform2fv(uniforms.uvScale, UV_FULL);
+    gl.uniform2fv(uniforms.uvOffset, UV_ZERO);
     gl.uniformMatrix4fv(uniforms.mvp, false, multiply(multiply(projection, viewMatrix), panelModelM));
     bindGeometry(quad);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, quad.count);
@@ -1436,12 +1453,16 @@ function drawLaser(projection, viewMatrix) {
   if (!pointer.active || !laserBuffer) return;
   try {
     const hit = pointer.hit;
-    const reach = hit ? null : 3.0;
-    const end = hit ? hit.point : [
-      pointer.origin[0] + pointer.dir[0] * reach,
-      pointer.origin[1] + pointer.dir[1] * reach,
-      pointer.origin[2] + pointer.dir[2] * reach,
-    ];
+    let end;
+    if (hit) {
+      end = hit.point;
+    } else {
+      const reach = 3.0;
+      _laserEnd[0] = pointer.origin[0] + pointer.dir[0] * reach;
+      _laserEnd[1] = pointer.origin[1] + pointer.dir[1] * reach;
+      _laserEnd[2] = pointer.origin[2] + pointer.dir[2] * reach;
+      end = _laserEnd;
+    }
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.useProgram(program);
@@ -1450,15 +1471,14 @@ function drawLaser(projection, viewMatrix) {
     gl.uniform1i(uniforms.tex, 0);
     gl.uniform1f(uniforms.alpha, 1.0);
     gl.uniform4fv(uniforms.tint, ORANGE_TINT);
-    gl.uniform2fv(uniforms.uvScale, [0, 0]);
-    gl.uniform2fv(uniforms.uvOffset, [0.5, 0.5]);
+    gl.uniform2fv(uniforms.uvScale, UV_ZERO);
+    gl.uniform2fv(uniforms.uvOffset, UV_HALF);
     gl.uniformMatrix4fv(uniforms.mvp, false, multiply(projection, viewMatrix));
     if (!previewActive) {
+      _laserVerts[0] = pointer.origin[0]; _laserVerts[1] = pointer.origin[1]; _laserVerts[2] = pointer.origin[2];
+      _laserVerts[3] = end[0]; _laserVerts[4] = end[1]; _laserVerts[5] = end[2];
       gl.bindBuffer(gl.ARRAY_BUFFER, laserBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-        pointer.origin[0], pointer.origin[1], pointer.origin[2],
-        end[0], end[1], end[2],
-      ]), gl.DYNAMIC_DRAW);
+      gl.bufferData(gl.ARRAY_BUFFER, _laserVerts, gl.DYNAMIC_DRAW);
       gl.enableVertexAttribArray(attribs.position);
       gl.vertexAttribPointer(attribs.position, 3, gl.FLOAT, false, 0, 0);
       gl.disableVertexAttribArray(attribs.uv);
@@ -1491,55 +1511,93 @@ function drawLaser(projection, viewMatrix) {
 
 /* --------------------------------------------------------------- matrices -- */
 
-function multiply(a, b) {
-  const out = new Float32Array(16);
+// Reusable 4x4 scratch matrices. multiply() without an explicit `out` cycles
+// through this ring so a nested multiply(multiply(a,b),c) hands the inner and
+// outer calls distinct buffers. Every result is uploaded to a uniform
+// immediately and never retained across statements, so the ring can't overwrite
+// a still-live result. `out` must not alias `a`/`b` — the ring guarantees that
+// for all current callers (inputs are WebXR matrices or the dedicated scratches
+// below, never the ring slot being written).
+const _matRing = [
+  new Float32Array(16), new Float32Array(16), new Float32Array(16),
+  new Float32Array(16), new Float32Array(16), new Float32Array(16),
+];
+let _matRingIdx = 0;
+
+function multiply(a, b, out) {
+  const dst = out || _matRing[_matRingIdx];
+  if (!out) _matRingIdx = (_matRingIdx + 1) % _matRing.length;
   for (let c = 0; c < 4; c++) {
     for (let r = 0; r < 4; r++) {
-      out[c * 4 + r] =
+      dst[c * 4 + r] =
         a[r] * b[c * 4] +
         a[4 + r] * b[c * 4 + 1] +
         a[8 + r] * b[c * 4 + 2] +
         a[12 + r] * b[c * 4 + 3];
     }
   }
-  return out;
+  return dst;
 }
 
+const _woTrans = new Float32Array(16);
 function withoutTranslation(m) {
-  const out = m.slice();
-  out[12] = 0;
-  out[13] = 0;
-  out[14] = 0;
-  return out;
+  _woTrans.set(m);
+  _woTrans[12] = 0;
+  _woTrans[13] = 0;
+  _woTrans[14] = 0;
+  return _woTrans;
 }
 
+// Flat-panel model matrix (column-major: scale on the diagonal, translation in
+// the last column). Rebuilt only when the media aspect actually changes.
+const _panelModel = new Float32Array([
+  1, 0, 0, 0,
+  0, 1, 0, 0,
+  0, 0, 1, 0,
+  0, 0, -PANEL_DISTANCE, 1,
+]);
+let _panelModelAspect = -1;
 function panelModel() {
-  const halfW = (PANEL_HEIGHT * mediaAspect) / 2;
-  const halfH = PANEL_HEIGHT / 2;
-  // column-major: scale on the diagonal, translation in the last column.
-  return new Float32Array([
-    halfW, 0, 0, 0,
-    0, halfH, 0, 0,
-    0, 0, 1, 0,
-    0, 0, -PANEL_DISTANCE, 1,
-  ]);
+  if (_panelModelAspect !== mediaAspect) {
+    _panelModel[0] = (PANEL_HEIGHT * mediaAspect) / 2; // halfW
+    _panelModel[5] = PANEL_HEIGHT / 2;                 // halfH
+    _panelModelAspect = mediaAspect;
+  }
+  return _panelModel;
 }
 
 /* --------------------------------------------------------------- stereo ---- */
+
+// Reused so per-eye stereo packing (twice per frame) allocates nothing.
+const _uvScale = new Float32Array([1, 1]);
+const _uvOffset = new Float32Array([0, 0]);
+const _uvResult = { scale: _uvScale, offset: _uvOffset };
+// Constant UV setups for the HUD / panel / laser passes.
+const UV_FULL = new Float32Array([1, 1]);
+const UV_ZERO = new Float32Array([0, 0]);
+const UV_HALF = new Float32Array([0.5, 0.5]);
+// Reused laser geometry scratch (the pointer is tracked every frame in-session).
+const _laserEnd = [0, 0, 0];
+const _laserVerts = new Float32Array(6);
 
 function stereoUv(eye) {
   const left = eye !== "right";
   switch (stereoMode) {
     case "top_bottom":
       // Top half of the frame carries the left eye (FLIP_Y puts top at v=1).
-      return { scale: [1, 0.5], offset: [0, left ? 0.5 : 0] };
+      _uvScale[0] = 1; _uvScale[1] = 0.5;
+      _uvOffset[0] = 0; _uvOffset[1] = left ? 0.5 : 0;
+      break;
     case "left_right":
-      return { scale: [0.5, 1], offset: [left ? 0 : 0.5, 0] };
-    case "pair":
-    case "mono":
-    default:
-      return { scale: [1, 1], offset: [0, 0] };
+      _uvScale[0] = 0.5; _uvScale[1] = 1;
+      _uvOffset[0] = left ? 0 : 0.5; _uvOffset[1] = 0;
+      break;
+    default: // "pair", "mono"
+      _uvScale[0] = 1; _uvScale[1] = 1;
+      _uvOffset[0] = 0; _uvOffset[1] = 0;
+      break;
   }
+  return _uvResult;
 }
 
 /* --------------------------------------------------------------- drawing --- */
@@ -1592,8 +1650,8 @@ function drawHud(projection, viewMatrix, alpha) {
     gl.uniform1i(uniforms.tex, 0);
     gl.uniform1f(uniforms.alpha, alpha);
     gl.uniform4fv(uniforms.tint, WHITE_TINT);
-    gl.uniform2fv(uniforms.uvScale, [1, 1]);
-    gl.uniform2fv(uniforms.uvOffset, [0, 0]);
+    gl.uniform2fv(uniforms.uvScale, UV_FULL);
+    gl.uniform2fv(uniforms.uvOffset, UV_ZERO);
     gl.uniformMatrix4fv(uniforms.mvp, false, multiply(multiply(projection, viewMatrix), HUD_MODEL));
     bindGeometry(quad);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, quad.count);
@@ -1602,9 +1660,24 @@ function drawHud(projection, viewMatrix, alpha) {
   } catch (e) { /* swallow */ }
 }
 
+// The video frame uploads every rendered frame. texImage2D would reallocate
+// the GPU texture store each time; instead allocate once (texImage2D) and then
+// re-specify pixels in place (texSubImage2D) — much cheaper on Quest's tiled
+// GPU. The allocated dimensions are tracked on the texture so a video swap or a
+// still-image reuse of the same texture re-allocates correctly.
 function refreshVideoTexture() {
   if (!isVideo || !mediaEl || mediaEl.readyState < 2) return;
-  uploadTexture(leftTex, mediaEl);
+  const w = mediaEl.videoWidth || 0;
+  const h = mediaEl.videoHeight || 0;
+  if (!w || !h) return;
+  gl.bindTexture(gl.TEXTURE_2D, leftTex);
+  if (leftTex.__vw === w && leftTex.__vh === h) {
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, mediaEl);
+  } else {
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mediaEl);
+    leftTex.__vw = w;
+    leftTex.__vh = h;
+  }
 }
 
 let stickNavReady = true;
@@ -2142,8 +2215,8 @@ function drawCarousel(proj, view) {
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   gl.useProgram(program);
   gl.uniform4fv(uniforms.tint, WHITE_TINT);
-  gl.uniform2fv(uniforms.uvScale, [1, 1]);
-  gl.uniform2fv(uniforms.uvOffset, [0, 0]);
+  gl.uniform2fv(uniforms.uvScale, UV_FULL);
+  gl.uniform2fv(uniforms.uvOffset, UV_ZERO);
   // Painter's order: farthest from focus first so nearer cards layer on top.
   const order = gallery.map((_, i) => i).sort((a, b) => Math.abs(b - focusF) - Math.abs(a - focusF));
   for (const i of order) {

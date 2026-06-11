@@ -27,6 +27,19 @@ const CLICK_MAX_ANGLE = 0.06;      // radians of controller travel before it's a
 const ORANGE = new THREE.Color("#F04E23");
 const WHITE = new THREE.Color("#FFFFFF");
 
+// Per-frame scratch for the XR input loop (runs every frame, per controller).
+// updateXR calls watchSelectCandidates → applyGrab → pollSticks → (per
+// controller) rayFromController strictly in sequence, so these slots can be
+// shared: no two simultaneously-live values use the same slot, and nothing
+// escapes (raycaster.set and quaternion.copy take value copies). Persistent
+// state (grab.lastQuat) is copied INTO an owned quaternion, never aliased here.
+const _sv0 = new THREE.Vector3();
+const _sv1 = new THREE.Vector3();
+const _sq0 = new THREE.Quaternion();
+const _sq1 = new THREE.Quaternion();
+const _sq2 = new THREE.Quaternion();
+const _UP = new THREE.Vector3(0, 1, 0);
+
 export class ModelInput {
   constructor({ renderer, scene, camera, pivot, panel, chip, onAction }) {
     this.renderer = renderer;
@@ -120,11 +133,11 @@ export class ModelInput {
   }
 
   rayFromController(controller) {
-    const origin = new THREE.Vector3();
-    controller.getWorldPosition(origin);
-    const direction = new THREE.Vector3(0, 0, -1)
-      .applyQuaternion(controller.getWorldQuaternion(new THREE.Quaternion()));
-    this.raycaster.set(origin, direction);
+    // raycaster.set copies origin/direction into the ray's own vectors, so the
+    // scratch is free to reuse the moment this returns.
+    controller.getWorldPosition(_sv0);
+    _sv1.set(0, 0, -1).applyQuaternion(controller.getWorldQuaternion(_sq0));
+    this.raycaster.set(_sv0, _sv1);
     return this.raycaster;
   }
 
@@ -291,25 +304,27 @@ export class ModelInput {
   applyGrab() {
     if (!this.grab) return;
     const controller = this.grab.controller;
-    const current = controller.getWorldQuaternion(new THREE.Quaternion());
-    const delta = current.clone().multiply(this.grab.lastQuat.clone().invert());
+    const current = controller.getWorldQuaternion(_sq0);
+    // delta = current * inverse(lastQuat)
+    _sq1.copy(this.grab.lastQuat).invert();
+    const delta = _sq2.copy(current).multiply(_sq1);
     // Gain: scale the delta's angle.
     const angle = 2 * Math.acos(Math.min(1, Math.abs(delta.w)));
     if (angle > 1e-4) {
-      const axis = new THREE.Vector3(delta.x, delta.y, delta.z).normalize();
-      const gained = new THREE.Quaternion().setFromAxisAngle(axis, angle * GRAB_GAIN * Math.sign(delta.w >= 0 ? 1 : -1));
-      this.pivot.quaternion.premultiply(gained);
+      _sv0.set(delta.x, delta.y, delta.z).normalize();
+      _sq1.setFromAxisAngle(_sv0, angle * GRAB_GAIN * Math.sign(delta.w >= 0 ? 1 : -1));
+      this.pivot.quaternion.premultiply(_sq1);
     }
-    this.grab.lastQuat = current;
+    this.grab.lastQuat.copy(current); // persist into the owned quaternion
 
     // Promote a trigger click into a grab once it moves.
     const candidate = controller.userData.selectGrab;
     if (candidate && !candidate.promoted) candidate.promoted = true;
 
     if (this.scaleGrab) {
-      const a = new THREE.Vector3(); controller.getWorldPosition(a);
-      const b = new THREE.Vector3(); this.scaleGrab.other.getWorldPosition(b);
-      const dist = Math.max(0.05, a.distanceTo(b));
+      controller.getWorldPosition(_sv0);
+      this.scaleGrab.other.getWorldPosition(_sv1);
+      const dist = Math.max(0.05, _sv0.distanceTo(_sv1));
       const base = this.scaleGrab.startScale;
       const next = THREE.MathUtils.clamp(
         base * (dist / this.scaleGrab.startDist),
@@ -317,10 +332,11 @@ export class ModelInput {
         base * SCALE_MAX_FACTOR
       );
       this.pivot.scale.setScalar(next);
-      const azimuth = Math.atan2(b.x - a.x, b.z - a.z);
+      const azimuth = Math.atan2(_sv1.x - _sv0.x, _sv1.z - _sv0.z);
       const yaw = azimuth - this.scaleGrab.startAzimuth;
+      // current (_sq0) is no longer needed after lastQuat.copy above — reuse it.
       this.pivot.quaternion.copy(this.scaleGrab.startQuat)
-        .premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw));
+        .premultiply(_sq0.setFromAxisAngle(_UP, yaw));
     }
   }
 
@@ -329,11 +345,12 @@ export class ModelInput {
     for (const controller of this.controllers) {
       const candidate = controller.userData.selectGrab;
       if (!candidate || candidate.promoted) continue;
-      const current = controller.getWorldQuaternion(new THREE.Quaternion());
+      const current = controller.getWorldQuaternion(_sq0);
       const angle = current.angleTo(candidate.startQuat);
       if (angle > CLICK_MAX_ANGLE || now - candidate.startedAt > CLICK_MAX_MS * 2.5) {
         candidate.promoted = true;
-        this.grab = { controller, lastQuat: current };
+        // lastQuat is persistent state — give the grab its own owned quaternion.
+        this.grab = { controller, lastQuat: controller.getWorldQuaternion(new THREE.Quaternion()) };
       }
     }
   }
@@ -351,17 +368,17 @@ export class ModelInput {
 
       if (Math.abs(x) >= STICK_DEADZONE) {
         this.pivot.quaternion.premultiply(
-          new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -x * ORBIT_SPEED * dt)
+          _sq0.setFromAxisAngle(_UP, -x * ORBIT_SPEED * dt)
         );
       }
       if (Math.abs(y) >= STICK_DEADZONE) {
-        const toModel = this.pivot.position.clone().sub(this.camera.position);
-        toModel.y = 0;
-        const dist = Math.max(0.001, toModel.length());
-        const dir = toModel.normalize();
+        _sv0.copy(this.pivot.position).sub(this.camera.position);
+        _sv0.y = 0;
+        const dist = Math.max(0.001, _sv0.length());
+        _sv0.normalize(); // now the horizontal direction to the model
         const next = THREE.MathUtils.clamp(dist + y * DOLLY_SPEED * dt, DOLLY_MIN, DOLLY_MAX);
-        this.pivot.position.x = this.camera.position.x + dir.x * next;
-        this.pivot.position.z = this.camera.position.z + dir.z * next;
+        this.pivot.position.x = this.camera.position.x + _sv0.x * next;
+        this.pivot.position.z = this.camera.position.z + _sv0.z * next;
       }
 
       const clickButton = gp.buttons && (gp.buttons[3] || gp.buttons[2]);

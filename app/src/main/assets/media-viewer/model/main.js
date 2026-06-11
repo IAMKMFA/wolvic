@@ -332,6 +332,10 @@ function syncAnimPanel() {
 /* ------------------------------------------------------------------ loop ---- */
 
 let lastTime = 0;
+// Per-frame scratch for the turntable spin (avoids allocating each frame).
+const _turntableQ = new THREE.Quaternion();
+const _UP = new THREE.Vector3(0, 1, 0);
+let lastAnimSecond = -1;
 
 function tick(time, frame) {
   const dt = lastTime ? Math.min(0.1, (time - lastTime) / 1000) : 0;
@@ -339,15 +343,22 @@ function tick(time, frame) {
 
   if (anim && anim.playing) {
     anim.update(dt);
-    panel.set({
-      fraction: anim.fraction(),
-      timeLabel: (anim.fraction() * anim.duration).toFixed(1) + "s",
-      playing: anim.playing,
-    });
+    // The panel only redraws when the 0.1s time label changes, so only push a
+    // state update at that cadence — avoids a per-frame object + string alloc.
+    const fraction = anim.fraction();
+    const tenths = Math.round(fraction * anim.duration * 10);
+    if (tenths !== lastAnimSecond) {
+      lastAnimSecond = tenths;
+      panel.set({
+        fraction,
+        timeLabel: (tenths / 10).toFixed(1) + "s",
+        playing: anim.playing,
+      });
+    }
   }
   if (turntable && !input.grab) {
     stage.pivot.quaternion.premultiply(
-      new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), TURNTABLE_SPEED * dt)
+      _turntableQ.setFromAxisAngle(_UP, TURNTABLE_SPEED * dt)
     );
   }
 
