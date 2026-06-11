@@ -12,9 +12,9 @@ and refresh the matching manifest below.
 | Component | Files | Version | License |
 |-----------|-------|---------|---------|
 | three.js (core + addons) | `three/**` | npm `three@0.180.0` | MIT © 2010-2025 three.js authors |
-| Draco decoder | `draco/*` | bundled with three 0.180.0 | Apache-2.0 © Google LLC |
+| Draco decoder (FULL build — the gltf variant lacks point-cloud decoding) | `draco/*` | bundled with three 0.180.0 | Apache-2.0 © Google LLC |
 | Basis Universal transcoder | `basis/*` | bundled with three 0.180.0 | Apache-2.0 © Binomial LLC |
-| meshoptimizer decoder | `three/addons/libs/meshopt_decoder.module.js` (if present) | bundled with three 0.180.0 | MIT © Arseny Kapoulkine |
+| meshoptimizer decoder | `three/addons/libs/meshopt_decoder.module.js` | bundled with three 0.180.0 | MIT © Arseny Kapoulkine |
 | ktx-parse | `three/addons/libs/ktx-parse.module.js` | bundled with three 0.180.0 | MIT © Don McCurdy |
 | zstddec (embedded zstd wasm) | `three/addons/libs/zstddec.module.js` | bundled with three 0.180.0 | MIT wrapper; zstd BSD-3-Clause © Meta Platforms |
 | Omnitone (spatial/ambisonic audio) | `omnitone/omnitone.min.js`, `omnitone/LICENSE` | npm `omnitone@1.3.0` | Apache-2.0 © Google Inc. |
@@ -27,20 +27,30 @@ preserved — this file is that notice. Upstream license texts:
 <https://github.com/zeux/meshoptimizer/blob/master/LICENSE.md>,
 <https://github.com/GoogleChrome/omnitone/blob/master/LICENSE>.
 
-**Omnitone HRIR is offline-safe.** The First-Order Ambisonic head-related
-impulse responses are embedded as base64 WAV inside `omnitone.min.js`;
+**Omnitone HRIR is offline-safe.** All 15 head-related impulse responses
+(2 FOA + 5 SOA + 8 TOA) are embedded as base64 WAV inside `omnitone.min.js`;
 `createFOARenderer(ctx)` with no config decodes them locally, so no `.wav`
-resources are fetched and nothing needs a network. The viewer lazy-loads this
-bundle only when an item is flagged `audio: "ambisonic"` — the default audio
-path never touches it.
+resources are fetched and nothing needs a network — and `createHOARenderer`
+(2nd/3rd order) is already offline-ready should HOA content arrive. The viewer
+lazy-loads this bundle only when an item is flagged `audio: "ambisonic"` — the
+default audio path never touches it.
+
+**Omnitone upstream is dormant (we own this code).** The GoogleChrome/omnitone
+repo has had no commits since Jan 2019 and 1.3.0 is both the GitHub and npm
+latest; Google's sibling resonance-audio web SDK was archived in 2026. For a
+pinned, vendored, fully-offline appliance this is acceptable — but any future
+fix lands in-tree, not via upstream. Provenance verified 2026-06: the vendored
+`omnitone.min.js` is byte-identical (SHA-256 `8000ccca…ddfd9c`) to
+`build/omnitone.min.js` inside the official npm tarball
+`https://registry.npmjs.org/omnitone/-/omnitone-1.3.0.tgz`.
 
 ## SHA-256 manifest (three@0.180.0)
 
 ```
 8478b5b6d6b74e7d3082b89f6417321d8d1dc0307f2b30d4484bb11b441696a1  basis/basis_transcoder.js
 6cf17dc889352c42e9acf8897107978d127005fe3386c36a0e3845e27967630a  basis/basis_transcoder.wasm
-a680d927bed9cb864ddbd63521868891af2bfbe755092761b4837487618df8ac  draco/draco_decoder.wasm
-8bb2952d2ba7d67e1414f8df819410cb0434a666be53f671fff75f68843d76f6  draco/draco_wasm_wrapper.js
+c55a594e8ffd18426d36b27fea9618af3df5e173640a3e56d46f09d76f0574f2  draco/draco_decoder.wasm
+e8049906ef3f8f75d3456c22a3f31bfdfe5b5b5bd09ccdec613b9e9a49d554d8  draco/draco_wasm_wrapper.js
 b97879c748170baadeb3fb84cea1ffdf4674e283dc06042f34e2acb95a76042c  three/addons/controls/OrbitControls.js
 c20f0b4677f6128a138d7152b85cbef9091f4f45cdfa05adca04d40c1697c7ae  three/addons/environments/RoomEnvironment.js
 f40c491f6c44dde511268121f778a0050e73b1a15fd844c1ae2c78c73213eafc  three/addons/libs/ktx-parse.module.js

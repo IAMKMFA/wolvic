@@ -139,7 +139,7 @@ class LocalWebServer private constructor(
                 .listFiles()?.count { it.isDirectory && !it.name.startsWith(".") } ?: 0
             """{"status":"ok","toursCount":$toursCount,"mediaCount":${snapshot.mediaCount},""" +
                 """"videosCount":${snapshot.videos.size},"imagesCount":${snapshot.images.size},""" +
-                """"modelsCount":${snapshot.models.size},""" +
+                """"modelsCount":${snapshot.models.size},"cloudsCount":${snapshot.clouds.size},""" +
                 """"storageGranted":${snapshot.storageGranted},""" +
                 """"version":"${com.igalia.wolvic.BuildConfig.VERSION_NAME}"}"""
         }.getOrDefault(HEALTH_JSON)
@@ -238,7 +238,11 @@ class LocalWebServer private constructor(
             // Bundled assets (viewer.js, the model viewer + ~1.9MB three.js
             // vendor, CSS, wasm) are immutable for the process lifetime, so cache
             // the bytes once instead of re-reading + re-allocating per request.
-            val bytes = assetCache[assetPath] ?: run {
+            // The lookup MUST hold the same lock as writers: with accessOrder=true
+            // a LinkedHashMap get() is a structural mutation (it relinks the LRU
+            // list), and GeckoView fetches a page's modules on parallel request
+            // threads — unsynchronized gets can corrupt the map.
+            val bytes = synchronized(assetCache) { assetCache[assetPath] } ?: run {
                 val read = appContext.assets.open(assetPath).use { it.readBytes() }
                 cacheAsset(assetPath, read)
                 read
@@ -324,6 +328,8 @@ class LocalWebServer private constructor(
     private fun defaultMime(name: String): String = when {
         name.endsWith(".js", ignoreCase = true) -> "application/javascript"
         name.endsWith(".css", ignoreCase = true) -> "text/css"
+        // Gecko rejects <track> sources that are not served as text/vtt.
+        name.endsWith(".vtt", ignoreCase = true) -> "text/vtt"
         name.endsWith(".json", ignoreCase = true) -> "application/json"
         name.endsWith(".xml", ignoreCase = true) -> "application/xml"
         name.endsWith(".wasm", ignoreCase = true) -> "application/wasm"

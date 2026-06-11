@@ -80,7 +80,15 @@ let playlistItems = [];
 let playlistIndex = -1;
 let pointSize = DEFAULT_POINT_SIZE;
 let pointCount = 0;
-let budgetCheckAt = 0;
+// The Quest eye buffer is denser than the dpr-1 2D page, but three still
+// multiplies gl_PointSize by the page's pixelRatio in-session — so unscaled
+// points render visibly thinner in-headset than in desktop verification.
+// Calibrated on sessionstart from the real XR framebuffer height.
+let xrSizeScale = 1;
+// Quest 2 starts dropping frames well below the old 5M figure: stereo doubles
+// vertex work (no multiview in three's WebGL path), so ~2.5M points ≈ 5M
+// verts/frame is the realistic warning line (SCAN_PIPELINE.md budgets match).
+const DENSE_POINTS = 2.5e6;
 
 /* ------------------------------------------------------------------- ui ---- */
 
@@ -170,17 +178,28 @@ async function presentCloud(src, title) {
 
   currentRoot = loaded.root;
   pointCount = loaded.pointCount || 0;
-  setPointSize(currentRoot, pointSize); // honour the active size across swaps
+  setPointSize(currentRoot, pointSize, xrSizeScale); // honour size across swaps
   framing = frameModel(stage.pivot, currentRoot);
   input.setModel(currentRoot);
   input.refreshBounds();
   turntable = false;
-  budgetCheckAt = performance.now() + 700;
 
   config.src = src;
   config.title = title;
   dom.title.textContent = title;
   document.title = "Framatome VR — " + title;
+
+  // Surface heaviness ON THE GLASS PANEL — the 2D status line is invisible
+  // inside an immersive session, where in-session swaps land.
+  const dense = pointCount > DENSE_POINTS;
+  if (dense) {
+    setStatus("Dense cloud: " + pointCountLabel(pointCount) +
+      " — decimate or crop for smoother VR (see SCAN_PIPELINE.md).");
+    console.warn("[cloud] heavy point count", pointCount);
+  }
+  if (loaded.droppedCount > 0) {
+    setStatus(loaded.droppedCount + " invalid (NaN) points were dropped from this scan.");
+  }
 
   hideLoader();
   panel.set({
@@ -192,7 +211,7 @@ async function presentCloud(src, title) {
     clipCount: 0,           // no animation row for point clouds
     cloud: true,            // enables the point-size row + cloud meta line
     pointSize,
-    pointMeta: pointCountLabel(pointCount),
+    pointMeta: pointCountLabel(pointCount) + (dense ? " · DENSE" : ""),
     trueScale: false,
     turntable: false,
   });
@@ -212,8 +231,28 @@ async function loadPlaylistItem(targetIndex) {
 /* ------------------------------------------------------------- panel actions */
 
 function applyPointSize(next) {
-  pointSize = setPointSize(currentRoot, next);
+  pointSize = setPointSize(currentRoot, next, xrSizeScale);
   panel.set({ pointSize });
+}
+
+// Calibrate the screen-space point size to the XR framebuffer density so the
+// in-headset appearance matches the desktop-verified weight, and restore the
+// 2D scale on exit. (renderer.setPixelRatio does not affect the XR buffer, but
+// three still multiplies gl_PointSize by the page pixelRatio in-session.)
+function wireXrPointSizeCalibration() {
+  renderer.xr.addEventListener("sessionstart", () => {
+    let fbHeight = 0;
+    try {
+      const baseLayer = renderer.xr.getSession().renderState.baseLayer;
+      fbHeight = baseLayer ? baseLayer.framebufferHeight : 0;
+    } catch (e) { fbHeight = 0; }
+    xrSizeScale = Math.min(2.5, Math.max(1, (fbHeight || 1600) / 1000));
+    applyPointSize(pointSize);
+  });
+  renderer.xr.addEventListener("sessionend", () => {
+    xrSizeScale = 1;
+    applyPointSize(pointSize);
+  });
 }
 
 function onAction(action) {
@@ -282,15 +321,6 @@ function tick(time, frame) {
   chip.update(time, stage.camera);
 
   renderer.render(stage.scene, stage.camera);
-
-  if (budgetCheckAt && time >= budgetCheckAt && currentRoot) {
-    budgetCheckAt = 0;
-    if (pointCount > 5e6) {
-      setStatus("Dense cloud: " + pointCountLabel(pointCount) +
-        " in memory — decimate or crop for smoother VR (see SCAN_PIPELINE.md).");
-      console.warn("[cloud] heavy point count", pointCount);
-    }
-  }
 }
 
 function sizeCanvas() {
@@ -366,6 +396,7 @@ async function main() {
     onAction,
   });
   input.partsEnabled = false; // no part-ID for point clouds
+  wireXrPointSizeCalibration();
   renderer.setAnimationLoop(tick);
   sizeCanvas();
 
