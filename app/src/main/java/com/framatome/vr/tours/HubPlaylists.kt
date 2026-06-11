@@ -17,6 +17,7 @@ object HubPlaylists {
   const val KEY_VIDEOS = "hub-videos"
   const val KEY_IMAGES = "hub-images"
   const val KEY_MODELS = "hub-models"
+  const val KEY_CLOUDS = "hub-clouds"
   const val KEY_ALL = "hub-all"
 
   fun jsonFor(context: Context, key: String): String? {
@@ -25,7 +26,8 @@ object HubPlaylists {
       KEY_VIDEOS -> snapshot.videos to "Videos"
       KEY_IMAGES -> snapshot.images to "Images"
       KEY_MODELS -> snapshot.models to "3D Models"
-      KEY_ALL -> (snapshot.videos + snapshot.images + snapshot.models) to "Media Library"
+      KEY_CLOUDS -> snapshot.clouds to "Point Clouds"
+      KEY_ALL -> (snapshot.videos + snapshot.images + snapshot.models + snapshot.clouds) to "Media Library"
       else -> return null
     }
     val playlistItems = items.mapNotNull(::toPlaylistItem)

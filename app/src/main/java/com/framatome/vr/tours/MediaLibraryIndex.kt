@@ -27,11 +27,12 @@ object MediaLibraryIndex {
     val videos: List<LibraryItem>,
     val images: List<LibraryItem>,
     val models: List<LibraryItem>,
+    val clouds: List<LibraryItem>,
     val scannedAtMs: Long,
     val rootsStamp: Long,
     val storageGranted: Boolean
   ) {
-    val mediaCount: Int get() = videos.size + images.size + models.size
+    val mediaCount: Int get() = videos.size + images.size + models.size + clouds.size
   }
 
   @Volatile
@@ -110,6 +111,9 @@ object MediaLibraryIndex {
         .sortedWith(byTitle),
       models = items
         .filter { it.contentType == ContentType.Model3D }
+        .sortedWith(byTitle),
+      clouds = items
+        .filter { it.contentType == ContentType.PointCloud }
         .sortedWith(byTitle),
       scannedAtMs = now,
       rootsStamp = rootsStamp(),

@@ -326,6 +326,29 @@ export class GlassPanel {
       rowY += 76;
     }
 
+    // Point-cloud control row (point size stepper + point count). Additive —
+    // only the cloud viewer sets s.cloud, so the model viewer is unaffected.
+    if (s.cloud) {
+      c.fillStyle = TEXT_SOFT;
+      c.font = "700 24px " + FONT;
+      c.textAlign = "left";
+      c.fillText("POINT SIZE", 76, rowY + 24);
+      this.button("ptMinus", 320, rowY, 56, 48, null, "−");
+      c.fillStyle = TEXT;
+      c.textAlign = "center";
+      c.font = "600 26px " + FONT;
+      c.fillText((s.pointSize || 0).toFixed(1) + "px", 432, rowY + 24);
+      this.button("ptPlus", 488, rowY, 56, 48, null, "+");
+      if (s.pointMeta) {
+        c.fillStyle = TEXT_SOFT;
+        c.textAlign = "right";
+        c.font = "600 24px " + FONT;
+        c.fillText(s.pointMeta, w - 76, rowY + 24);
+      }
+      c.textAlign = "left";
+      rowY += 64;
+    }
+
     // Button row.
     const btnY = Math.max(rowY + 8, 300);
     const btnH = h - btnY - 40;

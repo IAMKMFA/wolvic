@@ -115,6 +115,7 @@ object HubIndexServer {
             videoCount = snapshot.videos.size,
             imageCount = snapshot.images.size,
             modelCount = snapshot.models.size,
+            cloudCount = snapshot.clouds.size,
             tourCards = tourCards,
             videoSection = buildMediaSection(
                 title = "Videos",
@@ -138,6 +139,14 @@ object HubIndexServer {
                 items = snapshot.models,
                 playlistKey = HubPlaylists.KEY_MODELS,
                 emptyHint = "GLB/glTF models (SolidWorks XR exports with exploded views) appear here — see MODEL_PIPELINE.md.",
+                dateFormat = dateFormat
+            ),
+            cloudSection = buildMediaSection(
+                title = "Point Clouds",
+                gridId = "grid-clouds",
+                items = snapshot.clouds,
+                playlistKey = HubPlaylists.KEY_CLOUDS,
+                emptyHint = "PLY/PCD laser scans (Leica/FARO, converted) appear here — see SCAN_PIPELINE.md.",
                 dateFormat = dateFormat
             ),
             storageBanner = if (snapshot.storageGranted) "" else buildStorageBanner()
@@ -363,10 +372,12 @@ $body
         videoCount: Int,
         imageCount: Int,
         modelCount: Int,
+        cloudCount: Int,
         tourCards: String,
         videoSection: String,
         imageSection: String,
         modelSection: String,
+        cloudSection: String,
         storageBanner: String
     ): String = """
 <!DOCTYPE html>
@@ -755,6 +766,10 @@ body::after{
             <div class="num">$modelCount</div>
             <div class="label">Models</div>
         </div>
+        <div class="header-stat">
+            <div class="num">$cloudCount</div>
+            <div class="label">Point Clouds</div>
+        </div>
     </div>
 </div>
 $storageBanner
@@ -777,6 +792,8 @@ $videoSection
 $imageSection
 
 $modelSection
+
+$cloudSection
 </div>
 
 <div class="footer">

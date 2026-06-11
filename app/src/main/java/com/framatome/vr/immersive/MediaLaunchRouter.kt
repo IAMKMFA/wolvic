@@ -69,10 +69,16 @@ object MediaLaunchRouter {
           true
         }
       }
+      // Point clouds render in the bundled WebXR cloud viewer (cloud.html);
+      // no native fallback Activity, same as 3D models.
       ContentType.PointCloud -> {
-        Toast.makeText(activity, "Coming soon", Toast.LENGTH_LONG).show()
-        activity.finish()
-        true
+        if (payload.mediaViewerUrl() != null) {
+          false
+        } else {
+          Toast.makeText(activity, "This point cloud is outside the FramatomeVR library", Toast.LENGTH_LONG).show()
+          activity.finish()
+          true
+        }
       }
       ContentType.Unsupported -> {
         Toast.makeText(activity, "Unsupported media type", Toast.LENGTH_LONG).show()
