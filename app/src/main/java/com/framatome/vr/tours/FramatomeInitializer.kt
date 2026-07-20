@@ -23,6 +23,7 @@ import kotlin.jvm.JvmStatic
 object FramatomeInitializer {
     private const val TAG = "FramatomeInit"
 
+    @Volatile private var ingestStarted = false
     @Volatile private var configResolver: DeploymentConfigResolver? = null
     @Volatile private var tourIngestor: TourIngestor? = null
     @Volatile private var mediaIngestor: MediaIngestor? = null
@@ -36,15 +37,29 @@ object FramatomeInitializer {
         // Warm the library index off-thread so the first hub load is instant.
         MediaLibraryIndex.prewarm()
 
-        startIngest(app)
+        startIngestAsync(app)
     }
 
     /**
-     * Fold in the (formerly launcher-owned) continuous ingest pipeline. Idempotent
-     * on the underlying start() calls; failures are logged, never fatal to boot.
+     * Kick the ingest pipeline off the main thread. This runs inside
+     * VRBrowserApplication.onCreate (main thread, before Gecko engine init), and
+     * the ingestors' start() does synchronous sdcard I/O (mkdirs, config.json
+     * read, stale-artifact sweep, FileObserver registration) that must not jank
+     * boot. Guarded so it spawns at most once per process.
+     */
+    private fun startIngestAsync(app: Context) {
+        synchronized(this) {
+            if (ingestStarted) return
+            ingestStarted = true
+        }
+        Thread({ startIngest(app) }, "framatome-ingest-init").start()
+    }
+
+    /**
+     * Fold in the (formerly launcher-owned) continuous ingest pipeline.
+     * Failures are logged, never fatal to boot.
      */
     private fun startIngest(app: Context) {
-        if (tourIngestor != null) return
         runCatching {
             StorageLayout.ensureWritableDirectories()
 
