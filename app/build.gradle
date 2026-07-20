@@ -621,6 +621,7 @@ dependencies {
     implementation "org.nanohttpd:nanohttpd:2.3.1"
 
     implementation project(':content-contract')
+    implementation project(':content-ingest')
     implementation project(':core-ui')
     implementation project(':tour-injection')
     implementation project(':feature-native-image360')

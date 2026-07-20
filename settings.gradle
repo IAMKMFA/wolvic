@@ -30,7 +30,7 @@ def repoRoot = settingsDir.parentFile
 
 include ':app'
 
-['content-contract', 'core-ui', 'tour-injection',
+['content-contract', 'content-ingest', 'core-ui', 'tour-injection',
  'feature-native-image360', 'feature-native-image2d',
  'feature-native-video360', 'feature-flat-video'].each { name ->
     include ":$name"
