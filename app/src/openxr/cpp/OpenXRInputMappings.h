@@ -47,6 +47,8 @@ namespace crow {
     constexpr const char* kPathActionReady { "ready_ext" };
     constexpr const char* kInteractionProfileHandInteraction { "/interaction_profiles/ext/hand_interaction_ext" };
     constexpr const char* kInteractionProfileMSFTHandInteraction { "/interaction_profiles/microsoft/hand_interaction" };
+    // FRAMATOME: Quest 3 Touch Plus OpenXR profile (requires XR_META_touch_controller_plus).
+    constexpr const char* kInteractionProfileMetaTouchPlus { "/interaction_profiles/meta/touch_controller_plus" };
 
     // OpenXR Button List
     enum class OpenXRButtonType {
@@ -213,8 +215,36 @@ namespace crow {
             },
     };
 
-    // Meta Quest Touch Plus:  https://github.com/immersive-web/webxr-input-profiles/blob/master/packages/registry/profiles/meta/meta-quest-touch-plus.json
+    // Meta Quest Touch Plus: https://developers.meta.com/horizon/documentation/native/pc/native-touch-plus-controllers/
+    // FRAMATOME: bind the real meta/touch_controller_plus path (not legacy oculus/touch_controller).
     const OpenXRInputMapping MetaTouchPlus {
+            kInteractionProfileMetaTouchPlus,
+            "vr_controller_metaquest3_left.obj",
+            "vr_controller_metaquest3_right.obj",
+            device::MetaQuest3,
+            std::vector<OpenXRInputProfile> { "meta-quest-touch-plus", "oculus-touch-v3", "oculus-touch", "generic-trigger-squeeze-thumbstick" },
+            std::vector<OpenXRButton> {
+                    { OpenXRButtonType::Trigger, kPathTrigger, OpenXRButtonFlags::ValueTouch, OpenXRHandFlags::Both },
+                    { OpenXRButtonType::Squeeze, kPathSqueeze, OpenXRButtonFlags::Value, OpenXRHandFlags::Both },
+                    { OpenXRButtonType::Thumbstick, kPathThumbstick, OpenXRButtonFlags::ClickTouch, OpenXRHandFlags::Both },
+                    { OpenXRButtonType::ButtonX, kPathButtonX, OpenXRButtonFlags::ClickTouch, OpenXRHandFlags::Left },
+                    { OpenXRButtonType::ButtonY, kPathButtonY, OpenXRButtonFlags::ClickTouch, OpenXRHandFlags::Left,  },
+                    { OpenXRButtonType::ButtonA, kPathButtonA, OpenXRButtonFlags::ClickTouch, OpenXRHandFlags::Right },
+                    { OpenXRButtonType::ButtonB, kPathButtonB, OpenXRButtonFlags::ClickTouch, OpenXRHandFlags::Right },
+                    { OpenXRButtonType::Thumbrest, kPathThumbrest, OpenXRButtonFlags::Touch, OpenXRHandFlags::Both },
+                    { OpenXRButtonType::Menu, kPathMenu, OpenXRButtonFlags::Click, OpenXRHandFlags::Left, ControllerDelegate::Button::BUTTON_APP, true }
+            },
+            std::vector<OpenXRAxis> {
+                    { OpenXRAxisType::Thumbstick, kPathThumbstick,  OpenXRHandFlags::Both },
+            },
+            std::vector<OpenXRHaptic> {
+                    { kPathHaptic, OpenXRHandFlags::Both },
+            },
+    };
+
+    // FRAMATOME: keep legacy oculus/touch_controller suggested bindings for Quest 3 so
+    // runtimes that still remap Touch Plus continue to resolve an active mapping.
+    const OpenXRInputMapping MetaTouchPlusCompat {
             "/interaction_profiles/oculus/touch_controller",
             "vr_controller_metaquest3_left.obj",
             "vr_controller_metaquest3_right.obj",
@@ -525,8 +555,8 @@ namespace crow {
             },
     };
 
-    const std::array<OpenXRInputMapping, 17> OpenXRInputMappings {
-            OculusTouch, OculusTouch2, MetaQuestTouchPro, Pico4U, Pico4x, PicoNeo3, PfdmYVR1, PfdmYVR2, PfdmMR, Hvr6DOF, Hvr3DOF, LenovoVRX, MagicLeap2, MetaTouchPlus, HandInteraction, MSFTHandInteraction, KHRSimple
+    const std::array<OpenXRInputMapping, 18> OpenXRInputMappings {
+            OculusTouch, OculusTouch2, MetaQuestTouchPro, Pico4U, Pico4x, PicoNeo3, PfdmYVR1, PfdmYVR2, PfdmMR, Hvr6DOF, Hvr3DOF, LenovoVRX, MagicLeap2, MetaTouchPlus, MetaTouchPlusCompat, HandInteraction, MSFTHandInteraction, KHRSimple
     };
 
 } // namespace crow

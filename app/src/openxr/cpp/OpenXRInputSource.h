@@ -109,7 +109,18 @@ private:
 
     bool mIsHandInteractionSupported { false };
 
+    // FRAMATOME: debounce Device↔Hand flips so brief tracking loss does not
+    // spam WebXR inputSourcesChange (tour pointer cascade / freeze).
+    enum class StickyAimMode { None, Device, Hand };
+    StickyAimMode mStickyAimMode { StickyAimMode::None };
+    StickyAimMode mPendingAimMode { StickyAimMode::None };
+    int mPendingAimModeFrames { 0 };
+    XrSpaceLocation mLastValidControllerAim { XR_TYPE_SPACE_LOCATION };
+    bool mHasLastValidControllerAim { false };
+    StickyAimMode mLoggedAimMode { StickyAimMode::None };
+
     void HandleEyeTrackingScroll(XrTime predictedDisplayTime, bool triggerClicked, const vrb::Matrix& pointerTransform, const vrb::Matrix& eyeTrackingTransform, ControllerDelegate &controllerDelegate);
+    StickyAimMode ResolveStickyAimMode(StickyAimMode desired, bool allowImmediateDeviceRecover);
 public:
     static OpenXRInputSourcePtr Create(XrInstance, XrSession, OpenXRActionSet&, const XrSystemProperties&, OpenXRHandFlags, int index);
     ~OpenXRInputSource();

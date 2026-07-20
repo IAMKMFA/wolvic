@@ -5,6 +5,7 @@
 #include "DeviceUtils.h"
 #include "SystemUtils.h"
 #include "DeviceDelegate.h"
+#include "vrb/Logger.h"
 
 #define HAND_JOINT_FOR_AIM XR_HAND_JOINT_MIDDLE_PROXIMAL_EXT
 
@@ -20,6 +21,9 @@ const float kControllerClickThreshold = 0.25f;
 // Threshold to consider a pinch as a click. Hand tracking is not as precise as controllers, that's
 // why we need to be extra careful in order not to generate false positives.
 const float kPinchThreshold = 0.91f;
+
+// FRAMATOME: hold Device↔Hand transitions ~100–150 ms (12 frames @ 90–120 Hz).
+constexpr int kAimModeSwitchHoldFrames = 12;
 
 OpenXRInputSourcePtr OpenXRInputSource::Create(XrInstance instance, XrSession session, OpenXRActionSet& actionSet, const XrSystemProperties& properties, OpenXRHandFlags handeness, int index)
 {
@@ -744,6 +748,38 @@ void OpenXRInputSource::EmulateControllerFromHand(device::RenderMode renderMode,
     delegate.SetCapabilityFlags(mIndex, flags);
 }
 
+OpenXRInputSource::StickyAimMode
+OpenXRInputSource::ResolveStickyAimMode(StickyAimMode desired, bool allowImmediateDeviceRecover)
+{
+    if (desired == mStickyAimMode) {
+        mPendingAimMode = desired;
+        mPendingAimModeFrames = 0;
+        return mStickyAimMode;
+    }
+
+    // Recovering the physical controller should be snappy — only debounce drops
+    // into Hand / None, which are what flap WebXR input sources during tours.
+    if (allowImmediateDeviceRecover && desired == StickyAimMode::Device) {
+        mStickyAimMode = StickyAimMode::Device;
+        mPendingAimMode = StickyAimMode::Device;
+        mPendingAimModeFrames = 0;
+        return mStickyAimMode;
+    }
+
+    if (desired != mPendingAimMode) {
+        mPendingAimMode = desired;
+        mPendingAimModeFrames = 1;
+        return mStickyAimMode;
+    }
+
+    ++mPendingAimModeFrames;
+    if (mPendingAimModeFrames >= kAimModeSwitchHoldFrames) {
+        mStickyAimMode = desired;
+        mPendingAimModeFrames = 0;
+    }
+    return mStickyAimMode;
+}
+
 void OpenXRInputSource::Update(const XrFrameState& frameState, XrSpace localSpace, const vrb::Matrix &head, const vrb::Vector& offsets, device::RenderMode renderMode, DeviceDelegate::PointerMode pointerMode, bool usingEyeTracking, bool handTrackingEnabled, const vrb::Matrix& eyeTrackingTransform, ControllerDelegate& delegate)
 {
     if (mActiveMapping &&
@@ -785,6 +821,11 @@ void OpenXRInputSource::Update(const XrFrameState& frameState, XrSpace localSpac
     }
 
     bool isControllerUnavailable = (aimLocation.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) == 0;
+    if (!isControllerUnavailable) {
+        mLastValidControllerAim = aimLocation;
+        mHasLastValidControllerAim = true;
+    }
+
     auto gotHandTrackingInfo = false;
     auto handFacesHead = false;
 #if defined(PICOXR)
@@ -794,27 +835,89 @@ void OpenXRInputSource::Update(const XrFrameState& frameState, XrSpace localSpac
 #else
     bool mustAlwaysCheckHandTracking = false;
 #endif
-    if (isControllerUnavailable || mUsingHandInteractionProfile || mustAlwaysCheckHandTracking) {
+
+    // FRAMATOME: decide desired aim source, then debounce before acting.
+    StickyAimMode desiredMode = StickyAimMode::None;
+    if (!isControllerUnavailable) {
+        desiredMode = StickyAimMode::Device;
+    } else if (handTrackingEnabled) {
+        // Probe hand tracking only when we may want Hand mode (or Pico always-check).
+        gotHandTrackingInfo = GetHandTrackingInfo(frameState.predictedDisplayTime, localSpace, head);
+        if (gotHandTrackingInfo && !mIsHandInteractionSupported) {
+            desiredMode = StickyAimMode::Hand;
+        } else if (gotHandTrackingInfo && mIsHandInteractionSupported) {
+            // Hand interaction profile path still uses controller actions; keep Device
+            // sticky while joints are available for gestures.
+            desiredMode = StickyAimMode::Device;
+        } else if (mustAlwaysCheckHandTracking) {
+            desiredMode = StickyAimMode::None;
+        } else {
+            desiredMode = StickyAimMode::None;
+        }
+    } else {
+        desiredMode = StickyAimMode::None;
+    }
+
+    // While holding Device through a brief drop, keep publishing last valid aim.
+    if (desiredMode != StickyAimMode::Device && mStickyAimMode == StickyAimMode::Device &&
+        mHasLastValidControllerAim && isControllerUnavailable) {
+        aimLocation = mLastValidControllerAim;
+        isAimPoseActive = true;
+    }
+
+    StickyAimMode resolvedMode = ResolveStickyAimMode(desiredMode, /*allowImmediateDeviceRecover=*/true);
+
+    if (resolvedMode != mLoggedAimMode) {
+        const char* modeName = "None";
+        switch (resolvedMode) {
+            case StickyAimMode::Device: modeName = "Device"; break;
+            case StickyAimMode::Hand: modeName = "Hand"; break;
+            case StickyAimMode::None: modeName = "None"; break;
+        }
+        VRB_LOG("FRAMATOME input[%d]: aim mode -> %s (handTracking=%d immersiveProfile=%d)",
+                mIndex, modeName, handTrackingEnabled ? 1 : 0, mUsingHandInteractionProfile ? 1 : 0);
+        mLoggedAimMode = resolvedMode;
+    }
+
+    if (resolvedMode == StickyAimMode::Hand) {
         if (!handTrackingEnabled) {
             delegate.SetEnabled(mIndex, false);
             return;
         }
-        gotHandTrackingInfo = GetHandTrackingInfo(frameState.predictedDisplayTime, localSpace, head);
-        if (gotHandTrackingInfo) {
-            std::vector<vrb::Matrix> jointTransforms;
-            std::vector<float> jointRadii;
-            PopulateHandJointLocations(renderMode, jointTransforms, jointRadii);
-            if (!mIsHandInteractionSupported) {
-                mClickThreshold = kPinchThreshold;
-                EmulateControllerFromHand(renderMode, frameState.predictedDisplayTime, head, jointTransforms[HAND_JOINT_FOR_AIM], pointerMode, usingEyeTracking, eyeTrackingTransform, delegate);
-                delegate.SetHandJointLocations(mIndex, std::move(jointTransforms), std::move(jointRadii));
-                return;
-            }
-            handFacesHead = OpenXRGestureManager::handFacesHead(jointTransforms[HAND_JOINT_FOR_AIM], head);
-            delegate.SetHandJointLocations(mIndex, std::move(jointTransforms), std::move(jointRadii));
-        } else if (isControllerUnavailable) {
+        if (!gotHandTrackingInfo) {
+            gotHandTrackingInfo = GetHandTrackingInfo(frameState.predictedDisplayTime, localSpace, head);
+        }
+        if (!gotHandTrackingInfo) {
             delegate.SetEnabled(mIndex, false);
             return;
+        }
+        std::vector<vrb::Matrix> jointTransforms;
+        std::vector<float> jointRadii;
+        PopulateHandJointLocations(renderMode, jointTransforms, jointRadii);
+        mClickThreshold = kPinchThreshold;
+        EmulateControllerFromHand(renderMode, frameState.predictedDisplayTime, head, jointTransforms[HAND_JOINT_FOR_AIM], pointerMode, usingEyeTracking, eyeTrackingTransform, delegate);
+        delegate.SetHandJointLocations(mIndex, std::move(jointTransforms), std::move(jointRadii));
+        return;
+    }
+
+    if (resolvedMode == StickyAimMode::None) {
+        delegate.SetEnabled(mIndex, false);
+        return;
+    }
+
+    // Device mode: optionally refresh hand joints for gesture UI without switching aim.
+    if (isControllerUnavailable || mUsingHandInteractionProfile || mustAlwaysCheckHandTracking) {
+        if (handTrackingEnabled) {
+            if (!gotHandTrackingInfo) {
+                gotHandTrackingInfo = GetHandTrackingInfo(frameState.predictedDisplayTime, localSpace, head);
+            }
+            if (gotHandTrackingInfo) {
+                std::vector<vrb::Matrix> jointTransforms;
+                std::vector<float> jointRadii;
+                PopulateHandJointLocations(renderMode, jointTransforms, jointRadii);
+                handFacesHead = OpenXRGestureManager::handFacesHead(jointTransforms[HAND_JOINT_FOR_AIM], head);
+                delegate.SetHandJointLocations(mIndex, std::move(jointTransforms), std::move(jointRadii));
+            }
         }
     }
 
@@ -1071,7 +1174,8 @@ XrResult OpenXRInputSource::UpdateInteractionProfile(ControllerDelegate& delegat
         if (!strncmp(mapping.path, path, path_len)) {
             mActiveMapping = &mapping;
             mUsingHandInteractionProfile = pathDefinesHandInteractionProfile;
-            VRB_LOG("OpenXR: NEW active mapping %s", mActiveMapping->path);
+            VRB_LOG("FRAMATOME OpenXR: NEW active mapping %s (handProfile=%d hand=%d)",
+                    mActiveMapping->path, mUsingHandInteractionProfile ? 1 : 0, mHandeness);
             break;
         }
     }

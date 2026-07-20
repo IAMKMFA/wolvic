@@ -109,21 +109,21 @@
     <string name="tracking_dialog_message"><![CDATA[A protección mellorada de seguimento está %1$s para esta páxina web. <a href="%2$s">Saber máis</a>]]></string>
     <string name="exit_confirm_dialog_body">Seguro que quere saír de %1$s\?</string>
     <string name="download_delete_all_confirm_body">Seguro que quere borrar todos os arquivos descargados\?</string>
-    <string name="privacy_policy_section_1">Esta aplicación foi desenvolvida por Framatome, SL (a partir de agora FRAMATOME), rexistrada na rúa Bugallal Marchesi, 22- 1º, 15008, A Coruña, Galicia, coa seguinte información de contacto:
+    <string name="privacy_policy_section_1">Esta aplicación foi desenvolvida por Igalia, SL (a partir de agora IGALIA), rexistrada na rúa Bugallal Marchesi, 22- 1º, 15008, A Coruña, Galicia, coa seguinte información de contacto:
 \n
 \n• Teléfono +34 981 913991;
-\n• Email: support.framatome.com/vr
+\n• Email: info@igalia.com
 \n
-\nO contido e elementos que forman a aplicación foron implementados e/ou desenvolvidos por FRAMATOME baixo licencias open source, estando protexidos, sen limitacións, pola propiedade intelectual e industrial do Reino de España, e polos tratados e acordos internacionais que resulten aplicables.</string>
+\nO contido e elementos que forman a aplicación foron implementados e/ou desenvolvidos por IGALIA baixo licencias open source, estando protexidos, sen limitacións, pola propiedade intelectual e industrial do Reino de España, e polos tratados e acordos internacionais que resulten aplicables.</string>
     <string name="terms_service_section_1">Framatome VR é un software libre e aberto, construído por unha comunidade de miles de persoas por todo o mundo. Hai algunhas cousas que debe saber:
 \n
 \n• Framatome VR é publicado baixo a licencia Mozilla Public License. Isto significa que pode usar, copiar e distribuír Framatome VR a outras persoas. Tamén é posible modificar o código fonte de Framatome VR para satisfacer novas necesidades. A licencia permite distribuír a versión modificada.
 \n
-\n• Non se cede ningún dereito ou licencia de Framatome o de ningunha outra parte, incluíndo sen limitación o nome e o logo de Framatome VR.
+\n• Non se cede ningún dereito ou licencia de Igalia o de ningunha outra parte, incluíndo sen limitación o nome e o logo de Framatome VR.
 \n
-\n• Algunhas funcionalidades de Framatome VR, como o Crash Reporter, permiten enviar feedback a Framatome. Se se escolle que se quere enviar ese feedback, dáselle permiso a Framatome para usar esa información para mellorar os seus productos, para publicar información anónima nas súas páxinas web, e para distribuír ese feedback anónimo.
+\n• Algunhas funcionalidades de Framatome VR, como o Crash Reporter, permiten enviar feedback a Igalia. Se se escolle que se quere enviar ese feedback, dáselle permiso a Igalia para usar esa información para mellorar os seus productos, para publicar información anónima nas súas páxinas web, e para distribuír ese feedback anónimo.
 \n
-\n• O uso da información persoal e feedback enviado a Framatome mediante Framatome VR descríbese na política de privacidade de Framatome VR.
+\n• O uso da información persoal e feedback enviado a Igalia mediante Framatome VR descríbese na política de privacidade de Framatome VR.
 \n
 \n• Algunhas funcionalidades de Framatome VR fan uso de servizos web externos. Non podemos garantizar que estean completamente libres de erros. Máis detalles, incluíndo o xeito de desactivar as funcionalidades que usan esos servizos, podense atopar nos termos de servizo (abaixo).</string>
     <string name="keyboard_enter_label">ENTER</string>
@@ -506,17 +506,17 @@
     <string name="privacy_policy_title">Política de privacidade xeral</string>
     <string name="terms_service_section_2">Framatome VR usa servizos web (\"Servizos\") para proporcionar algunhas das funcionalidades incluídas para o seu uso nesta versión binaria de Framatome VR, baixo os termos descritos a continuación.
 \n
-\n\t• Framatome e os seus colaboradores, licenciadores e socios traballan para proporcionar Servizos o máis precisos e actualizados posible. Porén, non podemos garantir que esta información sexa completa e libre de erros. Por exemplo, o Servizo de navegación segura pode non identificar algunha das páxinas webs perigosas, e pode identificar algunhas páxinas seguras como perigosas por erro, e no Servizo de localización todas as localizacións proporcionadas polos nosos provedores son estimacións e nin nós nin os nosos provedores do serrvizo garantimos a precisión das localizacións proporcionadas.
+\n\t• Igalia e os seus colaboradores, licenciadores e socios traballan para proporcionar Servizos o máis precisos e actualizados posible. Porén, non podemos garantir que esta información sexa completa e libre de erros. Por exemplo, o Servizo de navegación segura pode non identificar algunha das páxinas webs perigosas, e pode identificar algunhas páxinas seguras como perigosas por erro, e no Servizo de localización todas as localizacións proporcionadas polos nosos provedores son estimacións e nin nós nin os nosos provedores do serrvizo garantimos a precisión das localizacións proporcionadas.
 \n
-\n\t• Framatome resérvase o dereito a eliminar ou cambiar os Servizos á súa discreción.
+\n\t• Igalia resérvase o dereito a eliminar ou cambiar os Servizos á súa discreción.
 \n
-\n\t• Framatome pon a disposición estes Servizos coa versión adxunta de Framatome VR, e garante dereitos de uso. Framatome e os seus licenciadores resérvanse todos os demais dereitos sobre os Servizos. Estes termos non pretenden limitar ningún dereito que proporcionen licencias open source que se poidan aplicar a Framatome VR e o seu código fonte.
+\n\t• Igalia pon a disposición estes Servizos coa versión adxunta de Framatome VR, e garante dereitos de uso. Igalia e os seus licenciadores resérvanse todos os demais dereitos sobre os Servizos. Estes termos non pretenden limitar ningún dereito que proporcionen licencias open source que se poidan aplicar a Framatome VR e o seu código fonte.
 \n
-\n\t• Os servizos proporciónanse \"tal e como están\". Framatome, os seus contribuidores, licenciadores e distribuidores, non proporcionan ningunha garantía, incluídas sen limitacións, garantías que os Servizos son axeitados para os propósitos particulares de cada usuario. O usuario asume todo o risco ao seleccionar os Servizos para os obxectivos concretos, en canto á calidade e rendemento dos mesmos.
+\n\t• Os servizos proporciónanse \"tal e como están\". Igalia, os seus contribuidores, licenciadores e distribuidores, non proporcionan ningunha garantía, incluídas sen limitacións, garantías que os Servizos son axeitados para os propósitos particulares de cada usuario. O usuario asume todo o risco ao seleccionar os Servizos para os obxectivos concretos, en canto á calidade e rendemento dos mesmos.
 \n
-\n\t• Salvo se fose requirido por lei, Framatome, os contribuidores, licenciadores e distribuidores, non serán responsables de ningún dano indirecto, especial, incidental, consecuente, punitivo ou exemplar que xurda ou estea relacionado de algún xeito co uso de Framatome VR e os Servizos. En calquera caso, a responsabilidade colectiva baixo estes termos non excederá os 500 USD (cincocentos dólares). Algunhas xurisdicións non permiten a exclusión ou limitación de certos danos, polo que é posible que esta exclusión e limitación non lle afecte.
+\n\t• Salvo se fose requirido por lei, Igalia, os contribuidores, licenciadores e distribuidores, non serán responsables de ningún dano indirecto, especial, incidental, consecuente, punitivo ou exemplar que xurda ou estea relacionado de algún xeito co uso de Framatome VR e os Servizos. En calquera caso, a responsabilidade colectiva baixo estes termos non excederá os 500 USD (cincocentos dólares). Algunhas xurisdicións non permiten a exclusión ou limitación de certos danos, polo que é posible que esta exclusión e limitación non lle afecte.
 \n
-\n\t• Framatome poderá actualizar estes termos á súa discreción en calquera momento. En calquera caso, estes termos non poderán ser modificados ou cancelados sen o consentimento por escrito de Framatome.
+\n\t• Igalia poderá actualizar estes termos á súa discreción en calquera momento. En calquera caso, estes termos non poderán ser modificados ou cancelados sen o consentimento por escrito de Igalia.
 \n
 \n\t• Estes termos réxense polas leis de España, excluíndo disposicións en materia de conflitos de leis. Se algunha parte destes termos é considerada inválida ou inaplicable por un xuíz, as partes restantes permanecerán en pleno vigor e efecto. En caso de conflito entre unha versión traducida destes termos e a versión en español, prevalecerá a versión en español.
 \n
@@ -557,17 +557,17 @@
 \n\t\t\t⁃ Enhanced Tracking Protection is now disabled.</string>
     <string name="privacy_policy_subtitle_1">Información xeral</string>
     <string name="privacy_policy_subtitle_2">Protección de datos</string>
-    <string name="privacy_policy_section_2">FRAMATOME está comprometida co cumprimento das provisións legais en relación coa protección de datos persoais: Regulación (EU) 2016/679 do Parlamento Europeo e do Consello do 27th April 2016 da protección das persoas físicas con respecto ao procesamento de datos persoais e á libre circulación dos mesmos (RGPD) e na Lei Orgánica 3/2018, de 5 de decembro, de protección de datos e garantía dos dereitos dixitais (LOPDGDD).
+    <string name="privacy_policy_section_2">IGALIA está comprometida co cumprimento das provisións legais en relación coa protección de datos persoais: Regulación (EU) 2016/679 do Parlamento Europeo e do Consello do 27th April 2016 da protección das persoas físicas con respecto ao procesamento de datos persoais e á libre circulación dos mesmos (RGPD) e na Lei Orgánica 3/2018, de 5 de decembro, de protección de datos e garantía dos dereitos dixitais (LOPDGDD).
 \n
-\nFRAMATOME non recolle datos persoais de maneira que o usuario poida ser identificado. Polo tanto, vostede pode usar a aplicación, consultar e navegar o entorno de realidade virtual sen revelar a súa identidade ou proporcionar datos persoais a FRAMATOME, nin directa nin indirectamente; polo tanto FRAMATOME non será responsable de ningún dos datos introducidos en FRAMATOME VR.
+\nIGALIA non recolle datos persoais de maneira que o usuario poida ser identificado. Polo tanto, vostede pode usar a aplicación, consultar e navegar o entorno de realidade virtual sen revelar a súa identidade ou proporcionar datos persoais a IGALIA, nin directa nin indirectamente; polo tanto IGALIA non será responsable de ningún dos datos introducidos en WOLVIC.
 \n
-\nOs únicos datos e información que FRAMATOME obterá do uso da aplicación, os cales non poderán ser utilizados en ningún momento para identificar ao usuario, son os seguintes:
+\nOs únicos datos e información que IGALIA obterá do uso da aplicación, os cales non poderán ser utilizados en ningún momento para identificar ao usuario, son os seguintes:
 \n
 \n\t• Datos analíticos, puramente estatísticos e non identificativos.
-\n\t• Para capturar e traducir a voz en texto, os datos de son do usuario son transferidos a servidores propiedade da compañía responsable de cada plataforma, a través da API para este propósito: por exemplo, en Oculus, de Facebook, un servizo que o envía ao SDK de voz de Oculus. En ningún momento, os datos mencionados son procesados, accedidos ou incorporados a servidores propiedade de FRAMATOME. Os datos transmitidos serán responsabilidade exclusiva das compañías que posúen cada plataforma (de aquí en diante, Terceiras Partes), que poden estar localizadas fora da Unión Europea e suxeitas a un réxime legar menos protector da privacidade do usuario. Recomendámoslle que lea con coidade a política de privacidade e os termos de uso de cada unha destas plataformas externas antes de aceptar e usar os seus servizos. FRAMATOME non será directa nin indirectamente responsable do procesamento dos datos persoais por estas Terceiras Partes.
-\n\t• A información de localización xeográfica podería obterse dende o navegador, en lugar da usada polo sistema. No entanto, para facer isto, debe configurar os permisos de localización do seu dispositivo cun aviso específico neste sentido e FRAMATOME non enlazará en ningún momento esta información a vostede como persoa identificada ou identificable, aínda que as Terceiras Partes mencionadas no punto anterior poderían facelo, se é aplicable. Recomendámoslle que preste atención aos seus termos legais.
-\n\t• FRAMATOME non accederá nin almacenará, de ningún modo, os enderezos ou URLs que visite.
-\n\t• A integración con servizos cloud (como Mozilla Accounts ou Google Accounts) para sincronizar datos como o historial de busca ou os seus marcadores podería ser posible. Neste caso, FRAMATOME non accederá ou procesará ningunha información de ningún modo, e tampouco a transmitirá a través dos servidores de FRAMATOME.
+\n\t• Para capturar e traducir a voz en texto, os datos de son do usuario son transferidos a servidores propiedade da compañía responsable de cada plataforma, a través da API para este propósito: por exemplo, en Oculus, de Facebook, un servizo que o envía ao SDK de voz de Oculus. En ningún momento, os datos mencionados son procesados, accedidos ou incorporados a servidores propiedade de IGALIA. Os datos transmitidos serán responsabilidade exclusiva das compañías que posúen cada plataforma (de aquí en diante, Terceiras Partes), que poden estar localizadas fora da Unión Europea e suxeitas a un réxime legar menos protector da privacidade do usuario. Recomendámoslle que lea con coidade a política de privacidade e os termos de uso de cada unha destas plataformas externas antes de aceptar e usar os seus servizos. IGALIA non será directa nin indirectamente responsable do procesamento dos datos persoais por estas Terceiras Partes.
+\n\t• A información de localización xeográfica podería obterse dende o navegador, en lugar da usada polo sistema. No entanto, para facer isto, debe configurar os permisos de localización do seu dispositivo cun aviso específico neste sentido e IGALIA non enlazará en ningún momento esta información a vostede como persoa identificada ou identificable, aínda que as Terceiras Partes mencionadas no punto anterior poderían facelo, se é aplicable. Recomendámoslle que preste atención aos seus termos legais.
+\n\t• IGALIA non accederá nin almacenará, de ningún modo, os enderezos ou URLs que visite.
+\n\t• A integración con servizos cloud (como Mozilla Accounts ou Google Accounts) para sincronizar datos como o historial de busca ou os seus marcadores podería ser posible. Neste caso, IGALIA non accederá ou procesará ningunha información de ningún modo, e tampouco a transmitirá a través dos servidores de IGALIA.
 \n
 \nRecordámoslle de novo que as plataformas de Terceiras Partes ás que vostede acceda ou use con esta aplicación poderían recoller estes ou outros datos identificativos de seu, ben proporcionándoos de maneira voluntaria ou involuntaria, consciente ou inconscientemente, posiblemente fora do alcance da lexislación de protección de datos Europea. Polo tanto, recomendámoslle que se informe e preste especial atención aos termos legais de ditas Terceiras Partes, como por exemplo, as seguintes:
 \n
@@ -575,10 +575,10 @@
 \n\t• Facebook: https://www.facebook.com/about/privacy/update
 \n\t• Vosk: https://alphacephei.com/vosk
 \n
-\nAsí mesmo, FRAMATOME infórmalle de que mentres utilice a opción de recoñecemento de voz do navegador, Vosk procesa os seus datos de voz completamente sen conexión no seu dispositivo. Non se transmite ningún dato de voz nin transcricións a servidores externos. Todo o procesamiento execútase localmente, garantindo que a súa privacidade está totalmente protexida.
-\nEn todo caso, FRAMATOME garante aos interesados o exercicio dos dereitos de acceso, rectificación, supresión, oposición, limitación do tratamento e portabilidade, respecto dos seus datos persoais.
-\nPara tales efectos, FRAMATOME estableceu un protocolo/procedemento interno para levalos a cabo.
-\nAs partes interesadas poden exercer os seus dereitos como segue: mediante o envío dunha solicitude ao enderezo físico de FRAMATOME: rúa Bugallal Marchesi, 22, 1o, 15008, A Coruña, Referencia: “Protección de datos”; ou ben, ao seguinte enderezo de correo electrónico: support.framatome.com/vr.
+\nAsí mesmo, IGALIA infórmalle de que mentres utilice a opción de recoñecemento de voz do navegador, Vosk procesa os seus datos de voz completamente sen conexión no seu dispositivo. Non se transmite ningún dato de voz nin transcricións a servidores externos. Todo o procesamiento execútase localmente, garantindo que a súa privacidade está totalmente protexida.
+\nEn todo caso, IGALIA garante aos interesados o exercicio dos dereitos de acceso, rectificación, supresión, oposición, limitación do tratamento e portabilidade, respecto dos seus datos persoais.
+\nPara tales efectos, IGALIA estableceu un protocolo/procedemento interno para levalos a cabo.
+\nAs partes interesadas poden exercer os seus dereitos como segue: mediante o envío dunha solicitude ao enderezo físico de IGALIA: rúa Bugallal Marchesi, 22, 1o, 15008, A Coruña, Referencia: “Protección de datos”; ou ben, ao seguinte enderezo de correo electrónico: info@igalia.com.
 \nEn ambos os casos, o interesado deberá achegar copia do seu DNI, pasaporte ou documento identificativo que acredite a súa identidade.
 \nO Delegado de Protección de Datos ou o departamento encargado da xestión dos dereitos rexistrarán os exercicios dos dereitos no formulario, dispoñible para o efecto, no que se recollerán os seguintes datos:
 \n
@@ -716,7 +716,8 @@
     <string name="terms_service_subtitle_2">Servizos de información web de Framatome VR</string>
     <string name="privacy_policy_subtitle_3">Lei aplicable e idioma orixinal</string>
     <string name="privacy_policy_section_3">Esta política de privacidade está suxeita á lei española. O idioma de aplicación desta política de privacidade é o español. Por esta razón, ante calquera posible diferencia entre o orixinal en Español e as traduccións a outros idiomas será considerada prevalente a versión en español que pode atoparse aquí:
-<string name="voice_service_vosk">Vosk (Sen conexión)</string>
+\nhttps://wolvic.com/es/legal/privacy/ .</string>
+    <string name="voice_service_vosk">Vosk (Sen conexión)</string>
     <string name="voice_service_huawei_asr">Recoñecemento de voz automático de Huawei</string>
     <string name="permissions_dialog_remember_choice">Lembrar esta decisión</string>
     <string name="settings_language_galician">Galego</string>
@@ -816,7 +817,7 @@
     <string name="close_tab">Pechar pestana</string>
     <string name="settings_language_ukrainian">Ucraíno</string>
     <string name="display_options_open_tabs_in_background">Abrir novas pestanas en segundo plano</string>
-    <string name="developer_options_homepage_framatome">framatome.com</string>
+    <string name="developer_options_homepage_wolvic">wolvic.com</string>
     <string name="developer_options_homepage_new_tab">Nova pestana</string>
     <string name="developer_options_homepage_other">Outra</string>
     <string name="url_new_tab_title">Nova pestana</string>
