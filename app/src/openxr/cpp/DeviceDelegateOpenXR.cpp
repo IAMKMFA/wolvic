@@ -239,7 +239,7 @@ struct DeviceDelegateOpenXR::State {
     if (OpenXRExtensions::IsExtensionSupported(XR_BD_CONTROLLER_INTERACTION_EXTENSION_NAME))
         extensions.push_back(XR_BD_CONTROLLER_INTERACTION_EXTENSION_NAME);
 
-    // FRAMATOME: Quest 3 Touch Plus interaction profile (OpenXR loader 1.0.34+).
+    // FRAMATOME: Quest 3 Touch Plus interaction profile (OpenXR loader 1.1.x / Meta).
     if (OpenXRExtensions::IsExtensionSupported(XR_META_TOUCH_CONTROLLER_PLUS_EXTENSION_NAME))
         extensions.push_back(XR_META_TOUCH_CONTROLLER_PLUS_EXTENSION_NAME);
 

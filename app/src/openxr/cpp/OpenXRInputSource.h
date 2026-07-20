@@ -115,8 +115,10 @@ private:
     StickyAimMode mStickyAimMode { StickyAimMode::None };
     StickyAimMode mPendingAimMode { StickyAimMode::None };
     int mPendingAimModeFrames { 0 };
+    // Aim is located in grip space; cache both so hold frames stay pose-revamp safe.
     XrSpaceLocation mLastValidControllerAim { XR_TYPE_SPACE_LOCATION };
-    bool mHasLastValidControllerAim { false };
+    XrSpaceLocation mLastValidGrip { XR_TYPE_SPACE_LOCATION };
+    bool mHasLastValidControllerPose { false };
     StickyAimMode mLoggedAimMode { StickyAimMode::None };
 
     void HandleEyeTrackingScroll(XrTime predictedDisplayTime, bool triggerClicked, const vrb::Matrix& pointerTransform, const vrb::Matrix& eyeTrackingTransform, ControllerDelegate &controllerDelegate);

@@ -821,9 +821,22 @@ void OpenXRInputSource::Update(const XrFrameState& frameState, XrSpace localSpac
     }
 
     bool isControllerUnavailable = (aimLocation.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) == 0;
-    if (!isControllerUnavailable) {
+
+    // Fetch grip early so we can cache a coherent aim+grip pair for hold frames.
+    // Aim is relative to grip space after the pose-revamp; holding aim alone is unsafe.
+    bool isGripPoseActive = false;
+    XrSpaceLocation gripLocation { XR_TYPE_SPACE_LOCATION };
+#if !defined(HVR)
+    GetPoseState(mGripAction, mGripSpace, localSpace, frameState, isGripPoseActive, gripLocation);
+#endif
+    const bool gripPoseValid =
+        (gripLocation.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0 &&
+        (gripLocation.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0;
+
+    if (!isControllerUnavailable && gripPoseValid) {
         mLastValidControllerAim = aimLocation;
-        mHasLastValidControllerAim = true;
+        mLastValidGrip = gripLocation;
+        mHasLastValidControllerPose = true;
     }
 
     auto gotHandTrackingInfo = false;
@@ -836,36 +849,43 @@ void OpenXRInputSource::Update(const XrFrameState& frameState, XrSpace localSpac
     bool mustAlwaysCheckHandTracking = false;
 #endif
 
-    // FRAMATOME: decide desired aim source, then debounce before acting.
+    // FRAMATOME: desired mode is the *eventual* target after a drop.
+    // While sticky stays Device we republish last valid aim+grip (hold window).
+    // Never force desired=Device when the live controller aim is invalid — that
+    // skipped the hold on Quest (hand-interaction extension present + hands on).
     StickyAimMode desiredMode = StickyAimMode::None;
     if (!isControllerUnavailable) {
         desiredMode = StickyAimMode::Device;
-    } else if (handTrackingEnabled) {
-        // Probe hand tracking only when we may want Hand mode (or Pico always-check).
-        gotHandTrackingInfo = GetHandTrackingInfo(frameState.predictedDisplayTime, localSpace, head);
+    } else {
+        if (handTrackingEnabled) {
+            gotHandTrackingInfo = GetHandTrackingInfo(frameState.predictedDisplayTime, localSpace, head);
+        }
+        // Hand emulation only when the legacy (non–hand-interaction) path owns aim.
+        // With XR_EXT_hand_interaction, prefer Device-hold then None over Hand flips.
         if (gotHandTrackingInfo && !mIsHandInteractionSupported) {
             desiredMode = StickyAimMode::Hand;
-        } else if (gotHandTrackingInfo && mIsHandInteractionSupported) {
-            // Hand interaction profile path still uses controller actions; keep Device
-            // sticky while joints are available for gestures.
-            desiredMode = StickyAimMode::Device;
-        } else if (mustAlwaysCheckHandTracking) {
-            desiredMode = StickyAimMode::None;
         } else {
             desiredMode = StickyAimMode::None;
         }
-    } else {
-        desiredMode = StickyAimMode::None;
     }
 
-    // While holding Device through a brief drop, keep publishing last valid aim.
-    if (desiredMode != StickyAimMode::Device && mStickyAimMode == StickyAimMode::Device &&
-        mHasLastValidControllerAim && isControllerUnavailable) {
+    // Hold last coherent Device pose while sticky is still Device.
+    bool holdingLastPose = false;
+    if (isControllerUnavailable && mStickyAimMode == StickyAimMode::Device &&
+        mHasLastValidControllerPose) {
         aimLocation = mLastValidControllerAim;
+        gripLocation = mLastValidGrip;
         isAimPoseActive = true;
+        isGripPoseActive = true;
+        holdingLastPose = true;
     }
 
     StickyAimMode resolvedMode = ResolveStickyAimMode(desiredMode, /*allowImmediateDeviceRecover=*/true);
+
+    // If sticky left Device during this frame, drop the hold immediately.
+    if (holdingLastPose && resolvedMode != StickyAimMode::Device) {
+        holdingLastPose = false;
+    }
 
     if (resolvedMode != mLoggedAimMode) {
         const char* modeName = "None";
@@ -874,8 +894,9 @@ void OpenXRInputSource::Update(const XrFrameState& frameState, XrSpace localSpac
             case StickyAimMode::Hand: modeName = "Hand"; break;
             case StickyAimMode::None: modeName = "None"; break;
         }
-        VRB_LOG("FRAMATOME input[%d]: aim mode -> %s (handTracking=%d immersiveProfile=%d)",
-                mIndex, modeName, handTrackingEnabled ? 1 : 0, mUsingHandInteractionProfile ? 1 : 0);
+        VRB_LOG("FRAMATOME input[%d]: aim mode -> %s (hold=%d handTracking=%d immersiveProfile=%d)",
+                mIndex, modeName, holdingLastPose ? 1 : 0, handTrackingEnabled ? 1 : 0,
+                mUsingHandInteractionProfile ? 1 : 0);
         mLoggedAimMode = resolvedMode;
     }
 
@@ -972,10 +993,14 @@ void OpenXRInputSource::Update(const XrFrameState& frameState, XrSpace localSpac
 
     vrb::Matrix controllerTransform = vrb::Matrix::Identity();
     if (pointerMode == DeviceDelegate::PointerMode::TRACKED_POINTER) {
-        bool isGripPoseActive = false;
-        XrSpaceLocation gripLocation = {XR_TYPE_SPACE_LOCATION};
-        CHECK_XRCMD(GetPoseState(mGripAction, mGripSpace, localSpace, frameState, isGripPoseActive,
-                                 gripLocation));
+#if defined(HVR)
+        // HVR: aim was located in local space; sample grip here unless holding.
+        if (!holdingLastPose) {
+            CHECK_XRCMD(GetPoseState(mGripAction, mGripSpace, localSpace, frameState, isGripPoseActive,
+                                     gripLocation));
+        }
+#endif
+        // Non-HVR: gripLocation already set above (live sample or last-valid hold).
         const bool gridPositionValid = gripLocation.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT;
 
         if (gridPositionValid)

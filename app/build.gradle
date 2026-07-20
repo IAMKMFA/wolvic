@@ -315,7 +315,6 @@ android {
             }
             buildConfigField "String", "HVR_APP_ID", "\"${getHVRAppId()}\""
             buildConfigField "String", "HVR_API_KEY", "\"${getHVRApiKey()}\""
-            buildConfigField "String", "MK_API_KEY", "\"\""
             buildConfigField "String[]", "SPEECH_SERVICES", "${getHVRMLSpeechServices()}"
             buildConfigField "Boolean", "SUPPORTS_SYSTEM_NOTIFICATIONS", "true"
             buildConfigField "Boolean", "WEBVIEW_IN_PHONE_UI", "true"
