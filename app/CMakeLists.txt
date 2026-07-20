@@ -197,6 +197,8 @@ include_directories(
 
 # Add dependency on KTX-Software
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/main/cpp/KTX-Software)
+target_link_options(ktx PRIVATE "-Wl,-z,max-page-size=16384")
+target_link_options(ktx_read PRIVATE "-Wl,-z,max-page-size=16384")
 target_link_libraries(native-lib PRIVATE ktx_read)
 target_include_directories(native-lib PRIVATE ${CMAKE_SOURCE_DIR}/src/main/cpp/KTX-Software/include)
 
@@ -219,3 +221,4 @@ target_link_libraries( # Specifies the target library.
                        EGL
                        GLESv3
                       )
+target_link_options(native-lib PRIVATE "-Wl,-z,max-page-size=16384")

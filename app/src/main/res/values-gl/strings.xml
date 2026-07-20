@@ -573,9 +573,9 @@
 \n
 \n\t• Google: https://policies.google.com/privacy
 \n\t• Facebook: https://www.facebook.com/about/privacy/update
-\n\t• MeetKai: https://meetkai.com/privacy
+\n\t• Vosk: https://alphacephei.com/vosk
 \n
-\nAsí mesmo, FRAMATOME infórmalle de que mentres utilice a opción de recoñecemento de voz do navegador, Meetkai manterá transcricións de voz totalmente anónimas da súa voz coa finalidade de mellorar o servizo que prestan. A súa voz non se conservará nin haberá ningún xeito de conectar as transcricións coa súa identidade. Máis información sobre a política de privacidade de MeetKai na seguinte ligazón: https://meetkai.com/es/privacy. Framatome nin ten interese en vincular transcricións con ningún usuario nin en afectar á súa privacidade; en consecuencia, Framatome solicita que non se inclúa información persoal ou confidencial de ningún tipo nos seus enderezos de voz sonora.
+\nAsí mesmo, FRAMATOME infórmalle de que mentres utilice a opción de recoñecemento de voz do navegador, Vosk procesa os seus datos de voz completamente sen conexión no seu dispositivo. Non se transmite ningún dato de voz nin transcricións a servidores externos. Todo o procesamiento execútase localmente, garantindo que a súa privacidade está totalmente protexida.
 \nEn todo caso, FRAMATOME garante aos interesados o exercicio dos dereitos de acceso, rectificación, supresión, oposición, limitación do tratamento e portabilidade, respecto dos seus datos persoais.
 \nPara tales efectos, FRAMATOME estableceu un protocolo/procedemento interno para levalos a cabo.
 \nAs partes interesadas poden exercer os seus dereitos como segue: mediante o envío dunha solicitude ao enderezo físico de FRAMATOME: rúa Bugallal Marchesi, 22, 1o, 15008, A Coruña, Referencia: “Protección de datos”; ou ben, ao seguinte enderezo de correo electrónico: support.framatome.com/vr.
@@ -716,8 +716,7 @@
     <string name="terms_service_subtitle_2">Servizos de información web de Framatome VR</string>
     <string name="privacy_policy_subtitle_3">Lei aplicable e idioma orixinal</string>
     <string name="privacy_policy_section_3">Esta política de privacidade está suxeita á lei española. O idioma de aplicación desta política de privacidade é o español. Por esta razón, ante calquera posible diferencia entre o orixinal en Español e as traduccións a outros idiomas será considerada prevalente a versión en español que pode atoparse aquí:
-\nhttps://framatome.com/vr/privacy/ .</string>
-    <string name="voice_service_metkai">MeetKai</string>
+<string name="voice_service_vosk">Vosk (Sen conexión)</string>
     <string name="voice_service_huawei_asr">Recoñecemento de voz automático de Huawei</string>
     <string name="permissions_dialog_remember_choice">Lembrar esta decisión</string>
     <string name="settings_language_galician">Galego</string>
@@ -826,4 +825,32 @@
     <string name="controller_options_hover_to_select">Punteiro</string>
     <string name="announcements_title">Anuncios</string>
     <string name="disable_hand_tracking_dialog_body">O seguimento de mans está desactivado temporalmente. Reactivarase automaticamente no próximo inicio. Esta opción non é persistente para evitar problemas cando os controladores non estean dispoñibles.</string>
+    <string name="add_search_engine_title">Engadir motor de busca</string>
+    <string name="add_search_engine_name_title">Nome</string>
+    <string name="add_search_engine_name_hint">Introduza o nome do motor de busca</string>
+    <string name="add_search_engine_search_url_title">URL de busca</string>
+    <string name="add_search_engine_search_url_hint">https://example.com/busca?q={TermosDeBusca}</string>
+    <string name="add_search_engine_suggest_url_title">URL de suxestións (opcional)</string>
+    <string name="add_search_engine_suggest_url_hint">https://example.com/suxestión?q={termosDeBusca}</string>
+    <string name="add_search_engine_save">Gardar</string>
+    <string name="add_search_engine_cancel">Cancelar</string>
+    <string name="edit_search_engine_title">Editar motor de busca</string>
+    <string name="edit_search_engine_save">Actualizar</string>
+    <string name="search_engine_deleted">Motor de busca borrado</string>
+    <string name="delete_search_engine_dialog_title">Borrar motor de busca</string>
+    <string name="delete_search_engine_dialog_text">Está seguro de querer borrar o motor de busca %1$s?</string>
+    <string name="custom_search_engines_title">Motores de busca personalizados</string>
+    <string name="custom_search_engines_empty">Non hai motores de busca personalizados. Use o botón Engadir motor de busca para engadir un.</string>
+    <string name="custom_search_engines_manage">Motores de busca personalizados</string>
+    <string name="custom_search_engines_list_header">Motores de busca personalizados</string>
+    <string name="search_engine_error_url_required">Requírese unha URL</string>
+    <string name="search_engine_error_url_placeholder">A URL debe conter %s ou {termosDeBusca}</string>
+    <string name="search_engine_error_url_scheme">A URL debe ter un esquema (http:// ou https://)</string>
+    <string name="search_engine_error_url_scheme_unsupported">Só se permiten URL http ou https</string>
+    <string name="search_engine_error_url_host">A URL debe ter un host válido</string>
+    <string name="search_engine_error_url_private">Non se admiten URLs de hosts privados/localhost por motivos de seguridade</string>
+    <string name="search_engine_error_name_required">Requírese nome</string>
+    <string name="search_engine_error_name_too_long">O nome debe ter 50 caracteres ou menos</string>
+    <string name="close_button">Pechar</string>
+    <string name="delete_button">Eliminar</string>
 </resources>

@@ -73,18 +73,11 @@ def getHVRApiKey = { ->
 
 def getHVRMLSpeechServices = { ->
     if (getHVRApiKey().isEmpty()) {
-        return "{ com.igalia.wolvic.speech.SpeechServices.MEETKAI }"
+        return "{ com.igalia.wolvic.speech.SpeechServices.VOSK }"
     } else {
-        return "{ com.igalia.wolvic.speech.SpeechServices.MEETKAI, " +
+        return "{ com.igalia.wolvic.speech.SpeechServices.VOSK, " +
                 " com.igalia.wolvic.speech.SpeechServices.HUAWEI_ASR }";
     }
-}
-
-def getMKApiKey = { ->
-    if (gradle.hasProperty("userProperties.MK_API_KEY")) {
-        return gradle."userProperties.MK_API_KEY"
-    }
-    return ""
 }
 
 def isChromiumAvailable = {
@@ -120,7 +113,7 @@ android {
         buildConfigField "Boolean", "WEBVIEW_IN_PHONE_UI", "false"
         buildConfigField "Boolean", "CN_FIRST_RUN_IN_PHONE_UI", "false"
         buildConfigField "Boolean", "FXA_USE_CHINA_SERVER", "false"
-        buildConfigField "String[]", "SPEECH_SERVICES", "{ com.igalia.wolvic.speech.SpeechServices.MEETKAI }"
+        buildConfigField "String[]", "SPEECH_SERVICES", "{ com.igalia.wolvic.speech.SpeechServices.VOSK }"
         buildConfigField "Boolean", "SUPPORTS_SYSTEM_NOTIFICATIONS", "false"
         buildConfigField "Float", "DEFAULT_DENSITY", "1.25f"
         buildConfigField "Float", "DEFAULT_WINDOW_DISTANCE", "0.0f"
@@ -193,12 +186,10 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig getUseDebugSigningOnRelease() ? debug.signingConfig : release.signingConfig
-            buildConfigField "String", "MK_API_KEY", "\"${getMKApiKey()}\""
         }
         debug {
             applicationIdSuffix getDevApplicationIdSuffix()
             pseudoLocalesEnabled true
-            buildConfigField "String", "MK_API_KEY", "\"\""
         }
     }
 
@@ -211,7 +202,12 @@ android {
     // Select the Glean from GeckoView (local geckoview-default includes Glean).
     project.configurations.configureEach {
         resolutionStrategy.capabilitiesResolution.withCapability("org.mozilla.telemetry:glean-native") {
-            def toBeSelected = candidates.find { it.id instanceof ModuleComponentIdentifier && it.id.module.contains('geckoview') }
+            def abi = getName().toLowerCase().contains('x64') ? 'x86_64' : 'arm64'
+            def toBeSelected = candidates.find { it.id instanceof ModuleComponentIdentifier && it.id.module.contains('geckoview') && it.id.module.contains(abi) }
+            // Local GeckoView substitution uses 'geckoview-default-omni' without abi suffix
+            if (toBeSelected == null) {
+                toBeSelected = candidates.find { it.id instanceof ModuleComponentIdentifier && it.id.module.contains('geckoview-default') }
+            }
             if (toBeSelected != null) {
                 select(toBeSelected)
             }
@@ -257,6 +253,7 @@ android {
 
         picoxr {
             dimension "platform"
+            minSdkVersion 29
             externalNativeBuild {
                 cmake {
                     cppFlags " -DPICOXR -DOPENXR"
@@ -565,6 +562,18 @@ android {
                    : "src/oculusvrArmRelease/AndroidManifest.xml"
            }
         }
+
+        // visionglass debug builds need to override src/debug/AndroidManifest.xml, which adds
+        // MAIN/LAUNCHER on VRBrowserActivity. On visionglass the launcher activity is
+        // FirstRunActivity, so the debug-added filter would let users skip the legal gate.
+        // Release builds with useDebugSigningOnRelease=true also pull in src/debug/AndroidManifest.xml
+        // (see the `release` source set above), so the same overlay is needed there.
+        if (name.startsWith('visionglass')) {
+            if (name.toLowerCase().contains('debug')
+                || (name.toLowerCase().contains('release') && getUseDebugSigningOnRelease())) {
+                manifest.srcFile "src/visionglassDebug/AndroidManifest.xml"
+            }
+        }
     }
 
     testOptions {
@@ -681,8 +690,14 @@ dependencies {
     implementation libs.work.runtime
     implementation libs.work.runtime.ktx
 
-    // OpenXR standard loader
-    implementation libs.openxrloader
+    // OpenXR loader — 1.1.x for Meta (16KB-aligned), 1.0.x for all other platforms
+    oculusvrImplementation libs.openxrloader
+    picoxrImplementation libs.openxrloader10
+    pfdmxrImplementation libs.openxrloader10
+    lynxImplementation libs.openxrloader10
+    spacesImplementation libs.openxrloader10
+    aospImplementation libs.openxrloader10
+    hvrImplementation libs.openxrloader10
 
     // Testing
     androidTestImplementation libs.atsl.runner
@@ -697,8 +712,8 @@ dependencies {
     testImplementation files(configurations.jnaForTest.copyRecursive().files)
     testImplementation libs.work.testing
 
-    // MeetKai
-    implementation fileTree(dir: "${project.rootDir}/libs/meetkai/", include: ['*.aar'])
+    // Vosk
+    implementation libs.vosk
     implementation libs.okhttp
     implementation libs.zip4j
     implementation libs.apache.commonsmath3
@@ -788,10 +803,10 @@ android.applicationVariants.configureEach { variant ->
             variant.buildConfigField "String[]", "SPEECH_SERVICES", "{ com.igalia.wolvic.speech.SpeechServices.HUAWEI_ASR }"
         } else if (platform.toLowerCase().startsWith('picoxr')) {
             variant.resValue 'string', 'HOMEPAGE_URL', '"http://localhost:18080"'
-            variant.buildConfigField "String[]", "SPEECH_SERVICES", "{ com.igalia.wolvic.speech.SpeechServices.MEETKAI }"
+            variant.buildConfigField "String[]", "SPEECH_SERVICES", "{ com.igalia.wolvic.speech.SpeechServices.VOSK }"
         }  else if (platform.toLowerCase().startsWith('pfdmxr')) {
             variant.resValue 'string', 'HOMEPAGE_URL', '"http://localhost:18080"'
-            variant.buildConfigField "String[]", "SPEECH_SERVICES", "{ com.igalia.wolvic.speech.SpeechServices.MEETKAI }"
+            variant.buildConfigField "String[]", "SPEECH_SERVICES", "{ com.igalia.wolvic.speech.SpeechServices.VOSK }"
         }
     }
 

@@ -15,6 +15,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -867,7 +868,8 @@ public class KeyboardWidget extends UIWidget implements CustomKeyboardView.OnKey
         if (mLanguageSelectorView.getItems() == null || mLanguageSelectorView.getItems().size() == 0) {
             ArrayList<KeyboardSelectorView.Item> items = new ArrayList<>();
             for (KeyboardInterface keyboard: mKeyboards) {
-                items.add(new KeyboardSelectorView.Item(StringUtils.capitalize(keyboard.getKeyboardTitle()), keyboard));
+                String title = keyboard.getKeyboardTitle();
+                items.add(new KeyboardSelectorView.Item(title != null ? StringUtils.capitalize(title) : "", keyboard));
             }
             mLanguageSelectorView.setItems(items);
         }
@@ -1340,11 +1342,18 @@ public class KeyboardWidget extends UIWidget implements CustomKeyboardView.OnKey
             if (isAttachToWindowWidget()) {
                 if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
                     return false;
-                } else {
+                }
+                // Only forward to Web engine and dismiss the VR keyboard for physical keyboard
+                // events (SOURCE_KEYBOARD). Controller/gamepad events (SOURCE_GAMEPAD) must
+                // not dismiss the keyboard: dismiss() does not notify the engine, so it would
+                // never re-show it. The typed character was already committed via MotionEvent from
+                // the VRB input layer; the redundant KeyEvent from Meta Horizon OS must be ignored here.
+                if ((event.getSource() & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD) {
                     connection.sendKeyEvent(event);
                     dismiss();
+                    return true;
                 }
-                return true;
+                return false;
             }
             // Android Components do not support InputConnection.sendKeyEvent()
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -1463,7 +1472,7 @@ public class KeyboardWidget extends UIWidget implements CustomKeyboardView.OnKey
             return;
         }
         if (mCurrentKeyboard.usesComposingText()) {
-            String code = StringUtils.removeSpaces(aItem.code);
+            String code = aItem.code != null ? StringUtils.removeSpaces(aItem.code) : "";
             mComposingText = mCurrentKeyboard.getComposingText(mComposingText, code).trim();
 
             postInputCommand(() -> {

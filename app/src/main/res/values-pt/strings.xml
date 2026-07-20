@@ -225,9 +225,9 @@
 \n
 \n• Google: https://policies.google.com/privacy
 \n• Facebook: https://www.facebook.com/about/privacy/update
-\n• MeetKai: https://meetkai.com/privacy
+\n• Vosk: https://alphacephei.com/vosk
 \n
-\nDa mesma forma, a FRAMATOME informa que, ao usar a opção de reconhecimento de voz do navegador, Meetkai manterá transcrições de voz totalmente anônimas da sua voz com o objetivo de melhorar o serviço prestado por eles. A sua voz não será mantida ou será de alguma forma para conectar as transcrições com a sua identidade. Mais informações sobre a política de privacidade do MeetKai na seguinte ligigação: https://meetkai.com/es/privacy. A Framatome não tem interesse em vincular transcrições a nenhum utilizador nem em afetar a sua privacidade; consequentemente, a Framatome solicita que nenhuma informação pessoal ou confidencial de qualquer tipo seja incluída nos seus endereços de voz sonora.
+\nDa mesma forma, a FRAMATOME informa que, ao usar a opção de reconhecimento de voz do navegador, o Vosk processa os seus dados de voz completamente offline no seu dispositivo. Nenhum dado de voz ou transcrição é transmitido para servidores externos. Todo o processamento acontece localmente, garantindo que a sua privacidade está totalmente protegida.
 \nEm qualquer caso, a FRAMATOME garante aos interessados o exercício dos direitos de acesso, retificação, eliminação, oposição, limitação de tratamento e portabilidade, relativamente aos seus dados pessoais.
 \nPara tal, a FRAMATOME estabeleceu um protocolo/procedimento interno para a sua realização.
 \nOs interessados podem exercer os seus direitos da seguinte forma: enviando um pedido para o endereço físico da FRAMATOME: Calle Bugallal Marchesi, 22, 1o, 15008, A Coruña, Referência: “Proteção de Dados”; ou, para o seguinte endereço de e-mail: support.framatome.com/vr.
@@ -615,8 +615,8 @@
     <string name="whats_new_button_start_browsing">Iniciar navegação</string>
     <string name="popup_dialog_button_on">Ligado</string>
     <string name="webxr_permission_dialog_message"><![CDATA[WebXR é %1$s para este site. <a href="%2$s">Saiba mais</a>]]></string>
-    <string name="privacy_policy_section_3">Esta Política de Privacidade está sujeita à lei espanhola. O idioma da Política de Privacidade desta aplicação é o espanhol. Por esse motivo, qualquer possível divergência entre a versão original em espanhol e a tradução dela para outro idioma será considerada predominante na versão em espanhol que encontra-se aqui: https://framatome.com/vr/privacy/ .</string>
-    <string name="voice_service_metkai">MeetKai</string>
+<string name="privacy_policy_section_3">Esta Política de Privacidade está sujeita à lei espanhola. O idioma da Política de Privacidade desta aplicação é o espanhol. Por esse motivo, qualquer possível divergência entre a versão original em espanhol e a tradução dela para outro idioma será considerada predominante na versão em espanhol que encontra-se aqui: https://wolvic.com/es/legal/privacy/ .</string>
+    <string name="voice_service_vosk">Vosk (Offline)</string>
     <string name="permissions_dialog_remember_choice">Lembrar esta decisão</string>
     <string name="history_description">Pode acessar o seu histórico de buscas aqui</string>
     <string name="downloads_delete">Apagar Todos</string>
@@ -821,4 +821,15 @@
     <string name="controller_options_hover_to_select">Ponteiro</string>
     <string name="announcements_title">Anúncios</string>
     <string name="disable_hand_tracking_dialog_body">O rastreamento de mãos está desativado temporariamente. Será reativado automaticamente na próxima inicialização. Esta opção não é persistente propositalmente para evitar problemas quando os controladores não estiverem disponíveis.</string>
+    <string name="add_search_engine_suggest_url_title">URL de sugestão (opcional)</string>
+    <string name="add_search_engine_title">Adicionar motor de busca</string>
+    <string name="add_search_engine_name_title">Nome</string>
+    <string name="add_search_engine_name_hint">Inserir nome do motor de busca</string>
+    <string name="add_search_engine_search_url_title">URL de procura</string>
+    <string name="add_search_engine_search_url_hint">https://example.com/search?q={searchTerms}</string>
+    <string name="add_search_engine_suggest_url_hint">https://example.com/search?q={searchTerms}</string>
+    <string name="add_search_engine_save">Guardar</string>
+    <string name="add_search_engine_cancel">Cancelar</string>
+    <string name="edit_search_engine_title">Editar motor de busca</string>
+    <string name="edit_search_engine_save">Atualizar</string>
 </resources>

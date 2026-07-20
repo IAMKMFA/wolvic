@@ -8,10 +8,11 @@ import com.igalia.wolvic.browser.api.WSession;
 import com.igalia.wolvic.browser.api.WWebExtensionController;
 import com.igalia.wolvic.browser.components.GeckoWebExtension;
 
+import com.igalia.wolvic.browser.api.WAllowOrDeny;
+
 import org.mozilla.geckoview.AllowOrDeny;
 import org.mozilla.geckoview.GeckoResult;
 import org.mozilla.geckoview.GeckoRuntime;
-import org.mozilla.geckoview.WebExtensionController;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,10 +45,19 @@ class WebExtensionControllerImpl implements WWebExtensionController {
         }
 
         mController.setPromptDelegate(new org.mozilla.geckoview.WebExtensionController.PromptDelegate() {
-            // GeckoView 140 renamed onInstallPrompt -> onInstallPromptRequest and changed its
-            // return type (AllowOrDeny -> WebExtension.PermissionPromptResponse). The Framatome
-            // kiosk never installs WebExtensions, so we leave that new method on its default
-            // (null = no response) instead of wiring the AllowOrDeny-based app delegate to it.
+            // GeckoView 140: onInstallPrompt -> onInstallPromptRequest (PermissionPromptResponse).
+            @Nullable
+            @Override
+            public GeckoResult<org.mozilla.geckoview.WebExtension.PermissionPromptResponse> onInstallPromptRequest(@NonNull org.mozilla.geckoview.WebExtension extension, @NonNull String[] permissions, @NonNull String[] origins) {
+                WResult<WAllowOrDeny> result = mPromptDelegate.onInstallPrompt(new GeckoWebExtension(extension, mRuntime));
+                if (result == null) {
+                    return null;
+                }
+                return ResultImpl.from(result).map(value -> {
+                    boolean granted = value == WAllowOrDeny.ALLOW;
+                    return new org.mozilla.geckoview.WebExtension.PermissionPromptResponse(granted, false);
+                });
+            }
 
             @Nullable
             @Override

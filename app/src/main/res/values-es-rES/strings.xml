@@ -1673,7 +1673,7 @@ the Select` button. When clicked it closes all the previously selected tabs -->
 \n
 \n Asimismo, usted observará que la aplicación le solicitará una serie de permisos especiales respecto a su dispositivo que, a continuación, aclaramos en cuanto a su función y finalidad:
 \n
-\n\t• Permiso para grabación de audio: Si usted autoriza esto, se utilizará para la citada función de traducción de voz a texto además de la funcionalidad de búsqueda por voz (“voice search”) para la que se utiliza el servicio que proporciona Meetkai cuya política de provacidad se puede consultar aquí: https://meetkai.com/privacy
+\n\t• Permiso para grabación de audio: Si usted autoriza esto, se utilizará para la citada función de traducción de voz a texto además de la funcionalidad de búsqueda por voz (“voice search”) para la que se utiliza el servicio que proporciona Vosk cuya política de privacidad se puede consultar aquí: https://alphacephei.com/vosk
 \n
 \n\t• Permiso para la captación de fotos y vídeos: Es posible que se solicite debido a que el dispositivo del usuario utilice cámaras para ver el entorno y situar al usuario en el espacio físico mediante sistemas de trazado o “tracking”. FRAMATOME no accede ni trata dicha información.
 \n
@@ -1685,9 +1685,9 @@ the Select` button. When clicked it closes all the previously selected tabs -->
 \n
 \n\t• Google: https://policies.google.com/privacy
 \n\t• Facebook: https://www.facebook.com/about/privacy/update
-\n\t• MeetKai: https://meetkai.com/privacy
+\n\t• Vosk: https://alphacephei.com/vosk
 \n
-\n Asimismo, FRAMATOME le informa de que si usted utiliza la opción de reconocimiento de voz del navegador, las transmisiones sonoras de su voz no serán conservadas ni vinculadas de modo alguno con usted, aunque sí se conservará el texto generado de manera totalmente anonimizada a efectos de mejora del servicio por parte de la empresa Meetkai (más información en el siguiente link: https://meetkai.com/es/privacy). Como es interés de FRAMATOME la no vinculación a ningún usuario y la no afectación de su privacidad, se ruega al usuario que no incluya ninguna información personal ni confidencial, de ningún tipo, en sus alocuciones sonoras de voz.
+\n Asimismo, FRAMATOME le informa de que si usted utiliza la opción de reconocimiento de voz del navegador, Vosk procesa sus datos de voz completamente sin conexión en su dispositivo. No se transmiten datos de voz ni transcripciones a servidores externos. Todo el procesamiento se realiza localmente, lo que garantiza la máxima protección de su privacidad.
 \n En cualquier caso, FRAMATOME garantiza el adecuado ejercicio por los interesados de los derechos de acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad, respecto de sus datos personales. A tal efecto, FRAMATOME ha establecido un protocolo/procedimiento interno para llevarlos a efecto.
 \n La forma en que los interesados pueden ejercer sus derechos son: mediante solicitud a FRAMATOME en la dirección física: Calle Bugallal Marchesi, 22, 1o, 15008, A Coruña, Referencia: “Protección de Datos” o en la dirección de correo electrónico: support.framatome.com/vr
 \n En ambos casos, el interesado deberá adjuntar copia de su DNI o documento identificativo para acreditar su identidad.
@@ -1721,7 +1721,7 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="voice_service_huawei_asr">Reconocimiento automático de voz de Huawei</string>
     <string name="settings_language_choose_language_voice_search_service_title">Servicio de búsqueda por voz</string>
     <string name="language_service_options_reset">Restablecer la configuración del servicio de búsqueda por voz</string>
-    <string name="voice_service_metkai">MeetKai</string>
+    <string name="voice_service_vosk">Vosk (sin conexión)</string>
     <string name="permissions_dialog_remember_choice">Recordar esta decisión</string>
     <string name="settings_language_galician">Gallego</string>
     <string name="settings_language_portuguese_br">Portugués (Brasil)</string>
@@ -1846,4 +1846,32 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="controller_options_click_to_select">Clic</string>
     <string name="controller_options_hover_to_select">Puntero</string>
     <string name="announcements_title">Anuncios</string>
+    <string name="add_search_engine_title">Añadir motor de búsqueda</string>
+    <string name="add_search_engine_name_title">Nombre</string>
+    <string name="add_search_engine_name_hint">Introduzca nombre del motor de búsqueda</string>
+    <string name="add_search_engine_search_url_title">URL de búsqueda</string>
+    <string name="add_search_engine_search_url_hint">https://example.com/busca?q={términosDeBúsqueda}</string>
+    <string name="add_search_engine_suggest_url_title">URL de sugerencias (opcional)</string>
+    <string name="add_search_engine_suggest_url_hint">https://example.com/sugiere?q={términosDeBúsqueda}</string>
+    <string name="add_search_engine_save">Guardar</string>
+    <string name="add_search_engine_cancel">Cancelar</string>
+    <string name="edit_search_engine_title">Editar motor de búsqueda</string>
+    <string name="edit_search_engine_save">Actualizar</string>
+    <string name="search_engine_deleted">Motor de búsqueda borrado</string>
+    <string name="delete_search_engine_dialog_title">Eliminar motor de búsqueda</string>
+    <string name="delete_search_engine_dialog_text">¿Está seguro de querer eliminar el motor de búsqueda %1$s?</string>
+    <string name="custom_search_engines_title">Motores de búsqueda personalizados</string>
+    <string name="custom_search_engines_empty">No hay motores de búsqueda personalizados. Use el botón Añadir motor de búsqueda para añadir uno.</string>
+    <string name="custom_search_engines_manage">Motores de búsqueda personalizados</string>
+    <string name="custom_search_engines_list_header">Motores de búsqueda personalizados</string>
+    <string name="search_engine_error_url_required">Se requiere URL</string>
+    <string name="search_engine_error_url_placeholder">La URL debe contener %s o {términosDeBúsqueda}</string>
+    <string name="search_engine_error_url_scheme">La URL debe tener un esquema (http:// o https://)</string>
+    <string name="search_engine_error_url_scheme_unsupported">Solo se permiten URLs http o https</string>
+    <string name="search_engine_error_url_host">La URL debe tener un host válido</string>
+    <string name="search_engine_error_url_private">No se permiten URLs privadas/localhost por motivos de seguridad</string>
+    <string name="search_engine_error_name_required">Se requiere nombre</string>
+    <string name="search_engine_error_name_too_long">El nombre debe tener 50 caracteres o menos</string>
+    <string name="close_button">Cerrar</string>
+    <string name="delete_button">Borrar</string>
 </resources>

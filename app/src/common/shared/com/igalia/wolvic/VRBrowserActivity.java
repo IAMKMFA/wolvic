@@ -7,7 +7,6 @@ package com.igalia.wolvic;
 
 import static com.igalia.wolvic.ui.widgets.UIWidget.REMOVE_WIDGET;
 
-import android.content.BroadcastReceiver;
 import android.content.ComponentCallbacks2;
 import android.content.Context;
 import android.content.Intent;
@@ -61,8 +60,6 @@ import com.igalia.wolvic.browser.api.WSession;
 import com.igalia.wolvic.browser.engine.EngineProvider;
 import com.igalia.wolvic.browser.engine.Session;
 import com.igalia.wolvic.browser.engine.SessionStore;
-import com.igalia.wolvic.crashreporting.CrashReporterService;
-import com.igalia.wolvic.crashreporting.GlobalExceptionHandler;
 import com.igalia.wolvic.geolocation.GeolocationWrapper;
 import com.igalia.wolvic.input.MotionEventGenerator;
 import com.igalia.wolvic.search.SearchEngineWrapper;
@@ -89,7 +86,6 @@ import com.igalia.wolvic.ui.widgets.WidgetManagerDelegate;
 import com.igalia.wolvic.ui.widgets.WidgetPlacement;
 import com.igalia.wolvic.ui.widgets.WindowWidget;
 import com.igalia.wolvic.ui.widgets.Windows;
-import com.igalia.wolvic.ui.widgets.dialogs.CrashDialogWidget;
 import com.igalia.wolvic.ui.widgets.dialogs.LegalDocumentDialogWidget;
 import com.igalia.wolvic.ui.widgets.dialogs.PromptDialogWidget;
 import com.igalia.wolvic.ui.widgets.dialogs.SendTabDialogWidget;
@@ -145,21 +141,6 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
 
     private boolean shouldRestoreHeadLockOnVRVideoExit;
 
-    private BroadcastReceiver mCrashReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if((intent.getAction() != null) && intent.getAction().equals(CrashReporterService.CRASH_ACTION)) {
-                Intent crashIntent;
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.S_V2) {
-                    crashIntent = intent.getParcelableExtra(CrashReporterService.DATA_TAG, Intent.class);
-                } else {
-                    crashIntent = intent.getParcelableExtra(CrashReporterService.DATA_TAG);
-                }
-                handleContentCrashIntent(crashIntent);
-            }
-        }
-    };
-
     private LifecycleRegistry mLifeCycle;
 
     @NonNull
@@ -214,7 +195,6 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     static final int GestureSwipeLeft = 0;
     static final int GestureSwipeRight = 1;
     static final int SwipeDelay = 1000; // milliseconds
-    static final long RESET_CRASH_COUNT_DELAY = 5000;
     static final int UPDATE_NATIVE_WIDGETS_DELAY = 50; // milliseconds
 
     static final String LOGTAG = SystemUtils.createLogtag(VRBrowserActivity.class);
@@ -232,7 +212,6 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     KeyboardWidget mKeyboard;
     NavigationBarWidget mNavigationBar;
     AbstractTabsBar mTabsBar;
-    CrashDialogWidget mCrashDialog;
     TrayWidget mTray;
     WhatsNewWidget mWhatsNewWidget = null;
     WebXRInterstitialWidget mWebXRInterstitial;
@@ -307,22 +286,6 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
             TelemetryService.setService(new OpenTelemetry(getApplication()));
         }
 
-        if (!BuildConfig.FRAMATOME_MODE) {
-            // Fix for infinite restart on startup crashes.
-            long count = SettingsStore.getInstance(getBaseContext()).getCrashRestartCount();
-            boolean cancelRestart = count > CrashReporterService.MAX_RESTART_COUNT;
-            if (cancelRestart) {
-                super.onCreate(savedInstanceState);
-                Log.e(LOGTAG, "Cancel Restart");
-                finish();
-                return;
-            }
-            SettingsStore.getInstance(getBaseContext()).incrementCrashRestartCount();
-            mHandler.postDelayed(() -> SettingsStore.getInstance(getBaseContext()).resetCrashRestartCount(), RESET_CRASH_COUNT_DELAY);
-            // Set a global exception handler as soon as possible
-            GlobalExceptionHandler.register(this.getApplicationContext());
-        }
-
         if (DeviceType.isOculusBuild()) {
             workaroundGeckoSigAction();
         }
@@ -333,15 +296,6 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         WRuntime runtime = EngineProvider.INSTANCE.getOrCreateRuntime(this);
         if (!BuildConfig.FRAMATOME_MODE) {
             runtime.appendAppNotesToCrashReport("Wolvic " + BuildConfig.VERSION_NAME + "-" + BuildConfig.VERSION_CODE + "-" + BuildConfig.FLAVOR + "-" + BuildConfig.BUILD_TYPE + " (" + BuildConfig.GIT_HASH + ")");
-
-            // Create broadcast receiver for getting crash messages from crash process
-            IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(CrashReporterService.CRASH_ACTION);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                registerReceiver(mCrashReceiver, intentFilter, BuildConfig.APPLICATION_ID + "." + getString(R.string.app_permission_name), null, Context.RECEIVER_NOT_EXPORTED);
-            } else {
-                registerReceiver(mCrashReceiver, intentFilter, BuildConfig.APPLICATION_ID + "." + getString(R.string.app_permission_name), null);
-            }
         }
 
         mLastGesture = NoGesture;
@@ -404,10 +358,6 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         initializeSpeechRecognizer();
 
         mPoorPerformanceAllowList = new HashSet<>();
-
-        // FIXME: We don't have any crash report analysis tool, so we need to disable this for the time being.
-        if (false)
-            checkForCrash();
 
         setLockMode(mSettings.isHeadLockEnabled() ? WidgetManagerDelegate.HEAD_LOCK : WidgetManagerDelegate.NO_LOCK);
         if (mSettings.getPointerMode() == WidgetManagerDelegate.TRACKED_EYE)
@@ -725,8 +675,6 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     protected void onDestroy() {
         ((VRBrowserApplication)getApplication()).onActivityDestroy();
         SettingsStore.getInstance(getBaseContext()).setPid(0);
-        // Unregister the crash service broadcast receiver
-        unregisterReceiver(mCrashReceiver);
         mSearchEngineWrapper.unregisterForUpdates();
         if (mPlatformPlugin != null)
             mPlatformPlugin.unregisterListener(this);
@@ -991,44 +939,6 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     private ConnectivityReceiver.Delegate mConnectivityDelegate = connected -> {
         mConnectionAvailable = connected;
     };
-
-    private void checkForCrash() {
-        final ArrayList<String> files = CrashReporterService.findCrashFiles(getBaseContext());
-        if (files.isEmpty()) {
-            Log.d(LOGTAG, "No crash files found.");
-            return;
-        }
-        boolean isCrashReportingEnabled = SettingsStore.getInstance(this).isCrashReportingEnabled();
-        if (isCrashReportingEnabled) {
-            SystemUtils.postCrashFiles(this, files);
-
-        } else {
-            if (mCrashDialog == null) {
-                mCrashDialog = new CrashDialogWidget(this, files);
-            }
-            mCrashDialog.show(UIWidget.REQUEST_FOCUS);
-        }
-    }
-
-    private void handleContentCrashIntent(@NonNull final Intent intent) {
-        Log.e(LOGTAG, "Got content crashed intent");
-        final String dumpFile = intent.getStringExtra(getCrashReportIntent().extra_minidump_path);
-        final String extraFile = intent.getStringExtra(getCrashReportIntent().extra_extras_path);
-        Log.d(LOGTAG, "Dump File: " + dumpFile);
-        Log.d(LOGTAG, "Extras File: " + extraFile);
-        Log.d(LOGTAG, "Fatal: " + intent.getBooleanExtra(getCrashReportIntent().extra_crash_fatal, false));
-
-        boolean isCrashReportingEnabled = SettingsStore.getInstance(this).isCrashReportingEnabled();
-        if (isCrashReportingEnabled) {
-            SystemUtils.postCrashFiles(this, dumpFile, extraFile);
-
-        } else {
-            if (mCrashDialog == null) {
-                mCrashDialog = new CrashDialogWidget(this, dumpFile, extraFile);
-            }
-            mCrashDialog.show(UIWidget.REQUEST_FOCUS);
-        }
-    }
 
     FrameLayout getWidgetContainer() {
         return mWidgetContainer;

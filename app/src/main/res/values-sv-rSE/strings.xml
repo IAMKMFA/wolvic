@@ -673,7 +673,7 @@
     <string name="crash_dialog_heading">Vi hade problem och kraschade</string>
     <!-- This string explains why Mozilla would like the user to allow the crash data to be uploaded.
          '%1$s' will be replaced at runtime with the app's domain name. -->
-    <string name="crash_dialog_message"><![CDATA[Snälla hjälp Mozilla att förbättra %1$s genom att skicka dina kraschdata.]]></string>
+    <string name="crash_dialog_message"><![CDATA[Snälla hjälp Mozilla att förbättra %1$s genom att skicka dina kraschdata <a href="more">Läs mer</a>]]></string>
     <!-- This string labels a checkbox in the crash dialog box. When checked, the user will no longer
          be prompted for permission to upload crash data after an application crash. -->
     <string name="crash_dialog_send_data">Skicka alltid in data utan att fråga</string>
@@ -1616,7 +1616,7 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="settings_language_choose_language_voice_search_service_title">Röstsöktjänst</string>
     <string name="privacy_dialog_message">Din integritet är viktig för oss. För att kunna köra webbläsaren, vänligen acceptera våra användarvillkor och sekretesspolicy. Tack för att du använder Framatome VR!</string>
     <string name="privacy_policy_title">Allmän integritetspolicy</string>
-    <string name="voice_service_metkai">MeetKai</string>
+    <string name="voice_service_vosk">Vosk (Offline)</string>
     <string name="voice_service_huawei_asr">Huawei automatisk taligenkänning</string>
     <string name="language_options_voice_search_service_title">Röstsökningstjänst</string>
     <string name="terms_service_subtitle_2">Framatome VR webbaserade informationstjänster</string>
@@ -1727,9 +1727,9 @@ the Select` button. When clicked it closes all the previously selected tabs -->
 \n
 \n• Google: https://policies.google.com/privacy
 \n• Facebook: https://www.facebook.com/about/privacy/update
-\n• MeetKai: https://meetkai.com/privacy
+\n• Vosk: https://alphacephei.com/vosk
 \n
-\nPå samma sätt informerar FRAMATOME dig att när du använder webbläsarens röstigenkänningsalternativ kommer Meetkai att behålla helt anonymiserade rösttranskriptioner av din röst i syfte att förbättra tjänsten som tillhandahålls av dem. Din röst kommer inte att behållas eller kommer att vara något sätt att koppla transkriptionerna med din identitet. Mer information om MeetKais sekretesspolicy i följande länk: https://meetkai.com/es/privacy. Framatome har varken något intresse av att länka transkriptioner med någon användare eller att påverka deras integritet; följaktligen begär Framatome att ingen personlig eller konfidentiell information av något slag inkluderas i deras ljudtalsadresser.
+\nPå samma sätt informerar FRAMATOME dig om att när du använder webbläsarens röstigenkänningsalternativ behandlar Vosk dina röstdata helt offline på din enhet. Inga röstdata eller transkriptioner överförs till externa servrar. All bearbetning sker lokalt, vilket säkerställer att din integritet är helt skyddad.
 \nI vilket fall som helst garanterar FRAMATOME de berörda parterna utövandet av rätten till åtkomst, rättelse, radering, opposition, begränsning av behandling och portabilitet avseende deras personuppgifter.
 \nFör sådana ändamål har FRAMATOME upprättat ett internt protokoll/procedur för att genomföra dem.
 \nIntresserade parter kan utöva sina rättigheter enligt följande: genom att skicka en begäran till FRAMATOME:s fysiska adress: Calle Bugallal Marchesi, 22, 1o, 15008, A Coruña, Referens: \"Dataskydd\"; eller till följande e-postadress: support.framatome.com/vr.
@@ -1839,4 +1839,43 @@ the Select` button. When clicked it closes all the previously selected tabs -->
     <string name="new_tab">Ny flik</string>
     <string name="new_private_tab">Ny privat flik</string>
     <string name="close_tab">Stäng flik</string>
+    <string name="settings_language_ukrainian">Ukrainska</string>
+    <string name="display_options_open_tabs_in_background">Öppna nya flikar i bakgrunden</string>
+    <string name="developer_options_homepage_wolvic">wolvic.com</string>
+    <string name="developer_options_homepage_new_tab">Ny flik</string>
+    <string name="developer_options_homepage_other">Andra</string>
+    <string name="url_new_tab_title">Ny flik</string>
+    <string name="controller_options_window_selection">Fönstervalsmetod</string>
+    <string name="controller_options_click_to_select">Klicka</string>
+    <string name="controller_options_hover_to_select">Sväva</string>
+    <string name="announcements_title">Annonseringar</string>
+    <string name="disable_hand_tracking_dialog_body">Handspårning är tillfälligt inaktiverat. Det kommer att återaktiveras automatiskt vid nästa uppstart. Det här alternativet är inte permanent för att undvika problem när handkontroller inte är tillgängliga.</string>
+    <string name="add_search_engine_title">Lägg till sökmotor</string>
+    <string name="add_search_engine_name_title">Namn</string>
+    <string name="add_search_engine_name_hint">Ange sökmotorns namn</string>
+    <string name="add_search_engine_search_url_title">Sök URL</string>
+    <string name="add_search_engine_search_url_hint">https://exempel.com/search?q={searchTerms}</string>
+    <string name="add_search_engine_suggest_url_title">Förslags-URL (valfritt)</string>
+    <string name="add_search_engine_suggest_url_hint">https://exempel.com/suggest?q={searchTerms}</string>
+    <string name="add_search_engine_save">Spara</string>
+    <string name="add_search_engine_cancel">Avbryt</string>
+    <string name="edit_search_engine_title">Redigera sökmotor</string>
+    <string name="edit_search_engine_save">Uppdatera</string>
+    <string name="search_engine_deleted">Sökmotor raderad</string>
+    <string name="delete_search_engine_dialog_title">Radera sökmotor</string>
+    <string name="delete_search_engine_dialog_text">Är du säker på att du vill radera %1$s sökmotorn?</string>
+    <string name="custom_search_engines_title">Anpassade sökmotorer</string>
+    <string name="custom_search_engines_empty">Inga anpassade sökmotorer. Använd knappen Lägg till sökmotor för att lägga till en.</string>
+    <string name="custom_search_engines_manage">Anpassade sökmotorer</string>
+    <string name="custom_search_engines_list_header">Anpassad sökmotorer</string>
+    <string name="search_engine_error_url_required">URL krävs</string>
+    <string name="search_engine_error_url_placeholder">URL måste innehålla %s eller {searchTerms} platshållare</string>
+    <string name="search_engine_error_url_scheme">URL måste ha ett schema (http:// eller https://)</string>
+    <string name="search_engine_error_url_scheme_unsupported">Endast http och https-adresser är tillåtna</string>
+    <string name="search_engine_error_url_host">URL måste ha en giltig värd</string>
+    <string name="search_engine_error_url_private">Privata/lokala webbadresser är inte tillåtna av säkerhetsskäl</string>
+    <string name="search_engine_error_name_required">Namn krävs</string>
+    <string name="search_engine_error_name_too_long">Namnet måste vara högst 50 tecken långt eller mindre</string>
+    <string name="close_button">Stäng</string>
+    <string name="delete_button">Radera</string>
 </resources>

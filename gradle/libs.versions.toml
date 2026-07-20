@@ -1,6 +1,6 @@
 [versions]
 agp = "8.11.1"
-androidComponents = "128.0"
+androidComponents = "140.0"
 androidxAnnotation = "1.6.0"
 androidxAppcompat = "1.6.1"
 androidxCardview = "1.0.0"
@@ -21,9 +21,9 @@ desugarJdkLibs = "2.1.4"
 diskLruCache = "2.0.2"
 espresso= "3.5.1"
 gamesActivity = "4.0.0"
-geckoviewBeta = "128.0.20240628091536"
-geckoviewNightly = "128.0.20240609205151"
-geckoviewRelease = "128.0.20240725162350"
+geckoviewBeta = "140.0.20250707120347"
+geckoviewNightly = "140.0.20250526095203"
+geckoviewRelease = "140.0.20250707120347"
 googleMaterial = "1.9.0"
 gson = "2.10.1"
 huaweiAGConnectCore = "1.9.1.301"
@@ -40,9 +40,11 @@ kotlinCoroutines = "1.7.3"
 okhttp = "4.12.0"
 opentelemetryAndroid = "0.9.1-alpha"
 opentelemetryApi = "1.46.0"
-openxrLoader = "1.0.34"
+openxrLoader = "1.1.48"
+openxrLoader10 = "1.0.34"
 robolectric = "4.11.1"
 zip4j = "2.11.5"
+vosk = "0.3.75"
 
 [libraries]
 # AGP
@@ -136,6 +138,7 @@ opentelemetry-android-instrumentation-crash = { module = "io.opentelemetry.andro
 opentelemetry-android-instrumentation-sessions = { module = "io.opentelemetry.android:instrumentation-sessions", version.ref = "opentelemetryAndroid" }
 # OpenXR
 openxrloader = { module = "org.khronos.openxr:openxr_loader_for_android", version.ref = "openxrLoader" }
+openxrloader10 = { module = "org.khronos.openxr:openxr_loader_for_android", version.ref = "openxrLoader10" }
 # Robolectric
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 # Room
@@ -156,6 +159,8 @@ work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "a
 work-testing = { module = "androidx.work:work-testing", version.ref = "androidxWork" }
 # ZIP4J
 zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
+# Vosk
+vosk = { module = "com.alphacephei:vosk-android", version.ref = "vosk" }
 
 [plugins]
 jetbrains-python-envs = { id = "com.jetbrains.python.envs", version.ref = "jetbrainsPython" }
