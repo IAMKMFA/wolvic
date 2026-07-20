@@ -90,6 +90,10 @@ object FramatomeInitializer {
      */
     @JvmStatic
     fun requestReconcile() {
+        // Re-attach any drop-root watchers that couldn't bind pre-grant (the
+        // shared dirs may not even have existed), then kick a reconcile pass.
+        tourIngestor?.refreshWatchers()
+        mediaIngestor?.refreshWatchers()
         tourIngestor?.requestReconcile()
         mediaIngestor?.requestReconcile()
     }
