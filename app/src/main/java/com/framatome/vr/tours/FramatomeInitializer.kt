@@ -82,6 +82,18 @@ object FramatomeInitializer {
         }.onFailure { Log.e(TAG, "Failed to start content ingest", it) }
     }
 
+    /**
+     * Nudge the ingest pipeline to re-scan now. Called when All-Files-Access is
+     * (re)confirmed — e.g. the operator just granted it — so content that was
+     * invisible at boot (empty dirs before the grant) is picked up immediately
+     * instead of waiting for the next watchdog tick. No-op until ingest started.
+     */
+    @JvmStatic
+    fun requestReconcile() {
+        tourIngestor?.requestReconcile()
+        mediaIngestor?.requestReconcile()
+    }
+
     @JvmStatic
     fun shutdown() {
         runCatching { dropsWatchdog?.stop() }
