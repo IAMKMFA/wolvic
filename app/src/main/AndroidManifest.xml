@@ -45,15 +45,14 @@
                 <action android:name="com.framatome.vr.pro.action.LAUNCH_CONTENT" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-            <!-- Declares Framatome VR as a browser app -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:scheme="https" />
-                <data android:scheme="http" />
-            </intent-filter>
+            <!--
+                The upstream browser registration (VIEW + BROWSABLE for http/https)
+                is deliberately NOT declared. This is a kiosk appliance, not a
+                general browser: accepting arbitrary web URLs would let outside
+                content run in the same process as the loopback operator API
+                (see HubRequestPolicy). Content reaches the Player through
+                ArborXR-delivered packages and the framatome:// links below.
+            -->
             <!-- Used for the special framatome:// links -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

@@ -1335,7 +1335,7 @@ function refreshContent() {
   fetch('/__rescan__?ts=' + Date.now(), {
     method:'POST',
     cache:'no-store',
-    headers:{'X-Framatome-Request':'hub'}
+    headers:{'X-Framatome-Request':'${HubRequestPolicy.REQUEST_VALUE}'}
   })
     .then(jsonResponse)
     .then(function(status) {

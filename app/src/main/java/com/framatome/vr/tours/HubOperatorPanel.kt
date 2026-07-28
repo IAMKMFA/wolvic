@@ -263,7 +263,7 @@ object HubOperatorPanel {
       return fetch(url, {
         method:'POST',
         cache:'no-store',
-        headers:{'X-Framatome-Request':'hub'}
+        headers:{'X-Framatome-Request':'${HubRequestPolicy.REQUEST_VALUE}'}
       }).then(operatorJson);
     }
     function openOperatorSettings(fromHistory) {

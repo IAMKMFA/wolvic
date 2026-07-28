@@ -16,11 +16,23 @@ class HubRequestPolicyTest {
 
   @Test
   fun `operator mutation requires trusted origin and exact proof header`() {
-    assertTrue(HubRequestPolicy.canMutateOperatorState("localhost:18080", "hub"))
+    val token = HubRequestPolicy.REQUEST_VALUE
+
+    assertTrue(HubRequestPolicy.canMutateOperatorState("localhost:18080", token))
     assertFalse(HubRequestPolicy.canMutateOperatorState("localhost:18080", null))
-    assertFalse(HubRequestPolicy.canMutateOperatorState("localhost:18080", "Hub"))
-    assertFalse(HubRequestPolicy.canMutateOperatorState("127.0.0.1:18080", "hub"))
-    assertFalse(HubRequestPolicy.canMutateOperatorState("malicious.invalid", "hub"))
+    assertFalse(HubRequestPolicy.canMutateOperatorState("localhost:18080", token.uppercase()))
+    assertFalse(HubRequestPolicy.canMutateOperatorState("127.0.0.1:18080", token))
+    assertFalse(HubRequestPolicy.canMutateOperatorState("malicious.invalid", token))
+  }
+
+  @Test
+  fun `proof header is an unguessable per-process token, not a fixed literal`() {
+    val token = HubRequestPolicy.REQUEST_VALUE
+
+    // The pre-hardening literal must no longer open the operator API.
+    assertFalse(HubRequestPolicy.canMutateOperatorState("localhost:18080", "hub"))
+    assertTrue(token.length >= 32)
+    assertTrue(HubRequestPolicy.REQUEST_VALUE === token)
   }
 
   @Test

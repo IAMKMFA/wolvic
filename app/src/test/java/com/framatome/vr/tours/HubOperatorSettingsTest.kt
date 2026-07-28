@@ -96,6 +96,10 @@ class HubOperatorSettingsTest {
     assertTrue(script.contains("/__operator__/status"))
     assertTrue(script.contains("/__operator__/tour"))
     assertTrue(script.contains("X-Framatome-Request"))
+    // The panel must carry this process's live token, not a compile-time
+    // literal any other page on the loopback port could replay.
+    assertTrue(script.contains(HubRequestPolicy.REQUEST_VALUE))
+    assertFalse(script.contains("'X-Framatome-Request':'hub'"))
   }
 
   @Test

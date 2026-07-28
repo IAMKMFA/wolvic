@@ -95,7 +95,13 @@ def isWebKitAvailable = {
 }
 
 // Version names for Gecko and Chromium releases.
-def GECKO_RELEASE_VERSION_NAME = '1.0'
+//
+// FRAMATOME: the shipped Player is the Gecko variant, so GECKO_RELEASE_VERSION_NAME
+// is the version operators and ArborXR actually see. Keep it in step with
+// defaultConfig.versionName below and with CHANGELOG.md — versionCode is derived
+// from a timestamp and rises on every build, so it is never evidence that a real
+// release happened. Bump both strings together; see RELEASE_CHECKLIST.md.
+def GECKO_RELEASE_VERSION_NAME = '1.1.0'
 def CHROMIUM_RELEASE_VERSION_NAME = '1.3'
 
 android {
@@ -106,7 +112,8 @@ android {
         minSdkVersion 29
         targetSdkVersion 34
         versionCode generatedVersionCode
-        versionName "1.0"
+        // Keep in step with GECKO_RELEASE_VERSION_NAME above.
+        versionName "1.1.0"
         buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""
         buildConfigField "Boolean", "DISABLE_CRASH_RESTART", getCrashRestartDisabled()
         buildConfigField "String", "AMO_COLLECTION", "\"fxr\""
