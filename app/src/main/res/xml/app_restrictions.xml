@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Managed configuration exposed by the production Player package. -->
+<restrictions xmlns:android="http://schemas.android.com/apk/res/android">
+    <restriction
+        android:key="dropRoots"
+        android:title="@string/restriction_drop_roots_title"
+        android:description="@string/restriction_drop_roots_desc"
+        android:restrictionType="string" />
+    <restriction
+        android:key="dropFilenamePrefix"
+        android:title="@string/restriction_drop_prefix_title"
+        android:description="@string/restriction_drop_prefix_desc"
+        android:restrictionType="string"
+        android:defaultValue="" />
+    <restriction
+        android:key="watchSdcardRoot"
+        android:title="@string/restriction_watch_sdcard_title"
+        android:description="@string/restriction_watch_sdcard_desc"
+        android:restrictionType="bool"
+        android:defaultValue="true" />
+    <restriction
+        android:key="autoBootFolder"
+        android:title="@string/restriction_auto_boot_folder_title"
+        android:description="@string/restriction_auto_boot_folder_desc"
+        android:restrictionType="string" />
+    <restriction
+        android:key="autoBootEnabled"
+        android:title="@string/restriction_auto_boot_enabled_title"
+        android:description="@string/restriction_auto_boot_enabled_desc"
+        android:restrictionType="bool"
+        android:defaultValue="false" />
+    <restriction
+        android:key="countdownSeconds"
+        android:title="@string/restriction_countdown_title"
+        android:description="@string/restriction_countdown_desc"
+        android:restrictionType="integer"
+        android:defaultValue="3" />
+    <restriction
+        android:key="kioskTitle"
+        android:title="@string/restriction_kiosk_title_title"
+        android:description="@string/restriction_kiosk_title_desc"
+        android:restrictionType="string" />
+    <restriction
+        android:key="allowRemoveTour"
+        android:title="@string/restriction_allow_remove_title"
+        android:description="@string/restriction_allow_remove_desc"
+        android:restrictionType="bool"
+        android:defaultValue="true" />
+</restrictions>

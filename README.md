@@ -51,8 +51,9 @@ Standard browsers on Quest can render 3DVista tours, but they lack true WebXR im
 | `FramatomeImmersiveActivity` | `immersive/FramatomeImmersiveActivity.java` | Framatome entry point; kiosk tour relaunch on new intents |
 | `TourIndexServer` | `tours/TourIndexServer.kt` | Optional branded HTML tour menu at `/` |
 
-Zip ingest and the operator menu live in the **launcher APK** (`com.framatome.vr`). This
-player APK receives typed launch intents and handles all playback.
+Zip ingest, the content hub, and operator controls all live in this Player APK.
+The legacy launcher can still send typed launch intents, but is not required for
+production deployment.
 
 Framatome-owned code lives under `app/src/main/java/com/framatome/vr/`.
 
@@ -67,21 +68,21 @@ Framatome-owned code lives under `app/src/main/java/com/framatome/vr/`.
 
 ### Deploying Tours
 
-Tours are standard 3DVista web exports (folder with `index.html` + assets). Production
-delivery is through the **Framatome VR launcher** (`com.framatome.vr`), which ingests
-zips into `/sdcard/FramatomeVR/Tours/`. Framatome Player serves those folders on
-`:18080` when a tour is launched.
+Tours are standard 3DVista web exports (folder with `index.html` + assets).
+Production delivery is through ArborXR Files. Framatome Player ingests zips from
+`/sdcard/FramatomeVR/Data/` into `/sdcard/FramatomeVR/Tours/` or `Library/`,
+then serves the resulting content on `:18080`.
 
 **Via Arbor XR (production)**
-1. Install both launcher and Framatome Player APKs on the headset group
+1. Install Framatome Player (`com.framatome.vr.pro`) on the headset group
 2. Export tour from 3DVista as a web package (`.zip`)
 3. Upload to Arbor XR under *Content > Files*
 4. Target path: `/sdcard/FramatomeVR/Data/`
-5. The launcher ingests on next scan; tap the tour card to open in Framatome Player
+5. The Player ingests automatically; use Rescan for immediate operator confirmation
 
 **Via ADB (development)**
 ```bash
-# Push a zip to the launcher drop folder
+# Push a zip to the Player drop folder
 adb push MyTour.zip /sdcard/FramatomeVR/Data/
 
 # Or push an already-extracted tour folder

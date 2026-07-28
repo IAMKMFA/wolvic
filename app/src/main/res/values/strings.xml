@@ -2702,4 +2702,22 @@ the Select` button. When clicked it bookmarks all the previously selected tabs -
     <string name="mozac_feature_addons_disabled_section">Disabled</string>
     <string name="mozac_feature_addons_recommended_section">Recommended</string>
 
+    <!-- ArborXR / Android Enterprise managed configuration for Framatome Player. -->
+    <string name="restriction_drop_roots_title">Drop roots</string>
+    <string name="restriction_drop_roots_desc">Paths where Player content ZIPs are delivered. Supports $EXTERNAL and $DOWNLOADS.</string>
+    <string name="restriction_drop_prefix_title">Drop filename prefix</string>
+    <string name="restriction_drop_prefix_desc">For broad roots such as /sdcard or Downloads, only ZIPs beginning with this prefix are considered.</string>
+    <string name="restriction_watch_sdcard_title">Watch /sdcard root</string>
+    <string name="restriction_watch_sdcard_desc">Also scan /sdcard for ZIPs matching the configured filename prefix.</string>
+    <string name="restriction_auto_boot_folder_title">Auto-boot tour folder</string>
+    <string name="restriction_auto_boot_folder_desc">Folder name of the tour the Player should open automatically.</string>
+    <string name="restriction_auto_boot_enabled_title">Auto-boot enabled</string>
+    <string name="restriction_auto_boot_enabled_desc">Automatically open the configured default tour.</string>
+    <string name="restriction_countdown_title">Auto-boot countdown seconds</string>
+    <string name="restriction_countdown_desc">Seconds to wait before opening the default tour.</string>
+    <string name="restriction_kiosk_title_title">Kiosk title</string>
+    <string name="restriction_kiosk_title_desc">Title shown for this managed device group.</string>
+    <string name="restriction_allow_remove_title">Allow operator to remove tours</string>
+    <string name="restriction_allow_remove_desc">Allow on-device operators to remove managed tours.</string>
+
 </resources>

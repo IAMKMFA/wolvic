@@ -87,6 +87,18 @@ object ThumbnailStore {
     return digest.joinToString("") { "%02x".format(it) } + ".jpg"
   }
 
+  /**
+   * Clears generated previews without touching source content. A thumbnail that
+   * finishes concurrently may remain, which is harmless and avoids blocking an
+   * active media request while an operator runs maintenance.
+   */
+  fun clear(context: Context): Int {
+    val files = cacheDir(context).listFiles().orEmpty().filter { it.isFile }
+    val deleted = files.count { runCatching { it.delete() }.getOrDefault(false) }
+    pruned.set(false)
+    return deleted
+  }
+
   private fun cacheDir(context: Context): File =
     File(context.filesDir, CACHE_DIR).apply { mkdirs() }
 

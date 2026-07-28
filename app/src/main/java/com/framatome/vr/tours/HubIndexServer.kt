@@ -4,7 +4,10 @@ import android.content.Context
 import android.util.Log
 import com.framatome.vr.content.MediaViewerUrls
 import com.framatome.vr.content.library.ContentBadges
+import com.framatome.vr.content.library.LibraryCollection
+import com.framatome.vr.content.library.LibraryIssueCategory
 import com.framatome.vr.content.library.LibraryItem
+import com.framatome.vr.content.library.LibraryScanIssue
 import java.io.File
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
@@ -22,6 +25,7 @@ object HubIndexServer {
 
     /** Cards rendered eagerly per section; the rest hide behind "Show all". */
     private const val SECTION_CHUNK = 24
+    private const val MAX_DIAGNOSTICS = 12
 
     data class TourInfo(
         val name: String,
@@ -29,6 +33,23 @@ object HubIndexServer {
         val thumbnailUrl: String?,
         val sizeMB: String,
         val lastModified: String
+    )
+
+    data class ContentStatus(
+        val toursCount: Int,
+        val mediaCount: Int,
+        val videosCount: Int,
+        val imagesCount: Int,
+        val modelsCount: Int,
+        val cloudsCount: Int,
+        val storageGranted: Boolean,
+        val revision: String
+    )
+
+    private data class HubDiagnostic(
+        val label: String,
+        val path: String,
+        val detail: String
     )
 
     // Tour folder sizes are a full directory walk — cache per dir mtime so the
@@ -42,6 +63,14 @@ object HubIndexServer {
     @Volatile private var cachedHtml: String? = null
     @Volatile private var cachedHtmlStamp = 0L
     @Volatile private var cachedHtmlAtMs = 0L
+
+    @Synchronized
+    fun invalidate() {
+        cachedHtml = null
+        cachedHtmlStamp = 0L
+        cachedHtmlAtMs = 0L
+        tourSizeCache.clear()
+    }
 
     fun generateIndexHtml(context: Context): String {
         // Discover tours from the SAME directory LocalWebServer serves so every
@@ -73,25 +102,68 @@ object HubIndexServer {
         toursRoot.listFiles()?.forEach { child ->
             if (child.isDirectory && !child.name.startsWith(".")) s = s * 31 + child.lastModified()
         }
-        return s * 31 + MediaLibraryIndex.rootsStamp()
+        s = s * 31 + MediaLibraryIndex.rootsStamp()
+        return s * 31 + MediaLibraryIndex.currentRevision().hashCode()
+    }
+
+    fun contentStatus(context: Context): ContentStatus {
+        val tours = enabledTours(context, TourStorage.sharedToursDir())
+        val snapshot = MediaLibraryIndex.snapshot()
+        return ContentStatus(
+            toursCount = tours.size,
+            mediaCount = snapshot.mediaCount,
+            videosCount = snapshot.videos.size,
+            imagesCount = snapshot.images.size,
+            modelsCount = snapshot.models.size,
+            cloudsCount = snapshot.clouds.size,
+            storageGranted = snapshot.storageGranted,
+            revision = contentRevision(tours, snapshot)
+        )
+    }
+
+    private fun enabledTours(context: Context, toursRoot: File): List<Tour> {
+        val settingsStore = (context.applicationContext as? android.app.Application)
+            ?.let(::TourSettingsStore)
+        return TourCatalog.scan(toursRoot) { relativePath ->
+            settingsStore?.isEnabled(relativePath) ?: true
+        }.filter { it.enabled }
+    }
+
+    private fun contentRevision(
+        tours: List<Tour>,
+        snapshot: MediaLibraryIndex.Snapshot
+    ): String {
+        var hash = snapshot.contentRevision.hashCode().toLong()
+        tours.sortedBy { it.relativePath }.forEach { tour ->
+            val dir = File(tour.absolutePath)
+            val entry = File(dir, tour.entryFileName)
+            val thumbnail = tour.thumbnailPath?.let(::File)
+            hash = hash * 31 + tour.relativePath.hashCode()
+            hash = hash * 31 + dir.lastModified()
+            hash = hash * 31 + entry.length()
+            hash = hash * 31 + entry.lastModified()
+            hash = hash * 31 + (thumbnail?.length() ?: 0L)
+            hash = hash * 31 + (thumbnail?.lastModified() ?: 0L)
+        }
+        return java.lang.Long.toHexString(hash)
     }
 
     private fun renderIndexHtml(context: Context, toursRoot: File): String {
-        val settingsStore = (context.applicationContext as? android.app.Application)
-            ?.let(::TourSettingsStore)
         val dateFormat = SimpleDateFormat("MMM d, yyyy", Locale.US)
 
-        val tours = TourCatalog.scan(toursRoot) { relativePath ->
-            settingsStore?.isEnabled(relativePath) ?: true
-        }
-            .filter { it.enabled }
+        val catalogTours = enabledTours(context, toursRoot)
+        val tours = catalogTours
             .map { tour ->
                 val dir = File(tour.absolutePath)
                 val encodedBase = encodePath(tour.relativePath)
                 val thumbUrl = tour.thumbnailPath?.let { thumb ->
-                    "/$encodedBase/${encodePath(File(thumb).name)}"
+                    "${LocalWebServer.baseUrl()}/$encodedBase/${encodePath(File(thumb).name)}"
                 }
-                val launchUrl = "/$encodedBase/${encodePath(tour.entryFileName)}"
+                // Keep delivered tour JavaScript on 127.0.0.1 while the trusted
+                // operator hub runs on localhost. The distinct web origins stop
+                // tour scripts from invoking hub-only maintenance APIs.
+                val launchUrl =
+                    "${LocalWebServer.baseUrl()}/$encodedBase/${encodePath(tour.entryFileName)}"
                 TourInfo(
                     name = tour.name,
                     launchUrl = launchUrl,
@@ -101,13 +173,18 @@ object HubIndexServer {
                 )
             }
 
+        // HTTP handlers consume immutable published snapshots only. Ingest
+        // events refresh the index in the background and its revision invalidates
+        // this HTML cache when the new snapshot is ready.
         val snapshot = MediaLibraryIndex.snapshot()
         Log.i(TAG, "Generating hub: ${tours.size} tours, ${snapshot.videos.size} videos, ${snapshot.images.size} images")
 
-        val tourCards = if (tours.isEmpty()) {
-            buildEmptyState()
-        } else {
-            tours.joinToString("\n") { tour -> buildTourCard(tour) }
+        val playableCollections = snapshot.collections.filter { it.items.isNotEmpty() }
+        val tourCards = when {
+            tours.isNotEmpty() -> tours.joinToString("\n") { tour -> buildTourCard(tour) }
+            snapshot.scannedAtMs == 0L -> buildLibraryLoadingState()
+            snapshot.mediaCount == 0 -> buildEmptyState()
+            else -> """<div class="section-empty">No immersive tours are installed.</div>"""
         }
 
         return buildPage(
@@ -116,27 +193,35 @@ object HubIndexServer {
             imageCount = snapshot.images.size,
             modelCount = snapshot.models.size,
             cloudCount = snapshot.clouds.size,
+            collectionCount = playableCollections.size,
+            contentRevision = contentRevision(catalogTours, snapshot),
             tourCards = tourCards,
+            collectionsSection = buildCollectionsSection(playableCollections, dateFormat),
+            diagnosticsSection = buildDiagnosticsSection(
+                snapshot.issues,
+                FramatomeInitializer.contentRefreshStatus().warnings +
+                    listOfNotNull(MediaLibraryIndex.lastScanError())
+            ),
             videoSection = buildMediaSection(
                 title = "Videos",
                 gridId = "grid-videos",
-                items = snapshot.videos,
+                items = snapshot.standaloneVideos,
                 playlistKey = HubPlaylists.KEY_VIDEOS,
-                emptyHint = "360 and flat videos delivered to FramatomeVR/Library or Data appear here.",
+                emptyHint = "Loose 360 and flat videos appear here. Folder and ZIP deliveries are grouped under Collections.",
                 dateFormat = dateFormat
             ),
             imageSection = buildMediaSection(
                 title = "Images",
                 gridId = "grid-images",
-                items = snapshot.images,
+                items = snapshot.standaloneImages,
                 playlistKey = HubPlaylists.KEY_IMAGES,
-                emptyHint = "360 panoramas and photos delivered to FramatomeVR/Library or Data appear here.",
+                emptyHint = "Loose panoramas and photos appear here. Folder and ZIP deliveries are grouped under Collections.",
                 dateFormat = dateFormat
             ),
             modelSection = buildMediaSection(
                 title = "3D Models",
                 gridId = "grid-models",
-                items = snapshot.models,
+                items = snapshot.standaloneModels,
                 playlistKey = HubPlaylists.KEY_MODELS,
                 emptyHint = "GLB/glTF models (SolidWorks XR exports with exploded views) appear here — see MODEL_PIPELINE.md.",
                 dateFormat = dateFormat
@@ -144,7 +229,7 @@ object HubIndexServer {
             cloudSection = buildMediaSection(
                 title = "Point Clouds",
                 gridId = "grid-clouds",
-                items = snapshot.clouds,
+                items = snapshot.standaloneClouds,
                 playlistKey = HubPlaylists.KEY_CLOUDS,
                 emptyHint = "PLY/PCD laser scans (Leica/FARO, converted) appear here — see SCAN_PIPELINE.md.",
                 dateFormat = dateFormat
@@ -201,6 +286,185 @@ $showMore"""
 $body
 """
     }
+
+    private fun buildCollectionsSection(
+        collections: List<LibraryCollection>,
+        dateFormat: SimpleDateFormat
+    ): String {
+        if (collections.isEmpty()) return ""
+        val cards = collections.joinToString("\n") { buildCollectionCard(it, dateFormat) }
+        val overlays = collections.joinToString("\n") { buildCollectionOverlay(it, dateFormat) }
+        return """
+<div class="section-bar"><h2>Collections <span class="section-count">${collections.size}</span></h2></div>
+<div class="tour-grid" id="grid-collections">
+$cards
+</div>
+$overlays
+"""
+    }
+
+    private fun buildCollectionCard(
+        collection: LibraryCollection,
+        dateFormat: SimpleDateFormat
+    ): String {
+        val poster = collection.posterItem()?.let(ThumbnailStore::thumbUrlFor)
+        val description = collection.description
+            ?.takeIf { it.isNotBlank() }
+            ?.let { """<p class="card-desc">${escapeHtml(it)}</p>""" }
+            ?: ""
+        val sourceLabel = if (collection.source == LibraryItem.Source.Manifest) {
+            "Managed package"
+        } else {
+            "Folder package"
+        }
+        val thumbInner = if (poster != null) {
+            """<img loading="lazy" src="$poster" alt="" onerror="thumbFallback(this)">"""
+        } else {
+            collectionPlaceholderIcon()
+        }
+        val unsupported = if (collection.unsupportedItems.isNotEmpty()) {
+            """<span class="meta-warning">${collection.unsupportedItems.size} skipped</span>"""
+        } else {
+            ""
+        }
+        return """
+        <div class="tour-card" onclick="openCollection('collection-${collection.id}')">
+            <div class="card-thumb media-thumb${if (poster == null) " no-thumb" else ""}">
+                $thumbInner
+                <div class="card-badge">Collection</div>
+            </div>
+            <div class="card-body">
+                <h3>${escapeHtml(collection.title)}</h3>
+                $description
+                <div class="card-meta">
+                    <span class="meta-item">${escapeHtml(collectionSummary(collection))}</span>
+                    <span class="meta-item">$sourceLabel</span>
+                    <span class="meta-item">${dateFormat.format(Date(collection.root.lastModified()))}</span>
+                    $unsupported
+                </div>
+            </div>
+            <div class="card-launch">
+                <div class="launch-btn">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h6l2 2h10v10H3z"/><path d="M3 7V5h7l2 2"/></svg>
+                    Open Collection
+                </div>
+            </div>
+        </div>
+        """
+    }
+
+    private fun buildCollectionOverlay(
+        collection: LibraryCollection,
+        dateFormat: SimpleDateFormat
+    ): String {
+        val videos = collection.items.filter {
+            it.contentType == com.framatome.vr.content.ContentType.Video360 ||
+                it.contentType == com.framatome.vr.content.ContentType.Video2D
+        }
+        val images = collection.items.filter {
+            it.contentType == com.framatome.vr.content.ContentType.Image360 ||
+                it.contentType == com.framatome.vr.content.ContentType.Image2D
+        }
+        val models = collection.items.filter {
+            it.contentType == com.framatome.vr.content.ContentType.Model3D
+        }
+        val clouds = collection.items.filter {
+            it.contentType == com.framatome.vr.content.ContentType.PointCloud
+        }
+        val sections = buildString {
+            if (videos.isNotEmpty()) append(
+                buildMediaSection(
+                    "Videos",
+                    "collection-${collection.id}-videos",
+                    videos,
+                    HubPlaylists.scopedKey(collection.id, HubPlaylists.KEY_VIDEOS),
+                    "",
+                    dateFormat
+                )
+            )
+            if (images.isNotEmpty()) append(
+                buildMediaSection(
+                    "Images",
+                    "collection-${collection.id}-images",
+                    images,
+                    HubPlaylists.scopedKey(collection.id, HubPlaylists.KEY_IMAGES),
+                    "",
+                    dateFormat
+                )
+            )
+            if (models.isNotEmpty()) append(
+                buildMediaSection(
+                    "3D Models",
+                    "collection-${collection.id}-models",
+                    models,
+                    HubPlaylists.scopedKey(collection.id, HubPlaylists.KEY_MODELS),
+                    "",
+                    dateFormat
+                )
+            )
+            if (clouds.isNotEmpty()) append(
+                buildMediaSection(
+                    "Point Clouds",
+                    "collection-${collection.id}-clouds",
+                    clouds,
+                    HubPlaylists.scopedKey(collection.id, HubPlaylists.KEY_CLOUDS),
+                    "",
+                    dateFormat
+                )
+            )
+        }
+        val description = collection.description
+            ?.takeIf { it.isNotBlank() }
+            ?.let { """<p>${escapeHtml(it)}</p>""" }
+            ?: """<p>${escapeHtml(collectionSummary(collection))}</p>"""
+        val skipped = if (collection.unsupportedItems.isNotEmpty()) {
+            """
+            <div class="collection-warning">
+                ${collection.unsupportedItems.size} file(s) in this package were skipped.
+                Open Content Status for details.
+            </div>
+            """
+        } else {
+            ""
+        }
+        return """
+<section class="collection-overlay" id="collection-${collection.id}" aria-hidden="true">
+    <div class="collection-header">
+        <button class="btn-scan" type="button" onclick="closeCollection()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+            Back to Library
+        </button>
+        <div class="collection-heading">
+            <span class="collection-kicker">Collection</span>
+            <h2>${escapeHtml(collection.title)}</h2>
+            $description
+        </div>
+        <span class="collection-total">${collection.itemCount} item(s)</span>
+    </div>
+    <div class="collection-content">
+        $skipped
+        $sections
+    </div>
+</section>
+"""
+    }
+
+    private fun collectionSummary(collection: LibraryCollection): String {
+        val parts = mutableListOf<String>()
+        if (collection.videoCount > 0) parts += "${collection.videoCount} video${if (collection.videoCount == 1) "" else "s"}"
+        if (collection.imageCount > 0) parts += "${collection.imageCount} image${if (collection.imageCount == 1) "" else "s"}"
+        if (collection.modelCount > 0) parts += "${collection.modelCount} model${if (collection.modelCount == 1) "" else "s"}"
+        if (collection.cloudCount > 0) parts += "${collection.cloudCount} point cloud${if (collection.cloudCount == 1) "" else "s"}"
+        return parts.joinToString(" · ").ifBlank { "${collection.itemCount} items" }
+    }
+
+    private fun collectionPlaceholderIcon(): String = """
+        <div class="no-thumb-icon">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+                <path d="M3 7h6l2 2h10v10H3z"/><path d="M3 7V5h7l2 2"/>
+            </svg>
+        </div>
+    """
 
     private fun buildMediaCard(
         item: LibraryItem,
@@ -282,11 +546,73 @@ $body
         """
     }
 
+    private fun buildDiagnosticsSection(
+        scanIssues: List<LibraryScanIssue>,
+        ingestWarnings: List<String>
+    ): String {
+        val diagnostics = scanIssues.map(::diagnosticFor) + ingestWarnings.map { warning ->
+            HubDiagnostic(
+                label = "Import skipped",
+                path = warning.substringBefore(':').trim(),
+                detail = warning.substringAfter(':', "Package was skipped").trim()
+            )
+        }
+        val distinct = diagnostics.distinctBy { "${it.label}|${it.path}|${it.detail}" }
+        if (distinct.isEmpty()) return ""
+        val rows = distinct.mapIndexed { index, diagnostic ->
+            val hiddenClass = if (index >= MAX_DIAGNOSTICS) " hidden-diagnostic" else ""
+            """
+            <div class="diagnostic-row$hiddenClass">
+                <span class="diagnostic-icon">!</span>
+                <div>
+                    <strong>${escapeHtml(diagnostic.label)}</strong>
+                    <span class="diagnostic-path">${escapeHtml(diagnostic.path)}</span>
+                    <p>${escapeHtml(diagnostic.detail)}</p>
+                </div>
+            </div>
+            """
+        }.joinToString("\n")
+        val remainder = if (distinct.size > MAX_DIAGNOSTICS) {
+            """<button class="btn-scan diagnostics-more" type="button" onclick="showAllDiagnostics(this)">Show all ${distinct.size} issues</button>"""
+        } else {
+            ""
+        }
+        return """
+<details class="diagnostics-panel">
+    <summary>
+        <span>Content Status</span>
+        <span class="diagnostics-count">${distinct.size} item(s) need attention</span>
+    </summary>
+    <div class="diagnostics-body">
+        $rows
+        $remainder
+        <p class="diagnostics-help">Supported video containers: MP4, MOV, M4V, WebM. Raw LAS/LAZ/E57 scans must be converted to PLY, PCD, or DRC.</p>
+    </div>
+</details>
+"""
+    }
+
+    private fun diagnosticFor(issue: LibraryScanIssue): HubDiagnostic {
+        val label = when (issue.category) {
+            LibraryIssueCategory.MalformedManifest -> "Manifest needs repair"
+            LibraryIssueCategory.MissingAsset -> "Manifest file is missing"
+            LibraryIssueCategory.UnsupportedAsset -> "Unsupported file"
+            LibraryIssueCategory.EmptyPackage -> "Package has no playable media"
+            LibraryIssueCategory.MisplacedTour -> "Tour is in the wrong folder"
+        }
+        val relative = MediaViewerUrls.mediaRelativePath(issue.source.absolutePath)
+        return HubDiagnostic(
+            label = label,
+            path = relative?.let { "FramatomeVR/$it" } ?: issue.source.name,
+            detail = issue.detail
+        )
+    }
+
     private fun buildStorageBanner(): String = """
     <div class="storage-banner">
         <strong>Storage access required.</strong>
-        Framatome Player needs All Files Access to list the media library. Grant it via ArborXR
-        or adb: <code>adb shell appops set com.framatome.vr.pro MANAGE_EXTERNAL_STORAGE allow</code>
+        Framatome Player needs All Files Access to list ArborXR deliveries and the media library.
+        <button class="storage-settings-link" type="button" onclick="openOperatorSettings()">Open Settings</button>
     </div>
     """
 
@@ -360,10 +686,18 @@ $body
                     </div>
                 </div>
             </div>
-            <button class="btn-primary" onclick="window.location.reload()">
+            <button class="btn-primary" data-refresh-button onclick="refreshContent(this)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
                 Scan for Content
             </button>
+        </div>
+    """
+
+    private fun buildLibraryLoadingState(): String = """
+        <div class="empty-state" aria-live="polite">
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <h2>Loading Content Library</h2>
+            <p>Checking installed tours and ArborXR deliveries…</p>
         </div>
     """
 
@@ -373,7 +707,11 @@ $body
         imageCount: Int,
         modelCount: Int,
         cloudCount: Int,
+        collectionCount: Int,
+        contentRevision: String,
         tourCards: String,
+        collectionsSection: String,
+        diagnosticsSection: String,
         videoSection: String,
         imageSection: String,
         modelSection: String,
@@ -461,6 +799,40 @@ body::after{
   background:rgba(0,0,0,.35);padding:2px 8px;border-radius:6px;
   font-size:12px;font-family:monospace;
 }
+.storage-settings-link{
+  margin-left:10px;padding:7px 12px;border-radius:9px;border:1px solid rgba(255,255,255,.24);
+  background:rgba(255,255,255,.11);color:white;font-size:12px;font-weight:750;cursor:pointer;
+}
+
+/* --- Content diagnostics --- */
+.diagnostics-panel{
+  position:relative;z-index:1;margin:20px 48px 0;border-radius:var(--radius);
+  background:rgba(240,78,35,.12);border:1px solid rgba(240,78,35,.35);
+  overflow:hidden;
+}
+.diagnostics-panel summary{
+  cursor:pointer;list-style:none;padding:15px 20px;display:flex;
+  justify-content:space-between;align-items:center;font-size:14px;font-weight:700;
+}
+.diagnostics-panel summary::-webkit-details-marker{display:none}
+.diagnostics-count{font-size:12px;color:#FFD9CC;font-weight:600}
+.diagnostics-body{padding:0 20px 18px;display:grid;gap:10px}
+.diagnostic-row{
+  display:flex;gap:12px;padding:11px 13px;border-radius:12px;
+  background:rgba(0,0,0,.18);color:var(--text-mid);
+}
+.diagnostic-icon{
+  flex:none;width:24px;height:24px;border-radius:50%;display:flex;
+  align-items:center;justify-content:center;background:var(--orange);color:white;
+  font-size:13px;font-weight:900;
+}
+.diagnostic-row strong{display:inline-block;font-size:13px;color:white;margin-right:9px}
+.diagnostic-path{font:11px monospace;color:#FFD9CC}
+.diagnostic-row p{font-size:12px;line-height:1.45;margin-top:3px;color:var(--text-mid)}
+.diagnostic-more,.diagnostics-help{font-size:12px;color:var(--text-dim);line-height:1.5}
+.hidden-diagnostic{display:none}
+.diagnostics-more{justify-self:start}
+.diagnostics-help{padding-top:4px;border-top:1px solid rgba(255,255,255,.08)}
 
 /* --- Main --- */
 .main{padding:32px 48px 48px}
@@ -490,6 +862,7 @@ body::after{
   display:flex;align-items:center;gap:8px;transition:all .15s;
 }
 .btn-scan:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3)}
+.btn-scan:disabled,.btn-primary:disabled{opacity:.55;cursor:wait;transform:none}
 .show-more{margin:20px auto 0}
 
 /* --- Card grid --- */
@@ -546,6 +919,7 @@ body::after{
   align-items:center;gap:4px;
 }
 .meta-item svg{color:var(--ink-soft)}
+.meta-warning{font-size:12px;color:var(--orange-deep);font-weight:700}
 .card-launch{padding:16px 20px 20px}
 .launch-btn{
   background:linear-gradient(135deg,var(--orange),var(--orange-deep));
@@ -555,6 +929,31 @@ body::after{
   transition:opacity .15s;width:100%;
 }
 .tour-card:hover .launch-btn{opacity:.95}
+
+/* --- Collection detail overlay --- */
+body.collection-open{overflow:hidden}
+.collection-overlay{
+  display:none;position:fixed;inset:0;z-index:9000;overflow-y:auto;
+  background:linear-gradient(135deg,var(--midnight),var(--blue) 55%,var(--surface));
+}
+.collection-overlay.active{display:block}
+.collection-header{
+  position:sticky;top:0;z-index:2;display:grid;
+  grid-template-columns:180px minmax(0,1fr) 120px;gap:24px;align-items:center;
+  padding:28px 48px;background:rgba(11,23,48,.95);
+  border-bottom:1px solid var(--glass-border);backdrop-filter:blur(14px);
+}
+.collection-heading{text-align:center}
+.collection-heading h2{font-size:28px;margin:2px 0 5px}
+.collection-heading p{font-size:13px;color:var(--text-mid)}
+.collection-kicker{font-size:11px;color:var(--orange);letter-spacing:1.8px;text-transform:uppercase;font-weight:800}
+.collection-total{text-align:right;font-size:13px;color:var(--text-mid);font-weight:700}
+.collection-content{padding:12px 48px 64px}
+.collection-warning{
+  margin:18px 0 4px;padding:13px 16px;border-radius:12px;
+  background:rgba(240,78,35,.14);border:1px solid rgba(240,78,35,.3);
+  color:#FFD9CC;font-size:13px;
+}
 
 /* --- Loading overlay --- */
 .loading-overlay{
@@ -571,6 +970,22 @@ body::after{
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:18px;font-weight:600;margin-bottom:4px}
 .loading-sub{font-size:14px;color:var(--text-dim)}
+
+.refresh-toast{
+  display:none;position:fixed;right:32px;bottom:32px;z-index:9998;
+  max-width:420px;padding:16px 18px;border-radius:14px;
+  background:rgba(11,23,48,.96);border:1px solid var(--glass-border);
+  color:var(--text);align-items:center;gap:18px;
+}
+.refresh-toast.active{display:flex}
+.refresh-toast.error{border-color:rgba(240,78,35,.55)}
+.refresh-toast-copy{display:flex;flex-direction:column;gap:3px;line-height:1.35}
+.refresh-toast-copy strong{font-size:14px}
+.refresh-toast-copy span{font-size:12px;color:var(--text-dim)}
+.refresh-toast button{
+  flex:none;background:var(--orange);border:0;color:white;border-radius:10px;
+  padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;
+}
 
 /* --- Empty state --- */
 .empty-state{
@@ -715,6 +1130,7 @@ body::after{
 @keyframes skipFadeIn{
   to{opacity:1}
 }
+${HubOperatorPanel.styles()}
 </style>
 </head>
 <body>
@@ -736,8 +1152,9 @@ body::after{
 <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-spinner"></div>
     <div class="loading-text" id="loadingText">Launching...</div>
-    <div class="loading-sub">Preparing immersive environment</div>
+    <div class="loading-sub" id="loadingSub">Preparing immersive environment</div>
 </div>
+${HubOperatorPanel.markup()}
 
 <div class="header">
     <div class="header-left">
@@ -755,6 +1172,10 @@ body::after{
             <div class="label">Tours</div>
         </div>
         <div class="header-stat">
+            <div class="num">$collectionCount</div>
+            <div class="label">Collections</div>
+        </div>
+        <div class="header-stat">
             <div class="num">$videoCount</div>
             <div class="label">Videos</div>
         </div>
@@ -770,14 +1191,16 @@ body::after{
             <div class="num">$cloudCount</div>
             <div class="label">Point Clouds</div>
         </div>
+        ${HubOperatorPanel.headerButton()}
     </div>
 </div>
 $storageBanner
+$diagnosticsSection
 
 <div class="main">
     <div class="section-bar">
         <h2>Your Tours <span class="section-count">$tourCount</span></h2>
-        <button class="btn-scan" onclick="window.location.reload()">
+        <button class="btn-scan" data-refresh-button onclick="refreshContent(this)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
             Rescan
         </button>
@@ -786,6 +1209,8 @@ $storageBanner
     <div class="tour-grid">
 $tourCards
     </div>
+
+$collectionsSection
 
 $videoSection
 
@@ -803,9 +1228,17 @@ $cloudSection
     <span>&middot;</span>
     Tours &middot; 360/VR180 &middot; Media Library
 </div>
+<div class="refresh-toast" id="refreshToast" role="status" aria-live="polite">
+    <div class="refresh-toast-copy">
+        <strong id="refreshToastTitle">New content is ready</strong>
+        <span id="refreshToastMessage">Refresh the library to show the latest delivery.</span>
+    </div>
+    <button type="button" data-refresh-button onclick="refreshContent(this)">Refresh</button>
+</div>
 <div class="accent-stripe" aria-hidden="true"></div>
 
 <script>
+var introDismissed = false;
 (function(){
   var pc = document.getElementById('introParticles');
   if (pc) {
@@ -820,22 +1253,168 @@ $cloudSection
       pc.appendChild(p);
     }
   }
-  setTimeout(dismissIntro, 4500);
+  try {
+    if (window.sessionStorage.getItem('framatomeIntroShown') === '1') {
+      dismissIntro();
+    } else {
+      setTimeout(dismissIntro, 4500);
+    }
+  } catch (ignored) {
+    setTimeout(dismissIntro, 4500);
+  }
 })();
-var introDismissed = false;
 function dismissIntro() {
   if (introDismissed) return;
   introDismissed = true;
   var o = document.getElementById('introOverlay');
   if (o) o.classList.add('fade-out');
+  try { window.sessionStorage.setItem('framatomeIntroShown', '1'); } catch (ignored) {}
 }
 function showLaunchOverlay(card, verb) {
   var overlay = document.getElementById('loadingOverlay');
   var text = document.getElementById('loadingText');
+  var sub = document.getElementById('loadingSub');
   var name = card && card.querySelector('h3');
   text.textContent = verb + (name ? ' ' + name.textContent : '') + '...';
+  if (sub) sub.textContent = 'Preparing immersive environment';
   overlay.classList.add('active');
 }
+var refreshInFlight = false;
+var refreshStartedAt = 0;
+var refreshPollFailures = 0;
+var initialContentRevision = '$contentRevision';
+function setRefreshBusy(busy) {
+  var buttons = document.querySelectorAll('[data-refresh-button]');
+  for (var i = 0; i < buttons.length; i++) buttons[i].disabled = busy;
+}
+function setRefreshOverlay(title, detail) {
+  var overlay = document.getElementById('loadingOverlay');
+  var text = document.getElementById('loadingText');
+  var sub = document.getElementById('loadingSub');
+  if (text) text.textContent = title;
+  if (sub) sub.textContent = detail;
+  if (overlay) {
+    overlay.setAttribute('aria-busy', 'true');
+    overlay.classList.add('active');
+  }
+}
+function hideRefreshOverlay() {
+  var overlay = document.getElementById('loadingOverlay');
+  if (overlay) {
+    overlay.removeAttribute('aria-busy');
+    overlay.classList.remove('active');
+  }
+}
+function showRefreshToast(title, message, isError) {
+  var toast = document.getElementById('refreshToast');
+  var toastTitle = document.getElementById('refreshToastTitle');
+  var toastMessage = document.getElementById('refreshToastMessage');
+  if (toastTitle) toastTitle.textContent = title;
+  if (toastMessage) toastMessage.textContent = message;
+  if (toast) {
+    toast.classList.toggle('error', !!isError);
+    toast.classList.add('active');
+  }
+}
+function hideRefreshToast() {
+  var toast = document.getElementById('refreshToast');
+  if (toast) toast.classList.remove('active', 'error');
+}
+function jsonResponse(response) {
+  if (!response.ok) throw new Error('Content service returned ' + response.status);
+  return response.json();
+}
+function refreshContent() {
+  if (refreshInFlight) return;
+  refreshInFlight = true;
+  refreshStartedAt = Date.now();
+  refreshPollFailures = 0;
+  setRefreshBusy(true);
+  hideRefreshToast();
+  setRefreshOverlay('Refreshing content', 'Checking active ArborXR deliveries…');
+  fetch('/__rescan__?ts=' + Date.now(), {
+    method:'POST',
+    cache:'no-store',
+    headers:{'X-Framatome-Request':'hub'}
+  })
+    .then(jsonResponse)
+    .then(function(status) {
+      if (status.phase === 'failed') throw new Error(status.message || 'Content refresh failed');
+      if (status.phase === 'complete') {
+        finishContentRefresh(status);
+      } else {
+        pollContentRefresh(status.requestId);
+      }
+    })
+    .catch(showRefreshError);
+}
+function pollContentRefresh(requestId) {
+  if (!refreshInFlight) return;
+  if (Date.now() - refreshStartedAt > 15 * 60 * 1000) {
+    showRefreshError(new Error('The content transfer is taking longer than expected. ArborXR may still be copying files.'));
+    return;
+  }
+  fetch('/__rescan__?ts=' + Date.now(), {cache:'no-store'})
+    .then(jsonResponse)
+    .then(function(status) {
+      refreshPollFailures = 0;
+      if (status.requestId !== requestId && status.phase === 'running') {
+        requestId = status.requestId;
+      }
+      if (status.phase === 'complete') {
+        finishContentRefresh(status);
+      } else if (status.phase === 'failed') {
+        throw new Error(status.message || 'Content refresh failed');
+      } else {
+        setRefreshOverlay('Refreshing content', status.message || 'Scanning the content library…');
+        window.setTimeout(function() { pollContentRefresh(requestId); }, 750);
+      }
+    })
+    .catch(function(error) {
+      refreshPollFailures += 1;
+      if (refreshPollFailures < 4) {
+        window.setTimeout(function() { pollContentRefresh(requestId); }, 1200);
+      } else {
+        showRefreshError(error);
+      }
+    });
+}
+function finishContentRefresh(status) {
+  var summary = (status.toursCount || 0) + ' tours · ' +
+    (status.videosCount || 0) + ' videos · ' +
+    (status.imagesCount || 0) + ' images';
+  setRefreshOverlay('Content ready', summary);
+  try { window.sessionStorage.setItem('framatomeIntroShown', '1'); } catch (ignored) {}
+  window.setTimeout(function() {
+    window.location.replace('/?refresh=' + Date.now());
+  }, 650);
+}
+function showRefreshError(error) {
+  refreshInFlight = false;
+  setRefreshBusy(false);
+  hideRefreshOverlay();
+  showRefreshToast(
+    'Refresh could not finish',
+    (error && error.message) || 'Check the ArborXR transfer and try again.',
+    true
+  );
+}
+function checkForContentChanges() {
+  if (refreshInFlight || document.hidden) return;
+  fetch('/health?ts=' + Date.now(), {cache:'no-store'})
+    .then(jsonResponse)
+    .then(function(health) {
+      if (health.revision && health.revision !== initialContentRevision) {
+        showRefreshToast(
+          'New content is ready',
+          'An ArborXR delivery changed the library. Refresh to update this menu.',
+          false
+        );
+      }
+    })
+    .catch(function() {});
+}
+window.setInterval(checkForContentChanges, 6000);
 function launchTour(url, card) {
   showLaunchOverlay(card, 'Launching');
   setTimeout(function() { window.location.href = url; }, 400);
@@ -843,6 +1422,67 @@ function launchTour(url, card) {
 function launchMedia(url, card) {
   showLaunchOverlay(card, 'Opening');
   setTimeout(function() { window.location.href = url; }, 400);
+}
+var activeCollectionId = null;
+function showCollection(id) {
+  if (activeCollectionId) {
+    var previous = document.getElementById(activeCollectionId);
+    if (previous) {
+      previous.classList.remove('active');
+      previous.setAttribute('aria-hidden', 'true');
+    }
+  }
+  var overlay = document.getElementById(id);
+  if (!overlay) return;
+  activeCollectionId = id;
+  overlay.classList.add('active');
+  overlay.setAttribute('aria-hidden', 'false');
+  overlay.scrollTop = 0;
+  document.body.classList.add('collection-open');
+}
+function openCollection(id) {
+  showCollection(id);
+  try {
+    window.history.pushState({collection:id}, '', '#' + id);
+  } catch (ignored) {}
+}
+function closeCollection(fromHistory) {
+  if (!fromHistory && window.history.state && window.history.state.collection) {
+    window.history.back();
+    return;
+  }
+  if (activeCollectionId) {
+    var overlay = document.getElementById(activeCollectionId);
+    if (overlay) {
+      overlay.classList.remove('active');
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+  }
+  activeCollectionId = null;
+  document.body.classList.remove('collection-open');
+}
+window.addEventListener('popstate', function(event) {
+  if (event.state && event.state.collection) {
+    showCollection(event.state.collection);
+  } else {
+    closeCollection(true);
+  }
+});
+window.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape' && activeCollectionId) closeCollection();
+});
+(function restoreCollectionFromLocation() {
+  var id = window.location.hash ? window.location.hash.substring(1) : '';
+  if (!/^collection-[a-f0-9]{24}$/.test(id) || !document.getElementById(id)) return;
+  showCollection(id);
+  try { window.history.replaceState({collection:id}, '', '#' + id); } catch (ignored) {}
+})();
+function showAllDiagnostics(button) {
+  var panel = button && button.closest('.diagnostics-panel');
+  if (!panel) return;
+  var hidden = panel.querySelectorAll('.hidden-diagnostic');
+  for (var i = 0; i < hidden.length; i++) hidden[i].classList.remove('hidden-diagnostic');
+  button.remove();
 }
 function showMore(gridId, btn) {
   var grid = document.getElementById(gridId);
@@ -860,6 +1500,7 @@ function thumbFallback(img) {
       '<div class="no-thumb-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>');
   }
 }
+${HubOperatorPanel.script()}
 </script>
 </body>
 </html>

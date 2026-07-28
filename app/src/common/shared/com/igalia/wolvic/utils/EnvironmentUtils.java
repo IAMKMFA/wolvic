@@ -307,10 +307,13 @@ public class EnvironmentUtils {
             for (String key : keysList) {
                 RemoteProperties props = properties.get(key);
                 if (props != null && props.getEnvironments() != null) {
-                    return Arrays.stream(props.getEnvironments())
-                            .filter(environment -> payloadUrl.equals(getEnvironmentPayload(environment)))
+                    Environment environment = Arrays.stream(props.getEnvironments())
+                            .filter(candidate -> payloadUrl.equals(getEnvironmentPayload(candidate)))
                             .findFirst()
                             .orElse(null);
+                    if (environment != null) {
+                        return environment;
+                    }
                 }
             }
         }

@@ -245,7 +245,7 @@ android {
             externalNativeBuild {
                 cmake {
                     cppFlags "-DOCULUSVR -DOPENXR"
-                    arguments "-DVR_SDK_EXTRA_LIB=ovrplatform-lib", "-DOCULUSVR=ON", "-DOPENXR=ON"
+                    arguments "-DOCULUSVR=ON", "-DOPENXR=ON"
                 }
             }
             manifestPlaceholders = [ headtrackingRequired:"false", permissionToRemove:"android.permission.RECEIVE_BOOT_COMPLETED" ]
@@ -405,6 +405,7 @@ android {
             externalNativeBuild {
                 cmake {
                     cppFlags "-DSTORE_BUILD", "-DMETA_APP_ID=5917120145021341"
+                    arguments "-DSTORE_BUILD=ON", "-DVR_SDK_EXTRA_LIB=ovrplatform-lib"
                 }
             }
         }

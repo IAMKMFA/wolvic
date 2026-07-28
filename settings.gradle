@@ -14,9 +14,16 @@ dependencyResolutionManagement {
     // or geckoMavenRepo=… in gradle.properties; defaults to <root>/gecko-maven.
     def geckoMavenRepo = providers.gradleProperty('geckoMavenRepo').getOrElse("${settingsDir}/gecko-maven")
     repositories {
-        maven {
-            name "LocalGeckoView"
-            url geckoMavenRepo
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name "LocalGeckoView"
+                    url geckoMavenRepo
+                }
+            }
+            filter {
+                includeGroup "org.mozilla.geckoview"
+            }
         }
         google()
         mavenCentral()

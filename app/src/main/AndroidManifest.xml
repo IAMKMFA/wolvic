@@ -29,6 +29,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/FxR.Dark">
+        <meta-data
+            android:name="com.framatome.vr.CONTENT_INGEST_CAPABILITY"
+            android:value="player-v1" />
+        <meta-data
+            android:name="android.content.APP_RESTRICTIONS"
+            android:resource="@xml/app_restrictions" />
         <activity
             android:name="com.framatome.vr.immersive.FramatomeImmersiveActivity"
             android:launchMode="singleInstance"

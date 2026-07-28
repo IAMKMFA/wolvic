@@ -15,6 +15,7 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
+import org.json.JSONObject
 import kotlin.math.min
 import kotlin.text.Charsets
 
@@ -38,6 +39,7 @@ class LocalWebServer private constructor(
             Log.d(TAG, "serve ${session.method} $decodedUri from ${session.remoteIpAddress}")
 
             if (pathOnly.removePrefix("/") == "launch") {
+                if (isTrustedHubOrigin(session)) return forbidden()
                 return serveLaunch(session)
             }
 
@@ -45,8 +47,19 @@ class LocalWebServer private constructor(
                 return serveHealth()
             }
 
+            if (pathOnly == "/__rescan__") {
+                if (!isTrustedHubOrigin(session)) return forbidden()
+                return serveContentRefresh(session)
+            }
+
+            if (pathOnly.startsWith("/__operator__/")) {
+                if (!isTrustedHubOrigin(session)) return forbidden()
+                return serveOperatorSettings(session, pathOnly)
+            }
+
             val uriPath = pathOnly.removePrefix("/")
             if (uriPath.isEmpty() || uriPath == "index.html") {
+                if (!isTrustedHubOrigin(session)) return redirectToHub()
                 return serveDynamicIndex()
             }
 
@@ -60,6 +73,7 @@ class LocalWebServer private constructor(
 
             // Framatome WebXR media viewer (served from bundled assets).
             if (uriPath.startsWith(VIEWER_PREFIX)) {
+                if (isTrustedHubOrigin(session)) return redirectToContent(uriPath)
                 val assetRel = uriPath.removePrefix(VIEWER_PREFIX).ifBlank { "index.html" }
                 if (assetRel.split('/').any { it == ".." }) return forbidden()
                 return serveAsset("$VIEWER_ASSET_DIR/$assetRel")
@@ -67,6 +81,7 @@ class LocalWebServer private constructor(
 
             // Raw media files streamed to the viewer from the shared storage tree.
             if (uriPath.startsWith(MEDIA_PREFIX)) {
+                if (isTrustedHubOrigin(session)) return redirectToContent(uriPath)
                 return serveMediaFile(session, uriPath.removePrefix(MEDIA_PREFIX))
             }
 
@@ -86,6 +101,7 @@ class LocalWebServer private constructor(
             // registry (intent launches); a missing key is a normal condition the
             // viewer degrades from, not an error worth logging.
             if (uriPath.startsWith(PLAYLIST_PREFIX)) {
+                if (isTrustedHubOrigin(session)) return redirectToContent(uriPath)
                 val key = uriPath.removePrefix(PLAYLIST_PREFIX).removeSuffix(".json")
                 val json = PlaylistRegistry.get(key) ?: servePlaylistFallback(key)
                 return if (json != null) {
@@ -95,6 +111,13 @@ class LocalWebServer private constructor(
                 } else {
                     notFound()
                 }
+            }
+
+            // The localhost origin is reserved for the trusted generated hub.
+            // Delivered tour HTML/JS is only served on 127.0.0.1 so it cannot
+            // become same-origin with operator maintenance APIs.
+            if (isTrustedHubOrigin(session)) {
+                return redirectToContent(uriPath)
             }
 
             if (uriPath.split('/').any { it.startsWith(".") }) {
@@ -128,23 +151,135 @@ class LocalWebServer private constructor(
 
     private fun serveDynamicIndex(): Response {
         val html = HubIndexServer.generateIndexHtml(appContext)
-        return newFixedLengthResponse(Response.Status.OK, "text/html", html)
+        return newFixedLengthResponse(Response.Status.OK, "text/html", html).apply {
+            HubRequestPolicy.hubResponseHeaders.forEach { (name, value) ->
+                addHeader(name, value)
+            }
+        }
+    }
+
+    private fun redirectToHub(): Response =
+        newFixedLengthResponse(Response.Status.REDIRECT, "text/plain", "Opening Framatome VR…").apply {
+            addHeader("Location", hubBaseUrl())
+            addHeader("Cache-Control", "no-store")
+        }
+
+    private fun redirectToContent(uriPath: String): Response {
+        val encodedPath = uriPath
+            .split('/')
+            .filter { it.isNotBlank() }
+            .joinToString("/") { segment ->
+                URLEncoder.encode(segment, Charsets.UTF_8.name()).replace("+", "%20")
+            }
+        return newFixedLengthResponse(
+            Response.Status.REDIRECT,
+            "text/plain",
+            "Opening content…"
+        ).apply {
+            addHeader("Location", "${baseUrl()}/$encodedPath")
+            addHeader("Cache-Control", "no-store")
+        }
+    }
+
+    private fun serveContentRefresh(session: IHTTPSession): Response {
+        val status = when (session.method) {
+            Method.POST -> {
+                if (!HubRequestPolicy.canMutateOperatorState(
+                        session.headers["host"],
+                        session.headers[HubRequestPolicy.REQUEST_HEADER]
+                    )) {
+                    return forbidden()
+                }
+                FramatomeInitializer.startContentRefresh()
+            }
+            Method.GET -> FramatomeInitializer.contentRefreshStatus()
+            else -> return badRequest("Use GET or POST for content refresh")
+        }
+        return newFixedLengthResponse(
+            Response.Status.OK,
+            "application/json",
+            status.toJson()
+        ).apply {
+            addHeader("Cache-Control", "no-store, no-cache, max-age=0")
+            addHeader("Pragma", "no-cache")
+        }
+    }
+
+    private fun serveOperatorSettings(session: IHTTPSession, path: String): Response {
+        if (path == "/__operator__/status") {
+            if (session.method != Method.GET) {
+                return badRequest("Use GET for operator status")
+            }
+            return jsonResponse(HubOperatorSettings.statusJson(appContext))
+        }
+        if (session.method != Method.POST) {
+            return badRequest("Use POST for operator actions")
+        }
+        if (!HubRequestPolicy.canMutateOperatorState(
+                session.headers["host"],
+                session.headers[HubRequestPolicy.REQUEST_HEADER]
+            )) {
+            return forbidden()
+        }
+
+        val result = when (path) {
+            "/__operator__/storage" -> HubOperatorSettings.openStorageSettings(appContext)
+            "/__operator__/previews" -> HubOperatorSettings.clearPreviews(appContext)
+            "/__operator__/tour" -> HubOperatorSettings.setTourEnabled(
+                context = appContext,
+                relativePath = session.parameters["path"]?.firstOrNull(),
+                enabled = when (session.parameters["enabled"]?.firstOrNull()) {
+                    "true" -> true
+                    "false" -> false
+                    else -> null
+                }
+            )
+            else -> return notFound()
+        }
+        return jsonResponse(
+            body = result.toJson(),
+            status = if (result.success) Response.Status.OK else Response.Status.BAD_REQUEST
+        )
     }
 
     private fun serveHealth(): Response {
-        // Counts come from the TTL-cached snapshot — health polls never rescan.
-        val json = runCatching {
-            val snapshot = MediaLibraryIndex.snapshot()
-            val toursCount = TourStorage.sharedToursDir()
-                .listFiles()?.count { it.isDirectory && !it.name.startsWith(".") } ?: 0
-            """{"status":"ok","toursCount":$toursCount,"mediaCount":${snapshot.mediaCount},""" +
-                """"videosCount":${snapshot.videos.size},"imagesCount":${snapshot.images.size},""" +
-                """"modelsCount":${snapshot.models.size},"cloudsCount":${snapshot.clouds.size},""" +
-                """"storageGranted":${snapshot.storageGranted},""" +
-                """"version":"${com.igalia.wolvic.BuildConfig.VERSION_NAME}"}"""
-        }.getOrDefault(HEALTH_JSON)
-        return newFixedLengthResponse(Response.Status.OK, "application/json", json).apply {
-            addHeader("Cache-Control", "no-cache")
+        val result = runCatching {
+            val status = HubIndexServer.contentStatus(appContext)
+            val servicesReady = FramatomeInitializer.contentServicesReady()
+            val serviceError = FramatomeInitializer.contentServicesError()
+            val scanError = MediaLibraryIndex.lastScanError()
+            val healthy = status.storageGranted && servicesReady && scanError == null
+            val json = JSONObject().apply {
+                put("status", if (healthy) "ok" else "degraded")
+                put("toursCount", status.toursCount)
+                put("mediaCount", status.mediaCount)
+                put("videosCount", status.videosCount)
+                put("imagesCount", status.imagesCount)
+                put("modelsCount", status.modelsCount)
+                put("cloudsCount", status.cloudsCount)
+                put("storageGranted", status.storageGranted)
+                put("contentServicesReady", servicesReady)
+                serviceError?.let { put("contentServiceError", it) }
+                scanError?.let { put("libraryScanError", it) }
+                put("revision", status.revision)
+                put("version", com.igalia.wolvic.BuildConfig.VERSION_NAME)
+            }.toString()
+            Pair(json, healthy)
+        }.getOrElse { error ->
+            Pair(
+                JSONObject()
+                    .put("status", "error")
+                    .put("message", error.message ?: "Health check failed")
+                    .toString(),
+                false
+            )
+        }
+        return newFixedLengthResponse(
+            if (result.second) Response.Status.OK else Response.Status.SERVICE_UNAVAILABLE,
+            "application/json",
+            result.first
+        ).apply {
+            addHeader("Cache-Control", "no-store, no-cache, max-age=0")
         }
     }
 
@@ -154,7 +289,10 @@ class LocalWebServer private constructor(
             ?: return badRequest("Missing target")
         val safeTarget = target.takeIf { !it.contains("://") && !it.startsWith("/") }
             ?: return badRequest("Invalid target")
-        val ts = session.parameters["ts"]?.firstOrNull() ?: System.currentTimeMillis().toString()
+        val ts = session.parameters["ts"]
+            ?.firstOrNull()
+            ?.takeIf { it.matches(SAFE_TIMESTAMP) }
+            ?: System.currentTimeMillis().toString()
         val encodedTarget = URLEncoder.encode(safeTarget, Charsets.UTF_8.name()).replace("+", "%20")
         val url = "${baseUrl()}/$encodedTarget?ts=$ts"
         val html = """
@@ -325,6 +463,18 @@ class LocalWebServer private constructor(
         message
     )
 
+    private fun jsonResponse(
+        body: String,
+        status: Response.Status = Response.Status.OK
+    ): Response = newFixedLengthResponse(status, "application/json", body).apply {
+        addHeader("Cache-Control", "no-store, no-cache, max-age=0")
+        addHeader("Pragma", "no-cache")
+    }
+
+    private fun isTrustedHubOrigin(session: IHTTPSession): Boolean {
+        return HubRequestPolicy.isTrustedHubHost(session.headers["host"])
+    }
+
     private fun defaultMime(name: String): String = when {
         name.endsWith(".js", ignoreCase = true) -> "application/javascript"
         name.endsWith(".css", ignoreCase = true) -> "text/css"
@@ -386,7 +536,7 @@ class LocalWebServer private constructor(
         private const val TAG = "FramatomeVRServer"
         private const val HOST = "127.0.0.1"
         const val PORT: Int = 18080
-        private const val HEALTH_JSON = """{"status":"ok"}"""
+        private val SAFE_TIMESTAMP = Regex("^[0-9]{1,20}$")
         // Total bundled-asset cache cap (three.js vendor + viewer/model JS+CSS ≈ 2.5MB).
         private const val ASSET_CACHE_MAX_BYTES = 24L * 1024 * 1024
 
@@ -411,8 +561,7 @@ class LocalWebServer private constructor(
                 // `started` false so the next tour launch retries cleanly.
                 try {
                     if (!dir.exists()) dir.mkdirs()
-                    // Standalone hub: make sure the media library root exists too.
-                    // Data/ stays launcher-owned (its ingest creates and manages it).
+                    // Standalone hub: make sure the Player's media library root exists too.
                     File(dir.parentFile, "Library").takeIf { !it.exists() }?.mkdirs()
                     Log.d(TAG, "ensureRunning baseDir=${dir.absolutePath}")
                     val srv = LocalWebServer(dir, appCtx)
@@ -454,5 +603,7 @@ class LocalWebServer private constructor(
         }
 
         fun baseUrl(): String = "http://$HOST:$PORT"
+
+        fun hubBaseUrl(): String = "http://${HubRequestPolicy.HUB_HOST}:$PORT"
     }
 }

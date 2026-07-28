@@ -88,7 +88,9 @@ class EnvironmentsTest {
     @Test
     fun `Environment by payload url`() {
         settingStore.setRemoteProperties(TestFileUtils.readTextFile(javaClass.classLoader!!,"environments/targetVersionEnvs.json"))
-        val env = EnvironmentUtils.getExternalEnvironmentByPayload(context, "https://mixedreality.mozilla.org/FirefoxReality/envs/framatome/space.zip", "11")
+        val target = EnvironmentUtils.getExternalEnvironmentById(context, "framatome_space", "1")
+        val payload = EnvironmentUtils.getEnvironmentPayload(requireNotNull(target))
+        val env = EnvironmentUtils.getExternalEnvironmentByPayload(context, requireNotNull(payload), "11")
         assertNotNull(env)
         assertEquals(env?.value, "framatome_space")
         assertEquals(env?.title, "Framatome VR")
@@ -100,7 +102,7 @@ class EnvironmentsTest {
     fun `Environment is builtin`() {
         assertTrue(EnvironmentUtils.isBuiltinEnvironment(context, "void"))
         assertTrue(EnvironmentUtils.isBuiltinEnvironment(context, "framatome"))
-        assertTrue(EnvironmentUtils.isBuiltinEnvironment(context, "cyberpunk"))
+        assertFalse(EnvironmentUtils.isBuiltinEnvironment(context, "cyberpunk"))
     }
 
     @Test

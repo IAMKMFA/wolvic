@@ -1,7 +1,9 @@
 package com.framatome.vr.immersive;
 
+import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,6 +25,7 @@ public class FramatomeImmersiveActivity extends VRBrowserActivity {
     // Prompt for All-Files-Access at most once per activity instance so we never
     // loop when the operator returns from Settings without granting.
     private boolean storagePromptShown = false;
+    private boolean storageAccessConfirmed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,12 +68,31 @@ public class FramatomeImmersiveActivity extends VRBrowserActivity {
      */
     private void ensureAllFilesAccess() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            boolean readGranted = checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED;
+            boolean writeGranted = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED;
+            if (readGranted && writeGranted) {
+                confirmStorageAccess();
+                return;
+            }
+            storageAccessConfirmed = false;
+            if (!storagePromptShown) {
+                storagePromptShown = true;
+                requestPermissions(
+                        new String[]{
+                                Manifest.permission.READ_EXTERNAL_STORAGE,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        },
+                        STORAGE_PERMISSION_REQUEST);
+            }
             return;
         }
         if (Environment.isExternalStorageManager()) {
-            FramatomeInitializer.requestReconcile();
+            confirmStorageAccess();
             return;
         }
+        storageAccessConfirmed = false;
         if (storagePromptShown) {
             return;
         }
@@ -88,4 +110,26 @@ public class FramatomeImmersiveActivity extends VRBrowserActivity {
             }
         }
     }
+
+    private void confirmStorageAccess() {
+        if (!storageAccessConfirmed) {
+            storageAccessConfirmed = true;
+            FramatomeInitializer.onStorageAccessConfirmed();
+        } else {
+            FramatomeInitializer.requestReconcile();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode,
+            String[] permissions,
+            int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == STORAGE_PERMISSION_REQUEST) {
+            ensureAllFilesAccess();
+        }
+    }
+
+    private static final int STORAGE_PERMISSION_REQUEST = 4101;
 }
