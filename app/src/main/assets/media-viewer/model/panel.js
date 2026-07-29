@@ -392,6 +392,9 @@ export class GlassPanel {
     c.font = "400 24px " + FONT;
     c.fillText("Framatome VR", w / 2, 358);
     c.textAlign = "left";
+    // A model that never finishes loading otherwise leaves no way back: the
+    // panel is pinned open in this mode and there is nothing else to aim at.
+    this.button("exit", (w - 224) / 2, 396, 224, 68, null, "EXIT TO HUB");
   }
 
   drawError() {

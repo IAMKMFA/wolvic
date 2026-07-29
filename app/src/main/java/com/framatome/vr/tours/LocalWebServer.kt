@@ -225,6 +225,7 @@ class LocalWebServer private constructor(
         val result = when (path) {
             "/__operator__/storage" -> HubOperatorSettings.openStorageSettings(appContext)
             "/__operator__/previews" -> HubOperatorSettings.clearPreviews(appContext)
+            "/__operator__/support" -> HubOperatorSettings.createSupportBundle(appContext)
             "/__operator__/tour" -> HubOperatorSettings.setTourEnabled(
                 context = appContext,
                 relativePath = session.parameters["path"]?.firstOrNull(),
@@ -447,15 +448,66 @@ class LocalWebServer private constructor(
         )
     }
 
-    private fun forbidden(): Response = newFixedLengthResponse(Response.Status.FORBIDDEN, "text/plain", "forbidden")
+    /**
+     * A branded page with a way back, rather than a white screen reading
+     * "forbidden". These are reached in a headset, where a browser's usual
+     * escapes do not exist: without the Back button the operator is stuck.
+     * The code is here so it can be read out to support.
+     */
+    private fun errorPage(status: Response.Status, code: String, title: String, detail: String): Response =
+        newFixedLengthResponse(status, "text/html; charset=utf-8", """
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>$title</title><style>
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+background:#0B1730;color:#fff;font-family:'Segoe UI',Roboto,system-ui,sans-serif;text-align:center;padding:8vh 6vw}
+.card{max-width:640px}h1{font-size:30px;margin:0 0 14px}p{color:#B8C7DC;font-size:17px;line-height:1.5;margin:0 0 10px}
+.code{display:inline-block;margin:18px 0 24px;padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.24);
+color:#F04E23;font-weight:700;letter-spacing:.08em;font-size:14px}
+a{display:inline-block;padding:15px 30px;border-radius:999px;background:#F04E23;color:#fff;
+text-decoration:none;font-weight:700;font-size:17px}
+</style></head><body><div class="card">
+<h1>${escapeHtml(title)}</h1>
+<p>${escapeHtml(detail)}</p>
+<div class="code">Reference $code</div><div>
+<a href="${hubBaseUrl()}/">Back to Library</a>
+</div></div></body></html>
+        """.trimIndent())
 
-    private fun notFound(): Response = newFixedLengthResponse(Response.Status.NOT_FOUND, "text/plain", "not found")
-
-    private fun internalError(t: Throwable): Response = newFixedLengthResponse(
-        Response.Status.INTERNAL_ERROR,
-        "text/plain",
-        t.message ?: "internal error"
+    private fun forbidden(): Response = errorPage(
+        Response.Status.FORBIDDEN,
+        "FVR-403",
+        "This content cannot be opened here",
+        "The item asked for something the Player does not allow. Return to the " +
+            "library and open it from there."
     )
+
+    private fun notFound(): Response = errorPage(
+        Response.Status.NOT_FOUND,
+        "FVR-404",
+        "This content is not on the headset",
+        "The file may still be copying, or the package may be incomplete. " +
+            "Check for new content in Settings, then try again."
+    )
+
+    private fun internalError(t: Throwable): Response {
+        // The exception text used to be the page body. It belongs in the log,
+        // not in front of a customer.
+        Log.w(TAG, "Request failed", t)
+        return errorPage(
+            Response.Status.INTERNAL_ERROR,
+            "FVR-500",
+            "This content could not be opened",
+            "Something went wrong while opening it. Create a support report in " +
+                "Settings if this keeps happening."
+        )
+    }
+
+    private fun escapeHtml(s: String): String = s
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace("\"", "&quot;")
 
     private fun badRequest(message: String): Response = newFixedLengthResponse(
         Response.Status.BAD_REQUEST,

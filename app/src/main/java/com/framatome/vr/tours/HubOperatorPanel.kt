@@ -48,8 +48,13 @@ object HubOperatorPanel {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
               <span><strong>Rebuild previews</strong><small>Clear generated thumbnails; source files stay untouched.</small></span>
             </button>
+            <button class="operator-action" id="operatorSupportButton" type="button" onclick="createSupportReport(this)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6M9 11h3"/></svg>
+              <span><strong>Create support report</strong><small>Saves device details and recent problems for Framatome support.</small></span>
+            </button>
           </div>
           <p class="operator-action-message" id="operatorActionMessage" role="status" aria-live="polite"></p>
+          <p class="operator-support-reference" id="operatorSupportReference" hidden></p>
         </section>
 
         <section class="operator-section">
@@ -198,6 +203,8 @@ object HubOperatorPanel {
     .operator-action small{font-size:11px;line-height:1.45;color:var(--text-mid)}
     .operator-action.primary small{color:rgba(255,255,255,.78)}
     .operator-action-message{min-height:16px;font-size:12px;color:#ffb39e;margin-top:10px;line-height:1.4}
+    .operator-support-reference{margin-top:8px;font-size:22px;font-weight:700;letter-spacing:0.08em;color:#fff;font-variant-numeric:tabular-nums}
+    .operator-support-reference[hidden]{display:none}
     .operator-data-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
     .operator-data-grid>div{
       padding:11px 12px;border-radius:11px;background:rgba(0,0,0,.15);min-width:0;
@@ -471,6 +478,24 @@ object HubOperatorPanel {
         .catch(function(error) {
           button.disabled = false;
           operatorSetText('operatorActionMessage', error.message || 'Previews could not be rebuilt.');
+        });
+    }
+    function createSupportReport(button) {
+      button.disabled = true;
+      operatorSetText('operatorActionMessage', 'Collecting device details…');
+      operatorPost('/__operator__/support?ts=' + Date.now())
+        .then(function(result) {
+          button.disabled = false;
+          // The reference is the whole point — keep it on screen rather than
+          // letting the status line clear it, so the operator can write it down.
+          operatorSetText('operatorSupportReference', result.supportId || '');
+          var ref = document.getElementById('operatorSupportReference');
+          if (ref) ref.hidden = !result.supportId;
+          operatorSetText('operatorActionMessage', result.message);
+        })
+        .catch(function(error) {
+          button.disabled = false;
+          operatorSetText('operatorActionMessage', error.message || 'The support report could not be saved.');
         });
     }
     function openOperatorStorageSettings(button) {

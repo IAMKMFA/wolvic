@@ -105,6 +105,9 @@ object FramatomeInitializer {
         }
         val app = context.applicationContext
         applicationContext = app
+        // Before anything that can fail: a crash during boot is exactly the one
+        // we will be asked about, and there is no other way to see it.
+        PlayerDiagnostics.start(app)
         Log.i(TAG, "Starting Framatome Player local web server")
         LocalWebServer.ensureRunning(app)
         // Warm the library index off-thread so the first hub load is instant.
@@ -384,17 +387,29 @@ object FramatomeInitializer {
                     val failureMessages =
                         (tourReport.failureMessages + mediaReport.failureMessages).distinct()
                     if (tourReport.hasFailures || mediaReport.hasFailures) {
+                        // This status is in-memory and only shown if someone is
+                        // watching a refresh; the record on disk is what a
+                        // support call actually has to work from.
+                        PlayerDiagnostics.recordIngestFailures("tours", tourReport)
+                        PlayerDiagnostics.recordIngestFailures("media", mediaReport)
                         return@runCatching ContentRefreshStatus(
                             requestId = requestId,
                             phase = REFRESH_FAILED,
-                            message = failureMessages.firstOrNull()
-                                ?: "One or more content packages could not be imported.",
+                            message = when (failureMessages.size) {
+                                0 -> "One or more content packages could not be imported."
+                                1 -> failureMessages.first()
+                                else ->
+                                    failureMessages.first() +
+                                        " (and ${failureMessages.size - 1} more)"
+                            },
                             startedAtMs = startedAt,
                             finishedAtMs = System.currentTimeMillis(),
                             failedCount = tourReport.failed + mediaReport.failed,
                             outOfSpaceCount =
                                 tourReport.outOfSpace + mediaReport.outOfSpace,
-                            warnings = mediaReport.warnings
+                            // Every failure, not just the one in `message` —
+                            // dropping the rest hid packages that also failed.
+                            warnings = mediaReport.warnings + failureMessages
                         )
                     }
 

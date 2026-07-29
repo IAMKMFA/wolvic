@@ -21,13 +21,15 @@ object HubOperatorSettings {
     val success: Boolean,
     val message: String,
     val changed: Boolean = false,
-    val deletedPreviews: Int = 0
+    val deletedPreviews: Int = 0,
+    val supportId: String? = null
   ) {
     fun toJson(): String = JSONObject().apply {
       put("success", success)
       put("message", message)
       put("changed", changed)
       put("deletedPreviews", deletedPreviews)
+      supportId?.let { put("supportId", it) }
     }.toString()
   }
 
@@ -129,6 +131,27 @@ object HubOperatorSettings {
       },
       changed = deleted > 0,
       deletedPreviews = deleted
+    )
+  }
+
+  /**
+   * Write everything support would ask for to a file the customer's ArborXR
+   * admin can pull, and hand back an identifier they can read to us over the
+   * phone. Without this, "it stopped working" is all we ever get.
+   */
+  fun createSupportBundle(context: Context): ActionResult {
+    val bundle = PlayerDiagnostics.writeSupportBundle(context.applicationContext)
+      ?: return ActionResult(
+        success = false,
+        message = "Could not save the report. Check that headset storage is " +
+          "available and not full, then try again."
+      )
+    return ActionResult(
+      success = true,
+      message = "Report ${bundle.supportId} saved to FramatomeVR/Logs. " +
+        "Quote this reference when you contact support.",
+      changed = false,
+      supportId = bundle.supportId
     )
   }
 

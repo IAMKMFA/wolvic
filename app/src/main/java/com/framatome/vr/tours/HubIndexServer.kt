@@ -223,7 +223,7 @@ object HubIndexServer {
                 gridId = "grid-models",
                 items = snapshot.standaloneModels,
                 playlistKey = HubPlaylists.KEY_MODELS,
-                emptyHint = "GLB/glTF models (SolidWorks XR exports with exploded views) appear here — see MODEL_PIPELINE.md.",
+                emptyHint = "3D models delivered to this headset appear here.",
                 dateFormat = dateFormat
             ),
             cloudSection = buildMediaSection(
@@ -231,7 +231,7 @@ object HubIndexServer {
                 gridId = "grid-clouds",
                 items = snapshot.standaloneClouds,
                 playlistKey = HubPlaylists.KEY_CLOUDS,
-                emptyHint = "PLY/PCD laser scans (Leica/FARO, converted) appear here — see SCAN_PIPELINE.md.",
+                emptyHint = "Laser scans delivered to this headset appear here.",
                 dateFormat = dateFormat
             ),
             storageBanner = if (snapshot.storageGranted) "" else buildStorageBanner()
