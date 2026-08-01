@@ -204,6 +204,7 @@ object HubIndexServer {
             ),
             videoSection = buildMediaSection(
                 title = "Videos",
+                panelKey = "videos",
                 gridId = "grid-videos",
                 items = snapshot.standaloneVideos,
                 playlistKey = HubPlaylists.KEY_VIDEOS,
@@ -212,6 +213,7 @@ object HubIndexServer {
             ),
             imageSection = buildMediaSection(
                 title = "Images",
+                panelKey = "images",
                 gridId = "grid-images",
                 items = snapshot.standaloneImages,
                 playlistKey = HubPlaylists.KEY_IMAGES,
@@ -220,6 +222,7 @@ object HubIndexServer {
             ),
             modelSection = buildMediaSection(
                 title = "3D Models",
+                panelKey = "models",
                 gridId = "grid-models",
                 items = snapshot.standaloneModels,
                 playlistKey = HubPlaylists.KEY_MODELS,
@@ -228,6 +231,7 @@ object HubIndexServer {
             ),
             cloudSection = buildMediaSection(
                 title = "Point Clouds",
+                panelKey = "clouds",
                 gridId = "grid-clouds",
                 items = snapshot.standaloneClouds,
                 playlistKey = HubPlaylists.KEY_CLOUDS,
@@ -263,7 +267,10 @@ object HubIndexServer {
         items: List<LibraryItem>,
         playlistKey: String,
         emptyHint: String,
-        dateFormat: SimpleDateFormat
+        dateFormat: SimpleDateFormat,
+        // Top-level sections are tab panels; the same builder renders inside
+        // collection overlays, where a tab wrapper would hide the content.
+        panelKey: String? = null
     ): String {
         val body = if (items.isEmpty()) {
             """<div class="section-empty">$emptyHint</div>"""
@@ -281,25 +288,42 @@ $cards
 </div>
 $showMore"""
         }
-        return """
+        val section = """
 <div class="section-bar"><h2>$title <span class="section-count">${items.size}</span></h2></div>
 $body
 """
+        return if (panelKey == null) {
+            section
+        } else {
+            """
+<section class="tab-panel" id="panel-$panelKey" role="tabpanel" aria-labelledby="tab-$panelKey">
+$section
+</section>
+"""
+        }
     }
 
     private fun buildCollectionsSection(
         collections: List<LibraryCollection>,
         dateFormat: SimpleDateFormat
     ): String {
-        if (collections.isEmpty()) return ""
-        val cards = collections.joinToString("\n") { buildCollectionCard(it, dateFormat) }
-        val overlays = collections.joinToString("\n") { buildCollectionOverlay(it, dateFormat) }
-        return """
-<div class="section-bar"><h2>Collections <span class="section-count">${collections.size}</span></h2></div>
-<div class="tour-grid" id="grid-collections">
+        // Rendered even when empty: every tab needs a panel behind it, and an
+        // explanation beats a click that appears to do nothing.
+        val body = if (collections.isEmpty()) {
+            """<div class="section-empty">Folder and ZIP deliveries appear here as grouped collections.</div>"""
+        } else {
+            val cards = collections.joinToString("\n") { buildCollectionCard(it, dateFormat) }
+            val overlays = collections.joinToString("\n") { buildCollectionOverlay(it, dateFormat) }
+            """<div class="tour-grid" id="grid-collections">
 $cards
 </div>
-$overlays
+$overlays"""
+        }
+        return """
+<section class="tab-panel" id="panel-collections" role="tabpanel" aria-labelledby="tab-collections">
+<div class="section-bar"><h2>Collections <span class="section-count">${collections.size}</span></h2></div>
+$body
+</section>
 """
     }
 
@@ -779,13 +803,26 @@ body::after{
 .logo-text h1{font-size:28px;font-weight:700;letter-spacing:-.5px;line-height:1.1}
 .logo-text .tagline{font-size:13px;color:var(--text-dim);font-weight:500;letter-spacing:.5px;text-transform:uppercase;margin-top:2px}
 .header-right{display:flex;align-items:center;gap:12px}
+.tab-bar{display:flex;align-items:stretch;gap:12px}
 .header-stat{
   background:var(--glass);border:1px solid var(--glass-border);
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border-radius:14px;padding:10px 16px;text-align:center;min-width:74px;
+  font-family:inherit;color:inherit;cursor:pointer;
+  transition:border-color .15s ease,background .15s ease,transform .15s ease;
 }
+.header-stat:hover{border-color:rgba(240,78,35,.55);transform:translateY(-1px)}
+.header-stat.active{
+  border-color:#F04E23;background:rgba(240,78,35,.14);
+  box-shadow:0 0 0 1px rgba(240,78,35,.35),0 8px 22px rgba(240,78,35,.18);
+}
+.header-stat.active .label{color:#FFD9CC}
+.header-stat:focus-visible{outline:2px solid #F04E23;outline-offset:2px}
 .header-stat .num{font-size:22px;font-weight:700;color:#FFD9CC}
 .header-stat .label{font-size:11px;color:var(--text-mid);text-transform:uppercase;letter-spacing:.5px}
+/* Tab panels: one section at a time; Tours is the front page. */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
 
 /* --- Storage banner --- */
 .storage-banner{
@@ -1167,30 +1204,36 @@ ${HubOperatorPanel.markup()}
         </div>
     </div>
     <div class="header-right">
-        <div class="header-stat">
-            <div class="num">$tourCount</div>
-            <div class="label">Tours</div>
-        </div>
-        <div class="header-stat">
-            <div class="num">$collectionCount</div>
-            <div class="label">Collections</div>
-        </div>
-        <div class="header-stat">
-            <div class="num">$videoCount</div>
-            <div class="label">Videos</div>
-        </div>
-        <div class="header-stat">
-            <div class="num">$imageCount</div>
-            <div class="label">Images</div>
-        </div>
-        <div class="header-stat">
-            <div class="num">$modelCount</div>
-            <div class="label">Models</div>
-        </div>
-        <div class="header-stat">
-            <div class="num">$cloudCount</div>
-            <div class="label">Point Clouds</div>
-        </div>
+        <nav class="tab-bar" role="tablist" aria-label="Content sections">
+            <button class="header-stat tab active" id="tab-tours" role="tab" aria-controls="panel-tours" onclick="showTab('tours')">
+                <div class="num">$tourCount</div>
+                <div class="label">Tours</div>
+            </button>
+            <button class="header-stat tab" id="tab-collections" role="tab" aria-controls="panel-collections" onclick="showTab('collections')">
+                <div class="num">$collectionCount</div>
+                <div class="label">Collections</div>
+            </button>
+            <button class="header-stat tab" id="tab-videos" role="tab" aria-controls="panel-videos" onclick="showTab('videos')">
+                <div class="num">$videoCount</div>
+                <div class="label">Videos</div>
+            </button>
+            <button class="header-stat tab" id="tab-images" role="tab" aria-controls="panel-images" onclick="showTab('images')">
+                <div class="num">$imageCount</div>
+                <div class="label">Images</div>
+            </button>
+            <button class="header-stat tab" id="tab-models" role="tab" aria-controls="panel-models" onclick="showTab('models')">
+                <div class="num">$modelCount</div>
+                <div class="label">Models</div>
+            </button>
+            <button class="header-stat tab" id="tab-clouds" role="tab" aria-controls="panel-clouds" onclick="showTab('clouds')">
+                <div class="num">$cloudCount</div>
+                <div class="label">Point Clouds</div>
+            </button>
+        </nav>
+        <button class="btn-scan" data-refresh-button onclick="refreshContent(this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
+            Rescan
+        </button>
         ${HubOperatorPanel.headerButton()}
     </div>
 </div>
@@ -1198,17 +1241,15 @@ $storageBanner
 $diagnosticsSection
 
 <div class="main">
+    <section class="tab-panel active" id="panel-tours" role="tabpanel" aria-labelledby="tab-tours">
     <div class="section-bar">
         <h2>Your Tours <span class="section-count">$tourCount</span></h2>
-        <button class="btn-scan" data-refresh-button onclick="refreshContent(this)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
-            Rescan
-        </button>
     </div>
 
     <div class="tour-grid">
 $tourCards
     </div>
+    </section>
 
 $collectionsSection
 
@@ -1238,6 +1279,25 @@ $cloudSection
 <div class="accent-stripe" aria-hidden="true"></div>
 
 <script>
+var TAB_NAMES = ['tours','collections','videos','images','models','clouds'];
+function showTab(name) {
+  if (TAB_NAMES.indexOf(name) < 0) name = 'tours';
+  TAB_NAMES.forEach(function(n){
+    var on = n === name;
+    var tab = document.getElementById('tab-' + n);
+    var panel = document.getElementById('panel-' + n);
+    if (tab) { tab.classList.toggle('active', on); tab.setAttribute('aria-selected', on ? 'true' : 'false'); }
+    if (panel) panel.classList.toggle('active', on);
+  });
+  // Rescan reloads the page; without this the operator would be bounced back
+  // to Tours every time they refresh from another tab.
+  try { window.sessionStorage.setItem('framatomeActiveTab', name); } catch (ignored) {}
+}
+(function(){
+  var saved = null;
+  try { saved = window.sessionStorage.getItem('framatomeActiveTab'); } catch (ignored) {}
+  if (saved && saved !== 'tours') showTab(saved);
+})();
 var introDismissed = false;
 (function(){
   var pc = document.getElementById('introParticles');

@@ -103,6 +103,19 @@ class HubOperatorSettingsTest {
   }
 
   @Test
+  fun `hub is tabbed with tours as the front page`() {
+    val html = HubIndexServer.generateIndexHtml(app)
+
+    // One panel per section, tours visible by default, the rest behind tabs.
+    for (key in listOf("tours", "collections", "videos", "images", "models", "clouds")) {
+      assertTrue("missing tab-$key", html.contains("id=\"tab-$key\""))
+      assertTrue("missing panel-$key", html.contains("id=\"panel-$key\""))
+    }
+    assertTrue(html.contains("class=\"tab-panel active\" id=\"panel-tours\""))
+    assertFalse(html.contains("class=\"tab-panel active\" id=\"panel-videos\""))
+  }
+
+  @Test
   fun `hub keeps operator controls and delivered tours on distinct origins`() {
     val html = HubIndexServer.generateIndexHtml(app)
 
